@@ -97,24 +97,12 @@ Since then, on `main`:
 
 The groundwork every later cycle grades itself against:
 
-- a standing check for the cluster test job;
 - a result type, one verdict line, exit statuses and `--json`;
 - one logger state for the whole program;
 - the mathematics written down;
 - a reference big integer;
-- the known answers with their sources.
-
-## A standing check for the cluster test job
-
-`make check` never runs the cluster test job or reads its target files, and the cycle that added
-them proved them with phase gates that become records once it merges. A small check in `make check`,
-with a local fixture repository and a stand-in module command and compiler, runs the job's happy
-path and its main failure paths and validates every target file, so a regression shows up on the
-Mac before any cluster time is spent.
-
-*Horizon: near-term · Depends on: test any commit on a cluster (cleared 2026-10-12) · Refs:
-cluster-test-jobs P4, 2026-10-12*
-**Seed:** [`issues/ci-job-standing-checks.md`](issues/ci-job-standing-checks.md)
+- the known answers with their sources;
+- a standing check for the cluster test job.
 
 ## Say what was found: a result type, one verdict line, exit statuses and `--json`
 
@@ -174,6 +162,18 @@ Every row carries its source, and the tables are append-only (§ Invariants 3).
 
 *Horizon: near-term · Depends on: the reference big integer, for computed rows · Refs: —*
 **Seed:** [`issues/known-answer-tables.md`](issues/known-answer-tables.md)
+
+## A standing check for the cluster test job
+
+`make check` never runs the cluster test job or reads its target files, and the cycle that added
+them proved them with phase gates that become records once it merges. A small check in `make check`,
+with a local fixture repository and a stand-in module command and compiler, runs the job's happy
+path and its main failure paths and validates every target file, so a regression shows up on the
+Mac before any cluster time is spent.
+
+*Horizon: near-term · Depends on: test any commit on a cluster (cleared 2026-10-12) · Refs:
+cluster-test-jobs P4, 2026-10-12*
+**Seed:** [`issues/ci-job-standing-checks.md`](issues/ci-job-standing-checks.md)
 
 ---
 
