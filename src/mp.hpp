@@ -11,6 +11,7 @@
 
 
 // Standard libs
+#include <cstdint>     // uint16_t
 #include <iostream>
 #include <string>
 #include <vector>
