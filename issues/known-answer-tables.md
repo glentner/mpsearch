@@ -1,0 +1,90 @@
+---
+status: unshaped
+kind: feature
+appetite: small
+---
+
+# The known answers: exponents, residues and factors, each with its source
+
+> **Candidate, not a contract.** `code mpsearch feature` promotes this into `spec/{slug}/GOAL.md`,
+> where appetite, non-goals and the R-IDs get negotiated. Do not copy it verbatim.
+
+## Problem
+
+Every verdict test and every burn-in run compares against an expected value, and the repo holds
+none. § Invariants 3 makes expected values fixed points: append-only, each with its source, never
+edited to make a test pass. That rule needs a home, a format and a loader before any engine is graded
+against it. Without them each cycle invents its own constants, and a wrong constant hides exactly
+the hardware fault the burn-in exists to catch.
+
+"Prime" is the weakest known answer. A Lucas–Lehmer residue of zero can come from a zeroed buffer,
+and the Gerbicz check can't see a self-consistent arithmetic bug. The strongest known answers are
+composite exponents with non-zero published residues, plus residues after a fixed number of
+iterations.
+
+Five kinds of answer are needed:
+
+- **The 52 known Mersenne prime exponents**, 2 through 136,279,841. None has been found since
+  October 2024. The rank of #52 is provisional, since not every smaller exponent has been verified.
+- **Lucas–Lehmer and PRP residues of composite exponents**, across sizes. GIMPS publishes them, and
+  several reproduce exactly from the definitions:
+  - LL: M1237 → `DF5E6622F83F5BE2`, M1277 → `5613A480590E78BA`;
+  - PRP type 1: M28603 → `F899E5F1E2B40323`.
+- **Partial-run residues.** For example, s_100 of M3888509 is `71E61322CCFB396C`, the Mlucas
+  self-test value. Short runs on huge exponents then still carry a known answer.
+- **Factors.** Small ones (M11: 23, 89; M23: 47; M29: 233, 1103, 2089). The 64-bit boundary
+  (M141900347: q = 18933328644689502913). 77-bit (M141900047: q = 114827397821638003622009). And P-1
+  boundary cases:
+  - M1022191's 97-bit factor is found if and only if B1 ≥ 15887 and B2 ≥ 2050333;
+  - M1003417 needs B1 ≥ 181219 and B2 ≥ 39340463;
+  - M141933599 needs B1 ≥ 869291 and B2 ≥ 200514673.
+- **Burn-in fingerprints.** Residues after a fixed number of iterations at a fixed transform length
+  and shift, agreed by two independent engines.
+
+## Why it was deferred
+
+Never started. It sits with the reference big integer because both precede every engine cycle.
+
+## Outcome / vision
+
+A small set of plain-text tables under `test/`, readable by people and loaded by one C++ module.
+Every row carries its source: a published result (URL and retrieval date) or the exact command and
+engine that computed it.
+
+- **Published rows** come from mersenne.org's plain-CSV reports: `report_LL`, `report_prp` and
+  `report_factors` with `txt=1`, which accept scripted requests. mersenne.ca now challenges scripts.
+  A row is accepted only when two or more shifts or programs agree and the error code is empty.
+- **Computed rows** for small exponents come from the reference big integer, checked by an
+  independent method.
+- **Fingerprints** are added only when two engines that share no arithmetic agree, such as the FP64
+  transform and the integer transform.
+
+A check in `make check` fails on any row without a source, and on any key with two different answers.
+
+## Sketch of the acceptance criteria
+
+- **R1** — Every expected value SHALL carry a source: a URL with its retrieval date, or the command
+  and engine that computed it.
+- **R2** — `make check` SHALL fail IF a row lacks a source, or IF one key appears with two different
+  values.
+- **R3** — The table of Mersenne prime exponents SHALL list all 52 known exponents as of its
+  retrieval date, and SHALL be the only place tests and burn-in profiles read them from.
+- **R4** — A burn-in fingerprint row SHALL record the exponent, test, residue type, transform length,
+  shift, iteration count and Res64, and SHALL name the two engines that agreed on it.
+- **R5** — The tables SHALL be append-only: a correction adds a superseding row with its reason and
+  never edits the old one in place.
+- **R6** — Every published row SHALL satisfy the acceptance rule above: agreement across shifts or
+  programs, and no error code.
+
+## Notes
+
+- Shaping decides the file format (one table per kind, with a source column) and how many rows go in
+  each transform-length band.
+- The factor report lists found factors only; a prime cofactor is implicit (M11 lists 23, not 89). A
+  range 10^5 wide returned exactly 5,000 rows, which looks like a cap, so page in narrow ranges.
+- P-1 rows need no GCD to check: test x ≡ 1 (mod q) for the known factor q.
+- Every table becomes a high-blast-radius path in the commit that creates it (§ Invariants).
+- References: GIMPS, "List of Known Mersenne Prime Numbers", https://www.mersenne.org/primes/; GIMPS
+  reports, https://www.mersenne.org/report_LL/, https://www.mersenne.org/report_prp/,
+  https://www.mersenne.org/report_factors/; E. Mayer, Mlucas README (self-test residues).
+- Found by: factory adoption review, 2026-10-11.
