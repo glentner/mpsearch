@@ -76,7 +76,7 @@ device. The kernel sources are shared with HIP through a thin header (`issues/hi
   out.
 - **Licensing.** GPLv3's system-library exception may not cover the proprietary CUDA runtime. The
   author chose to grant an additional permission under GPLv3 section 7 for it (2026-10-11), and
-  `issues/build-and-test-foundation.md` adds it. Kernels and host code are `mps`'s own.
+  `LICENSE-EXCEPTION` grants it. Kernels and host code are `mps`'s own.
 - Reference: wfgarnett3, "PRPLL NTT now supports both CUDA and OpenCL", NVIDIA Developer Forums,
   2026, https://forums.developer.nvidia.com/t/prpll-ntt-now-supports-both-cuda-and-opencl/367918.
 - Found by: factory adoption review, 2026-10-11.

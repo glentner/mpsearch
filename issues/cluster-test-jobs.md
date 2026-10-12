@@ -25,8 +25,8 @@ target and any phase: push the branch, submit a job with the commit hash, read b
 
 ## Why it was deferred
 
-Never started. It follows the test target (`issues/build-and-test-foundation.md`), which gives the
-job something to run.
+Never started. It waited on the test target, which gives the job something to run; `make check`
+landed on `main` on 2026-10-11, so that constraint is cleared.
 
 ## Outcome / vision
 

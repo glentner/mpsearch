@@ -87,25 +87,11 @@ The three tests are stubs, and there is no multiple-precision arithmetic yet.
 
 The groundwork every later cycle grades itself against:
 
-- a build both compilers accept, with a test target;
 - a way to test any commit on a cluster;
 - a result type that says what was found;
 - a reference big integer;
 - the known answers with their sources;
 - the mathematics written down.
-
-## A build both compilers accept, and a test target
-
-The build has only ever met Apple clang, and a fresh clone doesn't build at all: nothing creates
-`lib/` and `bin/`. Under GCC, `namespace log` collides with the C library's `log` the moment any
-source includes `<cmath>`, and every arithmetic module will. `-Ofast` is deprecated and drags in
-fast-math, which breaks the rounding the transforms depend on. There is no test target, so no later
-cycle has anything to verify against. This entry adds `make check`, moves the profile's `verify` onto
-it, and puts the license on a valid footing: GPL-3.0-only, with an additional permission to link
-vendor GPU runtimes.
-
-*Horizon: near-term · Depends on: — · Refs: factory adoption review, 2026-10-11*
-**Seed:** [`issues/build-and-test-foundation.md`](issues/build-and-test-foundation.md)
 
 ## Test any commit on a cluster, built fresh from GitHub
 
@@ -114,7 +100,7 @@ target. It clones the public repository into a fresh directory in scratch, build
 with the target's toolchain, runs the tests, and writes a machine-readable result. A cycle tests a
 phase on a target by pushing its branch and submitting the job with the hash.
 
-*Horizon: near-term · Depends on: the test target · Refs: —*
+*Horizon: near-term · Depends on: the test target (cleared 2026-10-11) · Refs: —*
 **Seed:** [`issues/cluster-test-jobs.md`](issues/cluster-test-jobs.md)
 
 ## Say what was found: verdicts, exit statuses, and the options that don't parse
@@ -156,7 +142,7 @@ obviously right. A binary-limb integer becomes that oracle: schoolbook and Karat
 folding reduction modulo 2^p − 1, and the transform digit form. It also runs Lucas–Lehmer and PRP for
 small exponents before any transform exists.
 
-*Horizon: near-term · Depends on: the test target · Refs: —*
+*Horizon: near-term · Depends on: the test target (cleared 2026-10-11) · Refs: —*
 **Seed:** [`issues/reference-big-integer.md`](issues/reference-big-integer.md)
 
 ## The known answers: exponents, residues and factors, each with its source
