@@ -65,7 +65,7 @@ kernels, at every radix and length it supports.
   (`target_clones`) suits small leaf kernels, not whole FFT passes.
 - SME stays parked: a later spike could try radix-4 outer-product blocks or exact int16→int64 limb
   products.
-- Each tier is tested on a host that has it, through the cluster test jobs
-  (`issues/cluster-test-jobs.md`), whose first targets are AVX2, AVX-512 and aarch64 GB10 nodes.
-  There is no hosted CI matrix.
+- Each tier is tested on a host that has it, through the cluster test job (`ci/test-commit.sh`),
+  whose targets under `ci/targets/` are AVX2, AVX-512 and aarch64 GB10 nodes. There is no hosted CI
+  matrix.
 - Found by: factory adoption review, 2026-10-11.

@@ -64,4 +64,7 @@ measured beside PRPLL on the same AMD GPU, with the ROCm version recorded.
 - Shaping names the AMD GPU to measure on and how to reach it.
 - rocFFT may serve as a test oracle, as cuFFT may for CUDA. Its output is bitwise reproducible per
   GPU model, but no error bounds are published.
+- **A cluster target.** The cluster test job (`ci/test-commit.sh`) shipped with CPU targets only;
+  GPU targets were left to the backend cycles. This cycle adds a HIP target under `ci/targets/`,
+  with the GPU resources and the ROCm module it needs, so each phase is tested on an AMD node.
 - Found by: factory adoption review, 2026-10-11.

@@ -81,27 +81,21 @@ The 2024 scaffold. It has:
 
 The three tests are stubs, and there is no multiple-precision arithmetic yet.
 
+Since then, on `main`:
+
+- `ci/test-commit.sh`, a Slurm job that builds and checks any commit fresh from GitHub on a named
+  target, with the CPU targets under `ci/targets/` (`cluster-test-jobs`, 2026-10-12).
+
 ---
 
 # Part I — Foundation
 
 The groundwork every later cycle grades itself against:
 
-- a way to test any commit on a cluster;
 - a result type that says what was found;
 - a reference big integer;
 - the known answers with their sources;
 - the mathematics written down.
-
-## Test any commit on a cluster, built fresh from GitHub
-
-Every target beyond the author's Mac lives on Slurm clusters. A batch script takes a commit hash and a
-target. It clones the public repository into a fresh directory in scratch, builds that exact commit
-with the target's toolchain, runs the tests, and writes a machine-readable result. A cycle tests a
-phase on a target by pushing its branch and submitting the job with the hash.
-
-*Horizon: near-term · Depends on: the test target (cleared 2026-10-11) · Refs: —*
-**Seed:** [`issues/cluster-test-jobs.md`](issues/cluster-test-jobs.md)
 
 ## A standing check for the cluster test job
 
@@ -111,7 +105,8 @@ with a local fixture repository and a stand-in module command and compiler, runs
 path and its main failure paths and validates every target file, so a regression shows up on the
 Mac before any cluster time is spent.
 
-*Horizon: near-term · Depends on: test any commit on a cluster · Refs: cluster-test-jobs P4, 2026-10-12*
+*Horizon: near-term · Depends on: test any commit on a cluster (cleared 2026-10-12) · Refs:
+cluster-test-jobs P4, 2026-10-12*
 **Seed:** [`issues/ci-job-standing-checks.md`](issues/ci-job-standing-checks.md)
 
 ## Say what was found: verdicts, exit statuses, and the options that don't parse
@@ -319,8 +314,8 @@ the SIMD kernels ship, a target names the machine and the CPU features its node 
 refuses a node without them, and the result names the CPU that ran it, so each tier's kernels are
 known to have run on that tier.
 
-*Horizon: mid-term, before the SIMD kernels · Depends on: test any commit on a cluster · Refs:
-cluster-test-jobs review cycle 1 (F3), 2026-10-12*
+*Horizon: mid-term, before the SIMD kernels · Depends on: test any commit on a cluster (cleared
+2026-10-12) · Refs: cluster-test-jobs review cycle 1 (F3), 2026-10-12*
 **Seed:** [`issues/target-node-check.md`](issues/target-node-check.md)
 
 ## SIMD kernels for each CPU family, chosen at run time

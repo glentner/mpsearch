@@ -79,4 +79,7 @@ device. The kernel sources are shared with HIP through a thin header (`issues/hi
   `LICENSE-EXCEPTION` grants it. Kernels and host code are `mps`'s own.
 - Reference: wfgarnett3, "PRPLL NTT now supports both CUDA and OpenCL", NVIDIA Developer Forums,
   2026, https://forums.developer.nvidia.com/t/prpll-ntt-now-supports-both-cuda-and-opencl/367918.
+- **A cluster target.** The cluster test job (`ci/test-commit.sh`) shipped with CPU targets only;
+  GPU targets were left to the backend cycles. This cycle adds a CUDA target under `ci/targets/`,
+  with the GPU resources and the toolkit module it needs, so each phase is tested on an NVIDIA node.
 - Found by: factory adoption review, 2026-10-11.
