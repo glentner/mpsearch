@@ -1,0 +1,6 @@
+label	job_id	state	exit_code
+x86-64-avx512	16964306	COMPLETED	0:0
+x86-64-avx2	44161743	COMPLETED	0:0
+aarch64-gb10	474553	COMPLETED	0:0
+not-a-commit	16964312	FAILED	1:0
+red-build	44160320	FAILED	1:0

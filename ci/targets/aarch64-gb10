@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2026 Geoffrey Lentner
+# SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
+#
+# GCC on aarch64 NVIDIA GB10 (Arm Cortex-X925 and Cortex-A725)
+#
+# The partition refuses jobs that request no GPU, so the CPU build asks for one.
+description='GCC on aarch64 NVIDIA GB10 (Arm Cortex-X925 and Cortex-A725)'
+partition=spark-batch
+gpus=1
+cpus=4
+mem=4G
+time=00:30:00
+modules='gcc/14.2.0'
+make_vars='CXX=g++'

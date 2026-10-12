@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2026 Geoffrey Lentner
+# SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
+#
+# GCC on x86-64 AVX2 (AMD EPYC 7763, Zen 3)
+#
+# The default GCC module on these nodes is older than 13, so the version is pinned.
+description='GCC on x86-64 AVX2 (AMD EPYC 7763, Zen 3)'
+partition=cpu
+gpus=
+cpus=4
+mem=4G
+time=00:30:00
+modules='gcc/14.4.0'
+make_vars='CXX=g++'

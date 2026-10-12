@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2026 Geoffrey Lentner
+# SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
+#
+# GCC on x86-64 AVX-512 (AMD EPYC 9654, Zen 4)
+#
+# Memory is capped per CPU on these nodes, so mem stays within what four CPUs may ask for.
+description='GCC on x86-64 AVX-512 (AMD EPYC 9654, Zen 4)'
+partition=cpu
+gpus=
+cpus=4
+mem=4G
+time=00:30:00
+modules='gcc/14.1.0'
+make_vars='CXX=g++'

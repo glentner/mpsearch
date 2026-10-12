@@ -1,0 +1,28 @@
+# Written only by $KB/bin/factory/metrics.py. Observation, never state: nothing routes on it.
+slug: cluster-test-jobs
+escaped_from: null
+planned: {date: '2026-10-12', phases: 4}
+landed: {date: '2026-10-12', phases: 4, failed_verifies: 0}
+open: null
+runs:
+- {step: feature, start: '2026-10-11T22:43:46-04:00', stop: '2026-10-11T22:45:26-04:00', seconds: 100, end: gate, agent: claude-opus-5-5}
+- {step: plan, start: '2026-10-11T22:46:08-04:00', stop: '2026-10-12T00:31:53-04:00', seconds: 6345, end: gate, agent: claude-opus-5-5}
+- {step: 'build:P1', start: '2026-10-12T00:31:53-04:00', stop: '2026-10-12T00:39:24-04:00', seconds: 451, end: done, agent: claude-opus-5-5}
+- {step: 'build:P2', start: '2026-10-12T00:39:24-04:00', stop: '2026-10-12T00:45:51-04:00', seconds: 387, end: done, agent: claude-opus-5-5}
+- {step: 'build:P4', start: '2026-10-12T00:45:52-04:00', stop: '2026-10-12T00:55:05-04:00', seconds: 553, end: done, agent: claude-opus-5-5}
+- {step: review, start: '2026-10-12T00:56:56-04:00', stop: '2026-10-12T01:16:15-04:00', seconds: 1159, end: done, agent: claude-opus-5-5}
+- {step: 'build:P2', start: '2026-10-12T01:16:15-04:00', stop: '2026-10-12T01:27:09-04:00', seconds: 654, end: done, agent: claude-opus-5-5}
+- {step: 'build:P4', start: '2026-10-12T01:27:09-04:00', stop: '2026-10-12T01:35:43-04:00', seconds: 514, end: done, agent: claude-opus-5-5}
+- {step: review, start: '2026-10-12T01:35:43-04:00', stop: '2026-10-12T01:44:47-04:00', seconds: 544, end: done, agent: claude-opus-5-5}
+- {step: publish, start: '2026-10-12T01:44:59-04:00', stop: '2026-10-12T01:45:51-04:00', seconds: 52, end: done, agent: claude-opus-5-5}
+reviews:
+- cycle: 1
+  date: '2026-10-12'
+  verdict: changes-requested
+  confirmed: {critical: 0, high: 0, medium: 0, low: 1}
+  plausible: 1
+- cycle: 2
+  date: '2026-10-12'
+  verdict: approved
+  confirmed: {critical: 0, high: 0, medium: 0, low: 0}
+  plausible: 0

@@ -1,0 +1,6 @@
+mps-test: script 8fb69ffc39e8ae81b5c7847e72fa5c6f89063ed2
+mps-test: clone
+mps-test: checkout
+mps-test: checkout failed
+mps-test: 04e6a97d4b89719e098c73fa0fe868e91a4aa88a is not a commit in https://github.com/glentner/mpsearch.git
+mps-test: failed in <scratch>

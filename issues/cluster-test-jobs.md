@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:cluster-test-jobs
 kind: feature
 appetite: small
 ---

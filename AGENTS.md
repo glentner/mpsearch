@@ -39,6 +39,10 @@ clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefil
   function listed in its file's `check_by_name` table), `check_<module>.cpp` hold one module's
   checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make check` runs
   both.
+- `ci/test-commit.sh`: the cluster test job. It builds and checks one commit on one target in a
+  fresh run directory in scratch and leaves the logs and `result.json` there; its header is the
+  manual. `ci/targets/`: one `key=value` file per target, naming its partition, resources, modules
+  and make variables.
 
 ## Factory
 
@@ -56,6 +60,7 @@ This repo is built by the spec-driven factory: GOAL → PLAN/TECH → build → 
 | ci | none |
 | setup | `make` |
 | verify | `make check`: the checks and the smoke test, both always run (`make -B check` after changing `CXX`) |
+| cluster test | `ci/test-commit.sh <hash> <target>`, copied from the tested commit into scratch and submitted to Slurm by path with its two arguments; the options, environment, run directory and `result.json` are in its header |
 | throwaway environment | none: `mps` keeps no state outside its own working directory yet |
 | coupled core | the command-line surface (`src/main.hpp` usage and help, `src/cli.*`, `README.md` usage); the test entry points (`src/math.hpp` and the dispatch in `src/main.cpp`) |
 | same-commit rules | see § Conventions |

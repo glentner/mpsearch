@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "requested": "04e6a97d4b89719e098c73fa0fe868e91a4aa88a",
+  "commit": null,
+  "target": "x86-64-avx512",
+  "cluster": "<cluster>",
+  "host": "<host>",
+  "arch": "x86_64",
+  "job_id": "16964312",
+  "start": "2026-10-12T05:30:57Z",
+  "end": "2026-10-12T05:30:57Z",
+  "compiler": null,
+  "make": null,
+  "steps": [
+    {
+      "name": "clone",
+      "status": "passed",
+      "seconds": 0
+    },
+    {
+      "name": "checkout",
+      "status": "failed",
+      "seconds": 0
+    },
+    {
+      "name": "toolchain",
+      "status": "not_run",
+      "seconds": null
+    },
+    {
+      "name": "build",
+      "status": "not_run",
+      "seconds": null
+    },
+    {
+      "name": "check",
+      "status": "not_run",
+      "seconds": null
+    }
+  ],
+  "status": "failed"
+}

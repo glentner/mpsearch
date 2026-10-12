@@ -1,0 +1,27 @@
+mps-test: script 62723964ac43658e53a2a7ef8ecd9bf0b38fc77e
+mps-test: clone
+mps-test: checkout
+mps-test: toolchain
+mps-test: build
+mps-test: build failed
+src/mp.hpp:20:29: error: template argument 1 is invalid
+   20 |         std::vector<uint16_t> digits {};
+      |                             ^
+src/mp.hpp:20:29: error: template argument 2 is invalid
+src/mp.hpp:20:14: error: '<expression error>' in namespace 'std' does not name a type
+   20 |         std::vector<uint16_t> digits {};
+      |              ^~~~~~~~~~~~~~~~
+src/mp.hpp:25:28: error: 'uint16_t' was not declared in this scope
+   25 |         BigInt(std::vector<uint16_t> const& digits);
+      |                            ^~~~~~~~
+src/mp.hpp:25:28: note: 'uint16_t' is defined in header '<cstdint>'; this is probably fixable by adding '#include <cstdint>'
+src/mp.hpp:25:36: error: template argument 1 is invalid
+   25 |         BigInt(std::vector<uint16_t> const& digits);
+      |                                    ^
+src/mp.hpp:25:36: error: template argument 2 is invalid
+src/mp.hpp:25:37: error: expected ')' before 'const'
+   25 |         BigInt(std::vector<uint16_t> const& digits);
+      |               ~                     ^~~~~~
+      |                                     )
+make: *** [Makefile:26: lib/io.o] Error 1
+mps-test: failed in <scratch>

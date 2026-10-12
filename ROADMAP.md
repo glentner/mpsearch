@@ -103,6 +103,17 @@ phase on a target by pushing its branch and submitting the job with the hash.
 *Horizon: near-term · Depends on: the test target (cleared 2026-10-11) · Refs: —*
 **Seed:** [`issues/cluster-test-jobs.md`](issues/cluster-test-jobs.md)
 
+## A standing check for the cluster test job
+
+`make check` never runs the cluster test job or reads its target files, and the cycle that added
+them proved them with phase gates that become records once it merges. A small check in `make check`,
+with a local fixture repository and a stand-in module command and compiler, runs the job's happy
+path and its main failure paths and validates every target file, so a regression shows up on the
+Mac before any cluster time is spent.
+
+*Horizon: near-term · Depends on: test any commit on a cluster · Refs: cluster-test-jobs P4, 2026-10-12*
+**Seed:** [`issues/ci-job-standing-checks.md`](issues/ci-job-standing-checks.md)
+
 ## Say what was found: verdicts, exit statuses, and the options that don't parse
 
 A run prints no verdict. The three tests return `bool` with mixed meanings, and `main` discards
@@ -299,6 +310,18 @@ program on the M4 Max, then the best x86 program on an EPYC node.
 *Horizon: mid-term · Depends on: `mps bench`; the portable engine as the correctness reference ·
 Refs: —*
 **Seed:** [`issues/cpu-transform-throughput.md`](issues/cpu-transform-throughput.md)
+
+## Targets that check their node
+
+A target names the node class it was written for, but the cluster test job checks only the
+partition. An AVX-512 target that lands on an AVX2-only node therefore passes under its name. Before
+the SIMD kernels ship, a target names the machine and the CPU features its node must have. The job
+refuses a node without them, and the result names the CPU that ran it, so each tier's kernels are
+known to have run on that tier.
+
+*Horizon: mid-term, before the SIMD kernels · Depends on: test any commit on a cluster · Refs:
+cluster-test-jobs review cycle 1 (F3), 2026-10-12*
+**Seed:** [`issues/target-node-check.md`](issues/target-node-check.md)
 
 ## SIMD kernels for each CPU family, chosen at run time
 
