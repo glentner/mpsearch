@@ -93,7 +93,10 @@ Since then, on `main`:
 - one result type for every test, one verdict line per result on stdout, exit statuses that tell
   prime (0), composite (40), probable prime (41) and no verdict (42) apart, with 50–59 reserved for
   burn-in, a `-j/--json` record per result, and an exponent check that answers a composite exponent
-  before any test runs (`verdicts-and-exit-statuses`, 2026-10-12).
+  before any test runs (`verdicts-and-exit-statuses`, 2026-10-12);
+- one logger state for the whole program, so the detailed style, the debug level, the hostname and
+  `TASK_ID` reach every message from every source file, with `-D` and `-d` taking effect where the
+  parser reads them (`logger-state-per-translation-unit`, 2026-10-12).
 
 ---
 
@@ -101,22 +104,11 @@ Since then, on `main`:
 
 The groundwork every later cycle grades itself against:
 
-- one logger state for the whole program;
 - the mathematics written down;
 - a reference big integer;
 - the known answers with their sources;
 - a standing check for the cluster test job;
 - `--` ending the options for every flag, in every position.
-
-## One logger state for the whole program
-
-The logger's style, level, hostname and task id are `static` in a header, so each source file has
-its own copy. `-D` and `-d` reach only `main.cpp`'s messages; every other file logs at the
-zero-initialised level, `DEBUG`, in the default style, without the hostname and `TASK_ID` stamp the
-fleet reads. One shared state makes the options and the stamp apply to every message.
-
-*Horizon: near-term · Depends on: — · Refs: build-and-test-foundation research, 2026-10-11*
-**Seed:** [`issues/logger-state-per-translation-unit.md`](issues/logger-state-per-translation-unit.md)
 
 ## The mathematics, written down: notes and references
 

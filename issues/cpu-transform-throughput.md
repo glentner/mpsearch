@@ -72,4 +72,6 @@ portable engine's residues (§ Invariants 2), and the round-off monitor stays on
   - per-socket placement on Sapphire Rapids, whose 105 MB L3 does too.
 - The established programs' published timings set the yardsticks. Their code is out of bounds
   (§ Invariants 4).
+- The logger's thread safety is this seed's to decide: its one shared state was built for a
+  single-threaded `mps` (`spec/logger-state-per-translation-unit/GOAL.md`, Non-goals).
 - Found by: factory adoption review, 2026-10-11.
