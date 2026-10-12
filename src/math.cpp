@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2024 Geoffrey Lentner
-// SPDX-License-Identifier: GPLv3
+// SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
 //
 // Mathematical operations and tests.
 //
@@ -50,23 +50,23 @@ void display_primes(size_t n) {
 }
 
 
-bool test_quick_factor(const long unsigned p) {
+bool test_quick_factor([[maybe_unused]] const long unsigned p) {
 
-	log::info("Running quick factor test");
+	logging::info("Running quick factor test");
 	return true;
 }
 
 
-bool test_p_minus_one(const long unsigned p) {
+bool test_p_minus_one([[maybe_unused]] const long unsigned p) {
 
-	log::info("Running P-1 test");
+	logging::info("Running P-1 test");
 	return true;
 }
 
 
-bool test_lucas_lehmer(const long unsigned p) {
+bool test_lucas_lehmer([[maybe_unused]] const long unsigned p) {
 
-	log::info("Running Lucas-Lehmer test");
+	logging::info("Running Lucas-Lehmer test");
 	return true;
 }
 

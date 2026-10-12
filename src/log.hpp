@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2024 Geoffrey Lentner
-// SPDX-License-Identifier: GPLv3
+// SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
 //
 // Logging
 //
@@ -23,7 +23,7 @@
 #include "ansi.hpp"
 
 
-namespace log {
+namespace logging {
 
 
 	inline void print(std::ostream& s){

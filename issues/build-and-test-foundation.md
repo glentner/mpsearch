@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:build-and-test-foundation
 kind: feature
 appetite: small
 ---

@@ -1,0 +1,8 @@
+Additional permission under GNU GPL version 3 section 7
+
+If you modify this Program, or any covered work, by linking or combining it with the NVIDIA CUDA
+Toolkit runtime and libraries, the CUDA libraries of the NVIDIA driver, the AMD ROCm libraries,
+Apple's Metal, Foundation and QuartzCore frameworks, or Google's libtpu TPU runtime and its PJRT
+plugin (or a modified version of that library), containing parts covered by the terms of that
+library's own license, the licensors of this Program grant you additional permission to convey the
+resulting work.

@@ -128,6 +128,16 @@ return and the fleet something to read.
 *Horizon: near-term · Depends on: — · Refs: factory adoption review, 2026-10-11*
 **Seed:** [`issues/results-and-cli-fixes.md`](issues/results-and-cli-fixes.md)
 
+## One logger state for the whole program
+
+The logger's style, level, hostname and task id are `static` in a header, so each source file has
+its own copy. `-D` and `-d` reach only `main.cpp`'s messages; every other file logs at the
+zero-initialised level, `DEBUG`, in the default style, without the hostname and `TASK_ID` stamp the
+fleet reads. One shared state makes the options and the stamp apply to every message.
+
+*Horizon: near-term · Depends on: — · Refs: build-and-test-foundation research, 2026-10-11*
+**Seed:** [`issues/logger-state-per-translation-unit.md`](issues/logger-state-per-translation-unit.md)
+
 ## The mathematics, written down: notes and references
 
 The author's 2024 TODO, "a comprehensive listing of notes and references", becomes `doc/`: short

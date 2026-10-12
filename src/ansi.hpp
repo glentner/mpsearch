@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2024 Geoffrey Lentner
-// SPDX-License-Identifier: GPLv3
+// SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
 //
 // String methods
 //
@@ -11,12 +11,6 @@
 #include <map>
 #include <string>
 #include <regex>
-
-
-static bool NO_COLOR = false;
-static bool FORCE_COLOR = false;
-static bool STDOUT_COLOR = true;
-static bool STDERR_COLOR = true;
 
 
 void init_tty();

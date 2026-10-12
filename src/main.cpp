@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2024 Geoffrey Lentner
-// SPDX-License-Identifier: GPLv3
+// SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
 
 
 // Standard libs
@@ -18,17 +18,17 @@
 
 int main(const int argc, const char **argv) {
 
-	log::init();
+	logging::init();
 
 	try {
 
 		auto opt = cli::parse_args(argc, argv);
 
 		if (opt.detailed_mode)
-			log::set_style(log::DETAILED);
+			logging::set_style(logging::DETAILED);
 
 		if (opt.debug_mode)
-			log::set_level(log::DEBUG);
+			logging::set_level(logging::DEBUG);
 
 		if (opt.show_primes) {
 			display_primes(std::stoi(opt.pval));
@@ -60,15 +60,15 @@ int main(const int argc, const char **argv) {
 		return OK;
 
 	} catch (cli::argument_error const& error) {
-		log::critical(error.what());
+		logging::critical(error.what());
 		return ERR_ARG;
 
 	} catch (std::runtime_error const& error) {
-		log::critical(error.what());
+		logging::critical(error.what());
 		return ERR_RUN;
 
 	} catch (std::exception const& error) {
-		log::critical("Uncaught exception: ", error.what());
+		logging::critical("Uncaught exception: ", error.what());
 		return ERR_UNKNOWN;
 	}
 

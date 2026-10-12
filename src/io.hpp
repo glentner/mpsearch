@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2024 Geoffrey Lentner
-// SPDX-License-Identifier: GPLv3
+// SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
 //
 // Input/Output
 //
@@ -29,7 +29,7 @@ public:
 };
 
 
-static const char* FORMAT_EXAMPLE = R"FORMAT(
+static const char* const FORMAT_EXAMPLE = R"FORMAT(
 VERSION
     MPS v0.1.0
 TEST

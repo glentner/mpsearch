@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2024 Geoffrey Lentner
-// SPDX-License-Identifier: GPLv3
+// SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
 //
 // Command-line Interface
 //
@@ -100,13 +100,13 @@ namespace cli {
 			if (remaining.empty())
 				throw argument_error("Missing option value for --test");
 			if (opt_test_case)
-				log::warn("Duplicate use of -t/--test");
+				logging::warn("Duplicate use of -t/--test");
 			set_test_case(remaining[0]);
 			pop_opt();
 
 		} else if (starts_with(opt, "--test=")) {
 			if (opt_test_case)
-				log::warn("Duplicate use of -t/--test");
+				logging::warn("Duplicate use of -t/--test");
 			opt_value = strip_left(opt, "--test=");
 			set_test_case(opt_value);
 
@@ -114,34 +114,34 @@ namespace cli {
 			if (remaining.empty())
 				throw argument_error("Missing option value for --file");
 			if (opt_file_path)
-				log::warn("Duplicate use of -f/--file");
+				logging::warn("Duplicate use of -f/--file");
 			set_test_case(remaining[0]);
 			pop_opt();
 
 		} else if (starts_with(opt, "--file=")) {
 			if (opt_file_path)
-				log::warn("Duplicate use of -f/--file");
+				logging::warn("Duplicate use of -f/--file");
 			opt_value = strip_left(opt, "--file=");
 			set_file_path(opt_value);
 
 		} else if (opt == "--skip-ptest") {
 			if (skip_ptest)
-				log::warn("Duplicate use of -s/--skip-ptest");
+				logging::warn("Duplicate use of -s/--skip-ptest");
 			skip_ptest = true;
 
 		} else if (opt == "--primes") {
 			if (show_primes)
-				log::warn("Duplicate use of -p/--primes");
+				logging::warn("Duplicate use of -p/--primes");
 			show_primes = true;
 
 		} else if (opt == "--debug") {
 			if (debug_mode)
-				log::warn("Duplicate use of -d/--debug");
+				logging::warn("Duplicate use of -d/--debug");
 			debug_mode = true;
 
 		} else if (opt == "--detailed") {
 			if (detailed_mode)
-				log::warn("Duplicate use of -D/--detailed");
+				logging::warn("Duplicate use of -D/--detailed");
 			detailed_mode = true;
 
 		} else {
@@ -161,19 +161,19 @@ namespace cli {
 			if (remaining.empty())
 				throw argument_error("Missing option value for -t/--test");
 			if (opt_test_case)
-				log::warn("Duplicate use of -t/--test");
+				logging::warn("Duplicate use of -t/--test");
 			set_test_case(remaining[0]);
 			pop_opt();
 
 		} else if (starts_with(opt, "-t")) {
 			if (opt_test_case)
-				log::warn("Duplicate use of -t/--test");
+				logging::warn("Duplicate use of -t/--test");
 			opt_value = strip_left(opt, "-t");
 			set_test_case(opt_value);
 
 		} else if (starts_with(opt, "-t=")) {
 			if (opt_test_case)
-				log::warn("Duplicate use of -t/--test");
+				logging::warn("Duplicate use of -t/--test");
 			opt_value = strip_left(opt, "-t=");
 			set_test_case(opt_value);
 
@@ -181,40 +181,40 @@ namespace cli {
 			if (remaining.empty())
 				throw argument_error("Missing option value for -f/--file");
 			if (opt_file_path)
-				log::warn("Duplicate use of -f/--file");
+				logging::warn("Duplicate use of -f/--file");
 			set_file_path(remaining[0]);
 			pop_opt();
 
 		} else if (starts_with(opt, "-f")) {
 			if (opt_file_path)
-				log::warn("Duplicate use of -f/--file");
+				logging::warn("Duplicate use of -f/--file");
 			opt_value = strip_left(opt, "-f");
 			set_file_path(opt_value);
 
 		} else if (starts_with(opt, "-f=")) {
 			if (opt_file_path)
-				log::warn("Duplicate use of -f/--file");
+				logging::warn("Duplicate use of -f/--file");
 			opt_value = strip_left(opt, "-f=");
 			set_file_path(opt_value);
 
 		} else if (opt == "-s") {
 			if (skip_ptest)
-				log::warn("Duplicate use of -s/--skip-ptest");
+				logging::warn("Duplicate use of -s/--skip-ptest");
 			skip_ptest = true;
 
 		} else if (opt == "-p") {
 			if (show_primes)
-				log::warn("Duplicate use of -p/--primes");
+				logging::warn("Duplicate use of -p/--primes");
 			show_primes = true;
 
 		} else if (opt == "-d") {
 			if (debug_mode)
-				log::warn("Duplicate use of -d/--debug");
+				logging::warn("Duplicate use of -d/--debug");
 			debug_mode = true;
 
 		} else if (opt == "-D") {
 			if (detailed_mode)
-				log::warn("Duplicate use of -D/--detailed");
+				logging::warn("Duplicate use of -D/--detailed");
 			detailed_mode = true;
 
 		} else {

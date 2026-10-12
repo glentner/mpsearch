@@ -11,16 +11,16 @@ walltime. Read `README.md` and `ROADMAP.md` first.
 ## Build and run
 
 ```sh
-mkdir -p lib bin          # a fresh clone lacks them, and make doesn't create them yet
 make                      # bin/mps from src/*.cpp (objects in lib/)
-make -B                   # rebuild everything; there is no clean target yet
+make check                # bin/check from tests/*.cpp, run it, then the smoke test tests/cli.sh
+make clean                # remove the objects in lib/ and the binaries in bin/
 bin/mps --help
 bin/mps -p 100            # primes below 100
 bin/mps -t ll 31          # one test on one exponent
 ```
 
-The build needs only a C++20 compiler and GNU make. Apple clang and GCC must both build it: macOS
-ships GNU make 3.81, so keep the Makefile within it.
+The build needs only a C++20 compiler and GNU make, and `make check` adds only a POSIX shell. Apple
+clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefile within it.
 
 ## Map
 
@@ -35,6 +35,10 @@ ships GNU make 3.81, so keep the Makefile within it.
 - `src/io.cpp`, `src/io.hpp`: the `.mps` checkpoint file (format sketch only).
 - `src/mp.cpp`, `src/mp.hpp`: `BigInt`, the multiple-precision type (a stub).
 - `src/math.cpp`, `src/math.hpp`: the prime sieve and the three tests (stubs).
+- `tests/`: the checks. `check.hpp` and `check.cpp` are the runner (a check is a `static void`
+  function listed in its file's `check_by_name` table), `check_<module>.cpp` hold one module's
+  checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make check` runs
+  both.
 
 ## Factory
 
@@ -50,8 +54,8 @@ This repo is built by the spec-driven factory: GOAL → PLAN/TECH → build → 
 | branch commits | `[{kind}] Build {slug} P<n>`; no trailers |
 | landing | `squash-local`: squash onto `origin/main` in the cycle worktree, one `[area] What changed` subject, then push direct to `main` |
 | ci | none |
-| setup | `mkdir -p lib bin && make` |
-| verify | `mkdir -p lib bin && make -B && bin/mps --version && bin/mps -p 30`: the full gate until a test target exists; the cycle that adds one replaces this in the same commit |
+| setup | `make` |
+| verify | `make check`: the checks and the smoke test, both always run (`make -B check` after changing `CXX`) |
 | throwaway environment | none: `mps` keeps no state outside its own working directory yet |
 | coupled core | the command-line surface (`src/main.hpp` usage and help, `src/cli.*`, `README.md` usage); the test entry points (`src/math.hpp` and the dispatch in `src/main.cpp`) |
 | same-commit rules | see § Conventions |
@@ -76,7 +80,7 @@ release:
     files: [src/main.hpp]
     diff_rule: only the APP_VERSION string changes
     subject: "[build] Version {v}"
-  gate: [mkdir -p lib bin, make -B, bin/mps --version, bin/mps -p 30]
+  gate: [make clean, make check]
   tag:
     message: "Release {v}"
     signed: true
@@ -152,7 +156,8 @@ A cycle that adds an arithmetic engine, a test driver that prints a verdict, a c
 - An agent working here never opens those programs' source: no repository file views, commits, pull-request diffs, or source archives. Pull-request pages mix prose with code, so read them only when their prose is needed, and never their file tabs.
 - Snippets from Rosetta Code and similar sites stay out. Rosetta Code's content is under the GNU FDL, which is incompatible with the GPL.
 - Third-party code enters only with the author's approval and a GPLv3-compatible licence, recorded where it lives. Prime95's licence adds an award-assignment term, so its code can't enter on licence grounds either.
-- Author our own code wherever possible. `mps` is GPL-3.0-only. Linking a proprietary vendor runtime (NVIDIA CUDA, AMD ROCm, Apple Metal, Google libtpu) is allowed only under the additional permission (GPLv3 section 7) that the license file grants, and no other proprietary code is linked.
+- Author our own code wherever possible. `mps` is GPL-3.0-only. Linking a proprietary vendor runtime (NVIDIA CUDA, AMD ROCm, Apple Metal, Google libtpu) is allowed only under the additional permission (GPLv3 section 7) that `LICENSE-EXCEPTION` grants beside the GPLv3 text in `LICENSE`, and no other proprietary code is linked.
+- Contributions come under the same expression as every header, `GPL-3.0-only WITH GPL-3.0-linking-exception`, because outside GPL code can't carry the additional permission.
 
 ### 5. Dependency-free core
 
@@ -183,6 +188,6 @@ New code reads as if the author wrote it alongside `src/`:
 - Logical operators are `not`, `and` and `or`.
 - Write `if (…)`, `for (…)` and `while (…)` with a space before the parenthesis. A single-statement body may drop its braces. Chains are `} else if (…) {`. A long function opens with a blank line after its brace.
 - A function's documentation is a `//` block at the top of its body: a title line, a blank `//`, then the description (see `src/mp.cpp`).
-- Log through `log::info(…)` and its siblings with variadic arguments. Multi-line text goes in raw strings with named delimiters (`R"HELP(…)HELP"`). Digit separators are welcome (`10'000'000`).
+- Log through `logging::info(…)` and its siblings with variadic arguments. Multi-line text goes in raw strings with named delimiters (`R"HELP(…)HELP"`). Digit separators are welcome (`10'000'000`).
 - Each module is one `.hpp`/`.cpp` pair under `src/`. A backend gets its own directory under `src/`, paired the same way.
 - Commit subjects are `[area] What changed`: imperative, capitalized, at most 72 characters, no trailing period, no trailers.

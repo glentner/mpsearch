@@ -34,6 +34,14 @@ The parser has bugs, all reproduced on `257acb7`:
   and never used.
 - `mps -p N` omits 2.
 
+The sieve behind `-p` is wrong at its edges (`src/math.cpp:19-40`):
+
+- For n < 3, `prime_sieve(n)` writes `is_prime[2]` out of range: the vector holds n entries and the
+  "special case" line sets index 2 unconditionally. `mps -p 1` and `mps -p 2` exit 0 after the
+  out-of-range write, and `mps -p 0` exits 30 (`ERR_UNKNOWN`) with "Uncaught exception:
+  std::bad_alloc".
+- `prime_sieve(n)[1]` is true: the even pass clears index 0 and nothing clears index 1.
+
 Fleet use needs a machine-readable record per result. Today there is only coloured log text on
 stderr.
 
@@ -66,6 +74,8 @@ options that parse.
 - **R6** — WHERE `--json` is given, `mps` SHALL write each result as one JSON object per line on
   stdout, and log text SHALL stay on stderr.
 - **R7** — `mps -p N` SHALL list every prime below N, 2 included.
+- **R8** — WHEN `prime_sieve(n)` is called with any n ≥ 0, it SHALL return n entries, true exactly
+  at the primes below n, and SHALL write nothing outside them.
 
 ## Notes
 
