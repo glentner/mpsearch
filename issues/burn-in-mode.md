@@ -95,7 +95,8 @@ writes one JSON record per workload plus a node summary, in a versioned schema:
   tensor or low-precision units, interconnects, coherency paths, or ECC-corrected faults, which only
   counters reveal.
 - macOS has no thread pinning (QoS classes only), so per-core attribution is Linux-only.
-- Profiles grow per device as backends land (Parts V–VI); each backend cycle adds its profile.
+- Profiles grow per device as backends land (Parts IV, VI and VII); each backend cycle adds its
+  profile.
 - Fleet orchestration, telemetry and the outlier report are `issues/fleet-runs-and-reports.md`.
 - References: H. D. Dixit et al., "Silent data corruptions at scale", arXiv:2102.11245, 2021; P. H.
   Hochschild et al., "Cores that don't count", HotOS 2021, doi:10.1145/3458336.3465297; S. Wang et

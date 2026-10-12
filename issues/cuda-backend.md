@@ -43,8 +43,8 @@ Practical constraints:
 
 ## Why it was deferred
 
-It follows the CPU engines (Parts II and IV), which fix the engine contract and the pass structure,
-and the integer engine (Part V), which the FP64-poor parts need.
+It follows the CPU engines (Parts II and V), which fix the engine contract and the pass structure,
+and the integer engine (Part IV), which the FP64-poor parts need.
 
 ## Outcome / vision
 

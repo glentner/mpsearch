@@ -83,6 +83,8 @@ The three tests are stubs, and there is no multiple-precision arithmetic yet.
 
 Since then, on `main`:
 
+- a build that clang and GCC both accept, `make check`, and a license exception for vendor GPU
+  runtimes (`build-and-test-foundation`, 2026-10-11);
 - `ci/test-commit.sh`, a Slurm job that builds and checks any commit fresh from GitHub on a named
   target, with the CPU targets under `ci/targets/` (`cluster-test-jobs`, 2026-10-12).
 
@@ -92,10 +94,12 @@ Since then, on `main`:
 
 The groundwork every later cycle grades itself against:
 
+- a standing check for the cluster test job;
 - a result type that says what was found;
+- one logger state for the whole program;
+- the mathematics written down;
 - a reference big integer;
-- the known answers with their sources;
-- the mathematics written down.
+- the known answers with their sources.
 
 ## A standing check for the cluster test job
 
@@ -294,7 +298,8 @@ RTX PRO 6000 Blackwell, 182 µs on an H100 and 331.5 µs on an A100.
 
 From correct to competitive. At the lengths that matter, a squaring is limited by memory traffic, so
 the CPU engine needs a cache-aware structure, fused passes, threads, and per-ISA kernels. The Mac
-comes first, then the x86 and Arm Linux CPUs.
+comes first, then the x86 and Arm Linux CPUs. Before the per-ISA kernels, the cluster test targets
+learn to check the node they land on.
 
 ## Fast on CPUs: cache-blocked, fused, multithreaded transforms
 
@@ -357,7 +362,8 @@ width, measured against PRPLL on an Instinct GPU.
 
 # Part VIII — The trio, complete
 
-Trial factoring and P-1, on every engine they suit, and the proofs that finish PRP.
+Trial factoring and P-1, on every engine they suit, the GCD and Jacobi symbol they need at the
+largest exponents, and the proofs that finish PRP.
 
 ## Trial factoring to a chosen bit depth
 

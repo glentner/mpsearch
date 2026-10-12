@@ -47,7 +47,7 @@ portability rather than speed.
 - **A length table** maps each transform length to its largest safe exponent. It is set by
   measurement, with a margin, and kept with the data that justify it.
 
-Faster CPU kernels (Part IV), the integer transform (Part V) and the GPU backends implement the same
+Faster CPU kernels (Part V), the integer transform (Part IV) and the GPU backends implement the same
 contract and are tested against the same answers.
 
 ## Sketch of the acceptance criteria
