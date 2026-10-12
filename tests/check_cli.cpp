@@ -7,6 +7,10 @@
 // values it does not list are argument errors naming them, and so is a bad PVAL. Parsing
 // is checked through `cli::parse_args` alone, which touches no file.
 //
+// The parser sets the logger's level and style as it reads -d and -D, so every check that
+// parses either, alone, grouped or long, holds a `log_peer::SavedLogger` and captures what
+// is logged: otherwise the state would leak into a later check's output.
+//
 
 
 // Standard libs
@@ -17,6 +21,8 @@
 // Internal libs
 #include "check.hpp"
 #include "cli.hpp"
+#include "log.hpp"
+#include "log_peer.hpp"
 #include "main.hpp"
 
 
@@ -355,6 +361,9 @@ static void parse_args_takes_values_whole() {
 	//
 	// A value is the text after the option, less one '=' that joins them
 
+	log_peer::SavedLogger saved;
+	log_peer::CaptureCerr capture;
+
 	struct Value {
 		std::vector<const char*> argv;
 		std::string file_path;
@@ -412,6 +421,9 @@ static void parse_args_rejects_missing_values() {
 	//
 	// A valued option with no value, or -f with an empty one, is an argument error
 
+	log_peer::SavedLogger saved;
+	log_peer::CaptureCerr capture;
+
 	struct Missing {
 		std::vector<const char*> argv;
 		std::string message;
@@ -439,6 +451,9 @@ static void parse_args_rejects_missing_values() {
 static void parse_args_reads_groups_as_separate_flags() {
 	//
 	// Grouped flags parse as the same flags given separately, in order
+
+	log_peer::SavedLogger saved;
+	log_peer::CaptureCerr capture;
 
 	struct Group {
 		std::vector<const char*> grouped;
@@ -486,6 +501,9 @@ static void parse_args_reads_json() {
 	//
 	// -j and --json set json_mode, alone, in groups and wherever they stand; without either it
 	// is off
+
+	log_peer::SavedLogger saved;
+	log_peer::CaptureCerr capture;
 
 	struct Json {
 		std::vector<const char*> argv;
@@ -536,9 +554,101 @@ static void parse_args_rejects_stray_flags_in_groups() {
 	//
 	// A character in a group that is not a flag is an argument error naming it
 
+	log_peer::SavedLogger saved;
+	log_peer::CaptureCerr capture;
+
 	check::expect_equal(parse_error({"mps", "-dx", "31"}), std::string("Unrecognized option: -x"), "-dx names -x");
 	check::expect_equal(parse_error({"mps", "-xh"}), std::string("Unrecognized option: -x"), "-xh names -x");
 	check::expect_equal(parse_error({"mps", "-pdZ", "30"}), std::string("Unrecognized option: -Z"), "-pdZ names -Z");
+}
+
+
+namespace {
+
+
+	// What parsing a command line leaves of the logger's state, and what it logged
+	struct Parsed {
+		logging::Style style;
+		logging::Level level;
+		std::string logged;
+	};
+
+}
+
+
+static Parsed parse_from_the_start(std::vector<const char*> argv) {
+	//
+	// Parse `argv` from the state `mps` starts parsing in, and see what it leaves
+	//
+	// That state is the one `logging::init()` sets: level INFO and the default style, here
+	// with the fake host `check-host` and the task id `abc`. Whatever the parse throws is
+	// dropped; the state it leaves is the point. The caller holds a `log_peer::SavedLogger`.
+
+	logging::level = logging::INFO;
+	logging::style = logging::DEFAULT;
+	logging::hostname = "check-host";
+	logging::task_id = "abc";
+
+	log_peer::CaptureCerr capture;
+	try {
+		cli::parse_args(static_cast<int>(argv.size()), argv.data());
+	} catch (std::exception const&) {
+	}
+	return {logging::style, logging::level, capture.text()};
+}
+
+
+static void parse_args_applies_the_logger_flags_as_read() {
+	//
+	// -D and -d set the logger's style and level the moment the parser reads them
+	//
+	// Each flag changes only its own setting. A -D read as a value, or rejected for one,
+	// changes nothing. A warning raised after -D is read is stamped; one raised before it is
+	// not.
+
+	log_peer::SavedLogger saved;
+
+	for (const std::vector<const char*>& argv: std::vector<std::vector<const char*>> {
+	         {"mps", "-D", "31"},
+	         {"mps", "--detailed", "31"},
+	     }) {
+		const Parsed after = parse_from_the_start(argv);
+		check::expect(after.style == logging::DETAILED, words(argv) + " leaves the style detailed");
+		check::expect(after.level == logging::INFO, words(argv) + " leaves the level at info");
+	}
+
+	for (const std::vector<const char*>& argv: std::vector<std::vector<const char*>> {
+	         {"mps", "-d", "31"},
+	         {"mps", "--debug", "31"},
+	     }) {
+		const Parsed after = parse_from_the_start(argv);
+		check::expect(after.level == logging::DEBUG, words(argv) + " leaves the level at debug");
+		check::expect(after.style == logging::DEFAULT, words(argv) + " leaves the style as it was");
+		check::expect_equal(log_peer::debug("after the parse"), std::string("   debug [mps] after the parse\n"),
+		                    "the peer's debug prints after " + words(argv));
+	}
+
+	for (const std::vector<const char*>& argv: std::vector<std::vector<const char*>> {
+	         {"mps", "31"},
+	         {"mps", "-t", "-D", "31"},
+	         {"mps", "-f", "-D", "31"},
+	         {"mps", "--detailed=1", "31"},
+	     }) {
+		const Parsed after = parse_from_the_start(argv);
+		check::expect(after.style == logging::DEFAULT, words(argv) + " leaves the style as it was");
+		check::expect(after.level == logging::INFO, words(argv) + " leaves the level as it was");
+	}
+
+	const std::string warning = " warning [mps] Duplicate use of -p/--primes\n";
+	for (const std::vector<const char*>& argv: std::vector<std::vector<const char*>> {
+	         {"mps", "-D", "-p", "-p", "3"},
+	         {"mps", "--detailed", "-p", "-p", "3"},
+	     }) {
+		check::expect(log_peer::stamped(parse_from_the_start(argv).logged, "check-host [abc] " + warning),
+		              words(argv) + " stamps its warning with the host and the task id");
+	}
+	const std::vector<const char*> late = {"mps", "-p", "-p", "-D", "3"};
+	check::expect_equal(parse_from_the_start(late).logged, warning, words(late) + " warns in the default style");
 }
 
 
@@ -559,4 +669,5 @@ check_by_name {
 	{"parse_args reads groups as separate flags",     parse_args_reads_groups_as_separate_flags},
 	{"parse_args reads -j and --json",                parse_args_reads_json},
 	{"parse_args rejects stray flags in groups",      parse_args_rejects_stray_flags_in_groups},
+	{"-D and -d apply as the parser reads them",      parse_args_applies_the_logger_flags_as_read},
 };

@@ -90,12 +90,14 @@ namespace logging {
 	};
 
 
-	static Style style;
-	static Level level;
+	// The logger's state, one of each for the whole program: an inline variable has a
+	// single definition however many source files include this header.
+	inline Style style;
+	inline Level level;
 
-	static std::string hostname;
-	static std::string task_id;
-	static std::string name;
+	inline std::string hostname;
+	inline std::string task_id;
+	inline std::string name;
 
 
 	inline void set_hostname() {

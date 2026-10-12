@@ -34,7 +34,7 @@ esac
 
 nl='
 '
-planned=530
+planned=644
 passed=0
 failed=0
 got=
@@ -216,6 +216,133 @@ expect "31 under FORCE_COLOR prints no escape on stdout" lacks "$out" "$esc"
 err=$(unset NO_COLOR; FORCE_COLOR=1 "$mps" 31 2>&1 >/dev/null)
 got="stderr '${err%%"$nl"*}'"
 expect "31 under FORCE_COLOR colours its log" has "$err" "$esc"
+
+# The logger keeps one state, so -D reaches every message mps logs once the parser has read it:
+# each line is stamped with a date, a time, the host and, where TASK_ID is set and not empty,
+# `[TASK_ID] `, then the line the default style prints. The time and the host are matched by
+# their shape, since neither is fixed. -d never changes what is printed, since no message is at
+# debug, and without -D every line keeps its exact bytes, colour included.
+stamped() { # TEXT TASK WANT: line for line, TEXT is WANT with each line behind a stamp: a date, a
+            # space, a time, a space, a host with no space in it, a space, and `[TASK] ` when TASK
+            # is not empty
+	st_text=$1$nl
+	st_want=$3$nl
+	st_task=
+	[ -z "$2" ] || st_task="[$2] "
+	while [ -n "$st_want" ]; do
+		[ -n "$st_text" ] || return 1
+		st_line=${st_text%%"$nl"*}
+		st_text=${st_text#*"$nl"}
+		st_expect=${st_want%%"$nl"*}
+		st_want=${st_want#*"$nl"}
+		case $st_line in
+			[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' '[0-9][0-9]:[0-9][0-9]:[0-9][0-9]' '?*) ;;
+			*) return 1 ;;
+		esac
+		st_rest=${st_line#????????????????????}
+		st_host=${st_rest%%' '*}
+		[ -n "$st_host" ] || return 1
+		[ "$st_host" != "$st_rest" ] || return 1
+		[ "${st_rest#"$st_host" }" = "$st_task$st_expect" ] || return 1
+	done
+	[ -z "$st_text" ]
+}
+
+
+run_stderr_task() { # TASK ARGS...: as run_stderr, with TASK_ID set to TASK for the one run
+	task=$1
+	shift
+	err=$(TASK_ID=$task "$mps" "$@" 2>&1 >/dev/null)
+	status=$?
+	got="exit $status, stderr '${err%%"$nl"*}'"
+}
+
+
+run_stderr_task abc -D -t ll 31
+expect "-D -t ll 31 stamps its start line with TASK_ID" stamped "$err" abc "$start_ll"
+run_stderr -D -t ll 31
+expect "-D -t ll 31 without TASK_ID has no task stamp" stamped "$err" "" "$start_ll"
+run_stderr_task "" -D -t ll 31
+expect "-D -t ll 31 with TASK_ID empty has no task stamp" stamped "$err" "" "$start_ll"
+
+run_stderr_task abc -D 31
+expect "-D 31 stamps its start lines with TASK_ID" stamped "$err" abc "$start_all"
+run_stderr -D 31
+expect "-D 31 without TASK_ID has no task stamp" stamped "$err" "" "$start_all"
+run_stderr_task "" -D 31
+expect "-D 31 with TASK_ID empty has no task stamp" stamped "$err" "" "$start_all"
+
+run_stderr -d 31
+expect "-d 31 logs as without -d" [ "$err" = "$start_all" ]
+run_stderr -d -t ll 31
+expect "-d -t ll 31 logs as without -d" [ "$err" = "$start_ll" ]
+
+# The default style's bytes under FORCE_COLOR, each line whole, its newline included
+err=$(unset NO_COLOR; FORCE_COLOR=1 "$mps" -t ll 31 2>&1 >/dev/null; echo .)
+err=${err%.}
+got="stderr '${err%%"$nl"*}'"
+expect "-t ll 31 under FORCE_COLOR logs its exact bytes" \
+	[ "$err" = "${esc}[1m${esc}[32m    info${esc}[0m${esc}[2m [mps] ${esc}[0mRunning Lucas-Lehmer test$nl" ]
+err=$(unset NO_COLOR; FORCE_COLOR=1 "$mps" -p -p 3 2>&1 >/dev/null; echo .)
+err=${err%.}
+got="stderr '${err%%"$nl"*}'"
+expect "-p -p 3 under FORCE_COLOR warns in its exact bytes" \
+	[ "$err" = "${esc}[1m${esc}[33m warning${esc}[0m${esc}[2m [mps] ${esc}[0mDuplicate use of -p/--primes$nl" ]
+err=$(unset NO_COLOR; FORCE_COLOR=1 "$mps" -x 31 2>&1 >/dev/null; echo .)
+err=${err%.}
+got="stderr '${err%%"$nl"*}'"
+expect "-x 31 under FORCE_COLOR errs in its exact bytes" \
+	[ "$err" = "${esc}[1m${esc}[35mcritical${esc}[0m${esc}[2m [mps] ${esc}[0mUnrecognized option: -x$nl" ]
+
+# The command line is read left to right, and -D applies from the word the parser reads it at: a
+# warning or an error raised after it is stamped, PVAL's error included, since PVAL is checked once
+# every word is read. One raised before it prints exactly as without -D, and so does a run where -D
+# is read as a value; each expected line is written out whole, since dropping -D from those words
+# runs something else.
+warn_p=' warning [mps] Duplicate use of -p/--primes'
+run_stderr_task abc -D -p -p 3
+expect "-D -p -p 3 stamps its warning" stamped "$err" abc "$warn_p"
+run_stderr_task abc -Dpp 3
+expect "-Dpp 3 stamps its warning" stamped "$err" abc "$warn_p"
+run_stderr_task abc -D -x 31
+expect "-D -x 31 stamps its error" stamped "$err" abc "critical [mps] Unrecognized option: -x"
+run_stderr_task abc -D abc
+expect "-D abc stamps its PVAL error" stamped "$err" abc \
+	"critical [mps] Invalid PVAL 'abc': expected a decimal integer from 2 to 999999999"
+run_stderr_task abc -x -D 31
+expect "-x -D 31 errs in the default style" [ "$err" = "critical [mps] Unrecognized option: -x" ]
+run_stderr_task abc -p -p -D 3
+expect "-p -p -D 3 warns in the default style" [ "$err" = "$warn_p" ]
+run_stderr_task abc -f -D 31
+expect "-f -D 31 logs in the default style" [ "$err" = "$start_all" ]
+run_stderr_task abc -t -D 31
+expect "-t -D 31 errs in the default style" [ "$err" = "critical [mps] Unrecognized option value '-D' for -t/--test" ]
+
+# After --, -D is a positional word, never the flag, so the error it leads to prints in the
+# default style.
+run_stderr_task abc 31 -- -D
+expect "31 -- -D errs in the default style" [ "$err" = "critical [mps] Unexpected positional argument: -D" ]
+run_stderr_task abc -- -D 31
+expect "-- -D 31 errs in the default style" [ "$err" = "critical [mps] Unexpected positional argument: 31" ]
+run_stderr_task abc -- -D
+expect "-- -D errs in the default style" \
+	[ "$err" = "critical [mps] Invalid PVAL '-D': expected a decimal integer from 2 to 999999999" ]
+
+# After --, every word is positional, whatever it looks like: each option, short and long, flag and
+# valued, a group, an unknown option and a second --. None ends the run, changes the output or sets
+# the style, so the run errs in the default style on the word itself: as a second positional after
+# PVAL, or as PVAL.
+for word in --help -h --version -v --json -j --primes -p --detailed -D --debug -d --skip-ptest -s \
+            --test=ll -t -tll --file=x -f -Dj --no-such-option -x --; do
+	run_stderr_task abc 31 -- "$word"
+	expect "31 -- $word exits 1" [ "$status" -eq 1 ]
+	expect "31 -- $word errs on $word as a positional word" \
+		[ "$err" = "critical [mps] Unexpected positional argument: $word" ]
+	run_stderr_task abc -- "$word"
+	expect "-- $word exits 1" [ "$status" -eq 1 ]
+	expect "-- $word errs on $word as PVAL" \
+		[ "$err" = "critical [mps] Invalid PVAL '$word': expected a decimal integer from 2 to 999999999" ]
+done
 
 # --file takes the next word as its path, so -t after it still selects the test.
 run_stderr --file out.mps -t ll 31

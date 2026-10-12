@@ -105,7 +105,8 @@ The groundwork every later cycle grades itself against:
 - the mathematics written down;
 - a reference big integer;
 - the known answers with their sources;
-- a standing check for the cluster test job.
+- a standing check for the cluster test job;
+- `--` ending the options for every flag, in every position.
 
 ## One logger state for the whole program
 
@@ -164,6 +165,17 @@ Mac before any cluster time is spent.
 *Horizon: near-term · Depends on: test any commit on a cluster (cleared 2026-10-12) · Refs:
 cluster-test-jobs P4, 2026-10-12*
 **Seed:** [`issues/ci-job-standing-checks.md`](issues/ci-job-standing-checks.md)
+
+## `--` ends the options, for every flag in every position
+
+`mps` treats every word after `--` as a positional word, but the checks were added one instance at a time:
+they cover a flag right after `--`, not after another positional or a second `--`, and not a flag given
+both before and after it. One check generated from the parser's flag list pins the property instead, so a
+new option is covered when it is added.
+
+*Horizon: near-term · Depends on: — · Refs: logger-state-per-translation-unit review cycle 3,
+2026-10-12*
+**Seed:** [`issues/end-of-options-checks.md`](issues/end-of-options-checks.md)
 
 ---
 

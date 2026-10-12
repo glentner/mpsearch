@@ -23,6 +23,8 @@
 
 // Internal libs
 #include "check.hpp"
+#include "log.hpp"
+#include "log_peer.hpp"
 #include "main.hpp"
 #include "math.hpp"
 #include "result.hpp"
@@ -773,6 +775,44 @@ static void a_contradiction_prints_no_verdict() {
 }
 
 
+static void the_printers_errors_log_in_the_shared_style() {
+	//
+	// The printer's error and contradiction lines log in the style set in another unit
+	//
+	// With the detailed style, a host and a task id set here, each `critical` line carries
+	// the stamp; in the default style each is today's line exactly.
+
+	const Result prime = Result::prime(WORK_LL, 31);
+	const Result composite = Result::composite_by_factor(WORK_TF, 31, "233");
+	const std::string error_line = "critical [mps] M31 ll: error, a constructed failure" + tail() + "\n";
+	const std::string contradiction_line = "critical [mps] Contradictory results, no verdict printed: M31 ll: prime" + tail() +
+	                                       "; M31 tf: composite, factor 233" + tail() + "\n";
+
+	log_peer::SavedLogger saved;
+	logging::level = logging::INFO;
+	logging::style = logging::DETAILED;
+	logging::hostname = "check-host";
+	logging::task_id = "abc";
+
+	for (const bool json: {false, true}) {
+		const Printed error = print_run({an_error()}, json);
+		check::expect(log_peer::stamped(log_peer::plain(error.err), "check-host [abc] " + error_line),
+		              "an error's line is stamped with the host and the task id" + mode(json));
+		const Printed contradiction = print_run({prime, composite}, json);
+		check::expect(log_peer::stamped(log_peer::plain(contradiction.err), "check-host [abc] " + contradiction_line),
+		              "a contradiction's line is stamped with the host and the task id" + mode(json));
+	}
+
+	logging::style = logging::DEFAULT;
+	for (const bool json: {false, true}) {
+		check::expect_equal(log_peer::plain(print_run({an_error()}, json).err), error_line,
+		                    "an error's line in the default style" + mode(json));
+		check::expect_equal(log_peer::plain(print_run({prime, composite}, json).err), contradiction_line,
+		                    "a contradiction's line in the default style" + mode(json));
+	}
+}
+
+
 static void a_sound_run_prints_every_result_in_order() {
 	//
 	// Runs with no error and no contradiction print every result, in order
@@ -936,26 +976,27 @@ static void test_all_runs_the_three_tests_in_order() {
 
 static check::Suite
 check_by_name {
-	{"each outcome has its line",                  each_outcome_has_its_line},
-	{"each outcome has its record",                each_outcome_has_its_record},
-	{"an error has a line and no record",          an_error_has_a_line_and_no_record},
-	{"residues are sixteen uppercase digits",      residues_are_sixteen_uppercase_digits},
-	{"every record is valid JSON",                 every_record_is_valid_json},
-	{"the JSON reader rejects bad text",           the_json_reader_rejects_bad_text},
-	{"a hostile reason stays one record",          a_hostile_reason_stays_one_record},
-	{"a hostile reason stays one line",            a_hostile_reason_stays_one_line},
-	{"a control-byte reason reads back",           a_control_byte_reason_reads_back_from_its_record},
-	{"well-formed UTF-8 passes through",           well_formed_utf8_passes_through},
-	{"malformed UTF-8 becomes U+FFFD",             a_malformed_utf8_reason_becomes_replacement_characters},
-	{"only verdicts are decisive",                 only_verdicts_are_decisive},
-	{"each outcome has its status",                each_outcome_has_its_status},
-	{"the status table keeps its values",          the_status_table_keeps_its_values},
-	{"no status is reserved for burn-in",          no_status_is_reserved_for_burn_in},
-	{"the printer shows each outcome",             the_printer_shows_each_outcome},
-	{"an error prints no verdict",                 an_error_prints_no_verdict},
-	{"a contradiction prints no verdict",          a_contradiction_prints_no_verdict},
-	{"a sound run prints every result in order",   a_sound_run_prints_every_result_in_order},
-	{"a verdict waits for the run to end",         a_verdict_waits_for_the_run_to_end},
-	{"run_in_order stops at the first verdict",    run_in_order_stops_at_the_first_verdict},
-	{"test_all runs the three tests in order",     test_all_runs_the_three_tests_in_order},
+	{"each outcome has its line",                    each_outcome_has_its_line},
+	{"each outcome has its record",                  each_outcome_has_its_record},
+	{"an error has a line and no record",            an_error_has_a_line_and_no_record},
+	{"residues are sixteen uppercase digits",        residues_are_sixteen_uppercase_digits},
+	{"every record is valid JSON",                   every_record_is_valid_json},
+	{"the JSON reader rejects bad text",             the_json_reader_rejects_bad_text},
+	{"a hostile reason stays one record",            a_hostile_reason_stays_one_record},
+	{"a hostile reason stays one line",              a_hostile_reason_stays_one_line},
+	{"a control-byte reason reads back",             a_control_byte_reason_reads_back_from_its_record},
+	{"well-formed UTF-8 passes through",             well_formed_utf8_passes_through},
+	{"malformed UTF-8 becomes U+FFFD",               a_malformed_utf8_reason_becomes_replacement_characters},
+	{"only verdicts are decisive",                   only_verdicts_are_decisive},
+	{"each outcome has its status",                  each_outcome_has_its_status},
+	{"the status table keeps its values",            the_status_table_keeps_its_values},
+	{"no status is reserved for burn-in",            no_status_is_reserved_for_burn_in},
+	{"the printer shows each outcome",               the_printer_shows_each_outcome},
+	{"an error prints no verdict",                   an_error_prints_no_verdict},
+	{"a contradiction prints no verdict",            a_contradiction_prints_no_verdict},
+	{"the printer's errors log in the shared style", the_printers_errors_log_in_the_shared_style},
+	{"a sound run prints every result in order",     a_sound_run_prints_every_result_in_order},
+	{"a verdict waits for the run to end",           a_verdict_waits_for_the_run_to_end},
+	{"run_in_order stops at the first verdict",      run_in_order_stops_at_the_first_verdict},
+	{"test_all runs the three tests in order",       test_all_runs_the_three_tests_in_order},
 };

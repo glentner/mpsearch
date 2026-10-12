@@ -135,6 +135,10 @@ namespace cli {
 	void Interface::check_flag(const char flag) {
 		//
 		// Apply one flag, given short or long
+		//
+		// -d and -D set the logger's level and style the moment they are read, so a message
+		// raised after them honours them, whichever file logs it, and one raised before them
+		// does not.
 
 		switch (flag) {
 
@@ -166,12 +170,14 @@ namespace cli {
 				if (debug_mode)
 					logging::warn("Duplicate use of -d/--debug");
 				debug_mode = true;
+				logging::set_level(logging::DEBUG);
 				break;
 
 			case 'D':
 				if (detailed_mode)
 					logging::warn("Duplicate use of -D/--detailed");
 				detailed_mode = true;
+				logging::set_style(logging::DETAILED);
 				break;
 
 			default:

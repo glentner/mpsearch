@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:logger-state-per-translation-unit
 kind: fix
 appetite: small
 ---

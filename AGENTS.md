@@ -44,7 +44,9 @@ clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefil
 - `tests/`: the checks. `check.hpp` and `check.cpp` are the runner (a check is a `static void`
   function listed in its file's `check_by_name` table), `check_<module>.cpp` hold one module's
   checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make check` runs
-  both.
+  both. `log_peer.hpp` and `log_peer.cpp` are a second unit the logger's checks log from, so a
+  state that isn't shared shows; they hold the checks' guards (`SavedLogger` restores the logger's
+  state, `CaptureCerr` captures `std::cerr`) and, run last, the check that the state is restored.
 - `ci/test-commit.sh`: the cluster test job. It builds and checks one commit on one target in a
   fresh run directory in scratch and leaves the logs and `result.json` there; its header is the
   manual. `ci/targets/`: one `key=value` file per target, naming its partition, resources, modules

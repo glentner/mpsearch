@@ -1,0 +1,7 @@
+mps-test: script 8fb69ffc39e8ae81b5c7847e72fa5c6f89063ed2
+mps-test: clone
+mps-test: checkout
+mps-test: toolchain
+mps-test: build
+mps-test: check
+mps-test: passed in <scratch>
