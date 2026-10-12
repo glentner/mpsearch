@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:verdicts-and-exit-statuses
 kind: feature
 appetite: small
 ---

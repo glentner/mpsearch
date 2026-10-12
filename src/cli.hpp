@@ -68,6 +68,7 @@ namespace cli {
 		{"--primes",     'p'},
 		{"--skip-ptest", 's'},
 		{"--test",       't'},
+		{"--json",       'j'},
 		{"--file",       'f'},
 		{"--debug",      'd'},
 		{"--detailed",   'D'},
@@ -94,6 +95,7 @@ namespace cli {
 
 		bool show_primes = false;
 		bool skip_ptest = false;
+		bool json_mode = false;
 
 		bool debug_mode = false;
 		bool detailed_mode = false;

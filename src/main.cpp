@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 #include <exception>
+#include <optional>
+#include <vector>
 
 // Internal libs
 #include "main.hpp"
@@ -14,6 +16,7 @@
 #include "cli.hpp"
 #include "math.hpp"
 #include "mp.hpp"
+#include "result.hpp"
 
 
 int main(const int argc, const char **argv) {
@@ -37,24 +40,43 @@ int main(const int argc, const char **argv) {
 
 		const long unsigned pval = opt.pval_number;
 
-		switch (opt.test_case) {
+		// Every result goes to the printer as its test completes; the printer decides the
+		// status and prints a verdict only once the run is known to be sound
+		std::vector<Result> run;
+		const ResultSink completed = [&](const Result& result) {
+			report_result(run, result, opt.json_mode, std::cout);
+		};
 
-			case cli::TEST_FACTOR:
-				test_quick_factor(pval);
-				break;
+		// Unless -s says otherwise, the exponent check comes first: a composite exponent is
+		// answered before any test runs, and that answer is the run's only result
+		std::optional<Result> answer;
+		if (not opt.skip_ptest)
+			answer = check_exponent(pval);
 
-			case cli::TEST_P_MINUS_ONE:
-				test_p_minus_one(pval);
-				break;
+		if (answer) {
+			completed(*answer);
+		} else {
+			switch (opt.test_case) {
 
-			case cli::TEST_LUCAS_LEHMER:
-				test_lucas_lehmer(pval);
-				break;
+				case cli::TEST_FACTOR:
+					completed(test_quick_factor(pval));
+					break;
 
-			case cli::TEST_ALL:
-				test_all(pval);
-				break;
+				case cli::TEST_P_MINUS_ONE:
+					completed(test_p_minus_one(pval));
+					break;
+
+				case cli::TEST_LUCAS_LEHMER:
+					completed(test_lucas_lehmer(pval));
+					break;
+
+				case cli::TEST_ALL:
+					test_all(pval, completed);
+					break;
+			}
 		}
+
+		return report_run(run, opt.json_mode, std::cout);
 
 	} catch (cli::show_info const& error) {
 		std::cout << colorize_usage(error.what()) << std::endl;

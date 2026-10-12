@@ -36,7 +36,11 @@ clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefil
 - `src/exc.hpp`: `mps_error`, the base of the project's exceptions.
 - `src/io.cpp`, `src/io.hpp`: the `.mps` checkpoint file (format sketch only).
 - `src/mp.cpp`, `src/mp.hpp`: `BigInt`, the multiple-precision type (a stub).
-- `src/math.cpp`, `src/math.hpp`: the prime sieve and the three tests (stubs).
+- `src/math.cpp`, `src/math.hpp`: the prime sieve; the exponent check (`check_exponent`), which
+  reports a factor only through its re-check (`composite_by_exponent`); the three tests (stubs);
+  and `run_in_order`, which runs them and stops at the first decisive result.
+- `src/result.cpp`, `src/result.hpp`: the result type, the verdict line, the JSON record and the
+  exit status.
 - `tests/`: the checks. `check.hpp` and `check.cpp` are the runner (a check is a `static void`
   function listed in its file's `check_by_name` table), `check_<module>.cpp` hold one module's
   checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make check` runs
@@ -134,8 +138,10 @@ A CONFIRMED finding in any of these files needs a human decision before the cycl
 - `src/math.hpp`, `src/math.cpp`
 - `src/mp.hpp`, `src/mp.cpp`
 - `src/io.hpp`, `src/io.cpp`
+- `src/result.hpp`, `src/result.cpp`
+- `src/main.cpp`
 
-A cycle that adds an arithmetic engine, a test driver that prints a verdict, a checkpoint or result format, or a table of known answers adds its paths here in the same commit.
+A cycle that adds an arithmetic engine, a test driver that prints a verdict, a checkpoint or result format of `mps`, or a table of known answers adds its paths here in the same commit.
 
 ### 1. Verdicts are earned (`src/math.*` and every test driver) [human gate]
 
@@ -176,7 +182,7 @@ A cycle that adds an arithmetic engine, a test driver that prints a verdict, a c
 
 - Version lives only at the release recipe's `version.source`; the release recipe's `gate` mirrors CI.
 - An option change moves the parser (`src/cli.*`), the usage and help text (`src/main.hpp`) and the usage in `README.md` together.
-- A change to the checkpoint or result format bumps that format's version in the same commit.
+- A change to a checkpoint or result format of `mps` bumps that format's version in the same commit.
 - The profile's `verify` changes in the same commit as the make target it names.
 - No spec R#/P# ids in source code.
 - Point to a rule; don't restate it. A rule restated in N places is a same-commit obligation in all N.

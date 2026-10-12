@@ -156,6 +156,12 @@ namespace cli {
 				skip_ptest = true;
 				break;
 
+			case 'j':
+				if (json_mode)
+					logging::warn("Duplicate use of -j/--json");
+				json_mode = true;
+				break;
+
 			case 'd':
 				if (debug_mode)
 					logging::warn("Duplicate use of -d/--debug");

@@ -200,6 +200,7 @@ static std::string describe(const cli::Interface& opt) {
 	       + "opt_file_path=" + std::to_string(opt.opt_file_path) + "\n"
 	       + "show_primes=" + std::to_string(opt.show_primes) + "\n"
 	       + "skip_ptest=" + std::to_string(opt.skip_ptest) + "\n"
+	       + "json_mode=" + std::to_string(opt.json_mode) + "\n"
 	       + "debug_mode=" + std::to_string(opt.debug_mode) + "\n"
 	       + "detailed_mode=" + std::to_string(opt.detailed_mode) + "\n";
 }
@@ -426,6 +427,8 @@ static void parse_args_rejects_missing_values() {
 		{{"mps", "--file=", "31"},     "Empty value for -f/--file"},
 		{{"mps", "-f", "", "31"},      "Empty value for -f/--file"},
 		{{"mps", "--debug=yes", "31"}, "Option --debug takes no value"},
+		{{"mps", "--json=1", "31"},    "Option --json takes no value"},
+		{{"mps", "--json=", "31"},     "Option --json takes no value"},
 	};
 
 	for (const Missing& m: missing)
@@ -448,6 +451,11 @@ static void parse_args_reads_groups_as_separate_flags() {
 		{{"mps", "-pd", "30"},  {"mps", "-p", "-d", "30"}},
 		{{"mps", "-ps", "30"},  {"mps", "-p", "-s", "30"}},
 		{{"mps", "-sdD", "31"}, {"mps", "-s", "-d", "-D", "31"}},
+		{{"mps", "-jd", "31"},  {"mps", "-j", "-d", "31"}},
+		{{"mps", "-dj", "31"},  {"mps", "-d", "-j", "31"}},
+		{{"mps", "-sj", "33"},  {"mps", "-s", "-j", "33"}},
+		{{"mps", "-js", "33"},  {"mps", "-j", "-s", "33"}},
+		{{"mps", "-jt", "ll", "31"}, {"mps", "-j", "-t", "ll", "31"}},
 		{{"mps", "-hv"},        {"mps", "-h"}},
 		{{"mps", "-vh"},        {"mps", "-v"}},
 		{{"mps", "-hx"},        {"mps", "-h"}},
@@ -471,6 +479,56 @@ static void parse_args_reads_groups_as_separate_flags() {
 
 	check::expect_equal(parsed({"mps", "-hv"}), "info: " + APP_HELP, "-hv is the help");
 	check::expect_equal(parsed({"mps", "-vh"}), "info: " + APP_NAME + " v" + APP_VERSION, "-vh is the version");
+}
+
+
+static void parse_args_reads_json() {
+	//
+	// -j and --json set json_mode, alone, in groups and wherever they stand; without either it
+	// is off
+
+	struct Json {
+		std::vector<const char*> argv;
+		bool json_mode;
+	};
+
+	static const std::vector<Json> runs = {
+		{{"mps", "31"},               false},
+		{{"mps", "-d", "31"},         false},
+		{{"mps", "-j", "31"},         true},
+		{{"mps", "--json", "31"},     true},
+		{{"mps", "31", "-j"},         true},
+		{{"mps", "31", "--json"},     true},
+		{{"mps", "-j", "-j", "31"},   true},
+		{{"mps", "-jd", "31"},        true},
+		{{"mps", "-dj", "31"},        true},
+		{{"mps", "-sj", "33"},        true},
+		{{"mps", "-js", "33"},        true},
+		{{"mps", "-jt", "ll", "31"},  true},
+		{{"mps", "-sdD", "31"},       false},
+	};
+
+	for (Json run: runs) {
+		const std::string label = words(run.argv);
+		try {
+			const cli::Interface opt = cli::parse_args(static_cast<int>(run.argv.size()), run.argv.data());
+			check::expect_equal(opt.json_mode, run.json_mode,
+			                    label + (run.json_mode ? " sets json_mode" : " leaves json_mode off"));
+
+		} catch (std::exception const& error) {
+			check::expect(false, label + " parses (" + error.what() + ")");
+		}
+	}
+
+	const char* argv[] = {"mps", "-sj", "33"};
+	try {
+		const cli::Interface opt = cli::parse_args(3, argv);
+		check::expect(opt.skip_ptest, "-sj sets -s");
+		check::expect_equal(opt.pval_number, 33lu, "-sj 33 gives PVAL 33");
+
+	} catch (std::exception const& error) {
+		check::expect(false, std::string("-sj 33 parses (") + error.what() + ")");
+	}
 }
 
 
@@ -499,5 +557,6 @@ check_by_name {
 	{"parse_args rejects unlisted test names",        parse_args_rejects_unlisted_test_names},
 	{"parse_args rejects missing values",             parse_args_rejects_missing_values},
 	{"parse_args reads groups as separate flags",     parse_args_reads_groups_as_separate_flags},
+	{"parse_args reads -j and --json",                parse_args_reads_json},
 	{"parse_args rejects stray flags in groups",      parse_args_rejects_stray_flags_in_groups},
 };

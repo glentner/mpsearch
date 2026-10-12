@@ -129,7 +129,9 @@ std::string colorize_usage(const std::string& text) {
 
 	std::string output = text;
 
-	std::regex header_re("^[A-Za-z]+:", std::regex::multiline);
+	// A header starts a line and may hold a space ("Exit status:"); no other line starts
+	// with a letter
+	std::regex header_re("^[A-Za-z][A-Za-z ]*:", std::regex::multiline);
 	output = std::regex_replace(output, header_re, bold("$&"));
 
 	std::regex metavar_re("(PVAL|NAME|PATH)", std::regex::multiline);

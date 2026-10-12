@@ -94,4 +94,27 @@ The checkpoint format is the one `.mps` file format, shared with PRP and P-1.
   *J. London Math. Soc.* s1-10, 1935, doi:10.1112/jlms/s1-10.2.162; J. W. Bruce, "A really trivial
   proof of the Lucas–Lehmer test", *Amer. Math. Monthly* 100(4), 1993, doi:10.2307/2324959; GIMPS,
   "The Math", https://www.mersenne.org/various/math.php.
+- **Stop `-t all` at the first error** (deferred from `verdicts-and-exit-statuses`, review cycle 1,
+  2026-10-12). `run_in_order` (`src/math.cpp`) runs the next test after one returns an error, and
+  the run exits 20 with the later tests' no-verdict lines printed. The contract allows that, since
+  an error is not decisive and no decisive verdict prints. With stubs it costs nothing. Once
+  Lucas-Lehmer is real, a run that has already failed should not spend days on the tests after it.
+  This cycle decides whether an error ends the run, and changes the stop rule and its checks
+  together.
+- **Pin the verdict path's guards in `make check`** (deferred from `verdicts-and-exit-statuses`,
+  review cycle 2, by Geoffrey's decision, 2026-10-12). The behaviour is right and was verified
+  exhaustively. What's missing is regression protection, and this cycle, the first with real
+  verdicts, reworks that path anyway:
+  - **G1.** The exponent check's exact re-check is pinned in `check_exponent_by` only.
+    Rewriting `check_exponent`, or building the composite in `src/main.cpp`, stays green.
+    Pinning that needs a fault on the production path, a search that lies inside `bin/mps`.
+  - **G2.** `utf8_length`'s table bounds in `src/result.cpp` are under-pinned. These pass
+    `make check` and produce invalid records:
+    - E0 or F0 taking an overlong second byte;
+    - leads F5–F7;
+    - unchecked third or fourth bytes.
+    Check every lead and continuation boundary against an independent validator.
+  - **G3.** `verdict_line` writes a factor as it is, and so does the contradiction line on
+    stderr. Put factors, and every string on those lines, through `line_text`, as reasons
+    are.
 - Found by: factory adoption review, 2026-10-11.
