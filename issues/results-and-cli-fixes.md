@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:cli-and-sieve-fixes
 kind: fix
 appetite: small
 ---

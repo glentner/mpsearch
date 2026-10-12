@@ -38,12 +38,16 @@ Arguments:
   PVAL                    Mersenne prime exponent.
 
 Options:
-  -p, --primes            Print primes up to PVAL.
+  -p, --primes            Print the primes below PVAL.
   -s, --skip-ptest        Suppress initial prime test on PVAL.
-  -t, --test        NAME  One of 'tf', 'p1', 'll' (default: 'all').
+  -t, --test        NAME  One of 'tf' ('trial-factor'), 'p1' ('p-minus-1'),
+                          'll' ('lucas-lehmer') or 'all' (default: 'all').
   -f, --file        PATH  File path for checkpointing.
   -d, --debug             Show debug messages.
   -D, --detailed          Show detailed logging messages.
   -v, --version           Show version and exit.
-  -h, --help              Show this message and exit.)HELP";
+  -h, --help              Show this message and exit.
+
+  Give a valued option as -x VALUE, -xVALUE, -x=VALUE, --long VALUE or
+  --long=VALUE. Short flags may be grouped (-dD).)HELP";
 

@@ -135,8 +135,10 @@ std::string colorize_usage(const std::string& text) {
 	std::regex metavar_re("(PVAL|NAME|PATH)", std::regex::multiline);
 	output = std::regex_replace(output, metavar_re, italic("$&"));
 
-	std::regex option_re("(-[a-zA-Z]+|--[a-z]+(-[a-z]+)?)", std::regex::multiline);
-	output = std::regex_replace(output, option_re, cyan("$&"));
+	// An option starts the text or follows a space, '[' or '(', so the hyphens inside a
+	// quoted name such as 'p-minus-1' are left alone
+	std::regex option_re("(^|[ \\[(])(-[a-zA-Z]+|--[a-z]+(-[a-z]+)?)", std::regex::multiline);
+	output = std::regex_replace(output, option_re, "$1" + cyan("$2"));
 
 	std::regex quoted_re("'(.*?)'", std::regex::multiline);
 	output = std::regex_replace(output, quoted_re, yellow("$&"));

@@ -1,0 +1,34 @@
+mkdir -p lib/check
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check.cpp -o lib/check/check.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_cli.cpp -o lib/check/check_cli.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_log.cpp -o lib/check/check_log.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_math.cpp -o lib/check/check_math.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/ansi.cpp -o lib/check/ansi.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/cli.cpp -o lib/check/cli.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/io.cpp -o lib/check/io.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/mp.cpp -o lib/check/mp.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/math.cpp -o lib/check/math.o
+g++ -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off lib/check/check.o lib/check/check_cli.o lib/check/check_log.o lib/check/check_math.o lib/check/ansi.o lib/check/cli.o lib/check/io.o lib/check/mp.o lib/check/math.o -o bin/check
+check parse_args accepts -t ll 31
+check parse_args rejects an unknown option
+check parse_args rejects bad PVALs
+check parse_args states the PVAL bounds
+check parse_args accepts good PVALs
+check parse_args names the default file from PVAL
+check parse_args spells each option alike
+check parse_args selects all tests by default
+check parse_args reads --file before -t
+check parse_args takes values whole
+check parse_args rejects unlisted test names
+check parse_args rejects missing values
+check parse_args reads groups as separate flags
+check parse_args rejects stray flags in groups
+check cmath and the logger together
+check level filter ordering
+check sieve below four exactly
+check sieve matches trial division
+check sieve marks squares at the bound
+check display lists the primes below n
+
+check: 20 passed, 0 failed
+cli: 126 passed, 0 failed

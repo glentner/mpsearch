@@ -124,6 +124,18 @@ return and the fleet something to read.
 *Horizon: near-term · Depends on: — · Refs: factory adoption review, 2026-10-11*
 **Seed:** [`issues/results-and-cli-fixes.md`](issues/results-and-cli-fixes.md)
 
+## Say what was found: a result type, one verdict line, exit statuses and `--json`
+
+The half of the entry above that the options-and-sieve cycle left for its own cycle. The three tests
+return `bool` and `main` discards it, so a run exits 0 whatever it found, and a composite exponent
+runs every test although 2^a − 1 already divides M_p. Every test returns one result type; `mps`
+prints one verdict line and exits with a status that tells prime from composite from error, with
+room for burn-in's "matched the expected answer"; `--json` writes one record per result; and
+`--skip-ptest` gets a check to skip, or goes.
+
+*Horizon: near-term · Depends on: — · Refs: cli-and-sieve-fixes P4, 2026-10-12*
+**Seed:** [`issues/verdicts-and-exit-statuses.md`](issues/verdicts-and-exit-statuses.md)
+
 ## One logger state for the whole program
 
 The logger's style, level, hostname and task id are `static` in a header, so each source file has

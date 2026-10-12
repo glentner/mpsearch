@@ -17,34 +17,43 @@
 
 
 std::vector<bool> prime_sieve(size_t n) {
+	//
+	// Primes below n
+	//
+	// Returns n entries, entry i true exactly when i is prime, by the sieve of Eratosthenes
+	// (Crandall and Pomerance, "Prime Numbers: A Computational Perspective", 2nd ed., 2005,
+	// ch. 3). Every index written is below n, so for n < 3 the result is n false entries.
+	// Only odd multiples of an odd i are struck, starting from i * i: a smaller multiple
+	// has a smaller prime factor and is struck already. A composite below n has a prime
+	// factor p with p * p < n, so the outer loop stops there.
 
-	size_t i, j;
-	std::vector<bool> is_prime(n, true);
+	std::vector<bool> is_prime(n, false);
 
-	// All even are composite
-	for (i = 0; i < n; i += 2)
-		is_prime[i] = false;
+	// 2 is the only even prime
+	if (n > 2)
+		is_prime[2] = true;
 
-	// Special case
-	is_prime[2] = true;
+	for (size_t i = 3; i < n; i += 2)
+		is_prime[i] = true;
 
-	i = 3;
-	while (i * i < n) {
+	for (size_t i = 3; i * i < n; i += 2)
 		if (is_prime[i])
-			for (j = i * i; j < n; j += 2 * i)
+			for (size_t j = i * i; j < n; j += 2 * i)
 				is_prime[j] = false;
-		i += 2;
-	}
 
 	return is_prime;
 }
 
 
 void display_primes(size_t n) {
+	//
+	// Print the primes below n
+	//
+	// One per line in ascending order, from 2, and nothing else.
 
 	std::vector<bool> is_prime = prime_sieve(n);
 
-	for (size_t i = 3; i < n; i += 2)
+	for (size_t i = 2; i < n; i++)
 		if (is_prime[i])
 			std::cout << i << std::endl;
 }

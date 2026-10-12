@@ -31,11 +31,11 @@ int main(const int argc, const char **argv) {
 			logging::set_level(logging::DEBUG);
 
 		if (opt.show_primes) {
-			display_primes(std::stoi(opt.pval));
+			display_primes(opt.pval_number);
 			return OK;
 		}
 
-		const long unsigned pval = std::stoi(opt.pval);
+		const long unsigned pval = opt.pval_number;
 
 		switch (opt.test_case) {
 
@@ -51,8 +51,9 @@ int main(const int argc, const char **argv) {
 				test_lucas_lehmer(pval);
 				break;
 
-			default:
+			case cli::TEST_ALL:
 				test_all(pval);
+				break;
 		}
 
 	} catch (cli::show_info const& error) {

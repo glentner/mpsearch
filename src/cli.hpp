@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 
 // Internal libs
 #include "main.hpp"
@@ -36,7 +37,6 @@ namespace cli {
 
 
 	enum TestCase {
-		TEST_NONE,
 		TEST_ALL,
 		TEST_FACTOR,
 		TEST_P_MINUS_ONE,
@@ -44,18 +44,35 @@ namespace cli {
 	};
 
 
+	// The largest PVAL accepted, with or without -p/--primes
+	static const long unsigned PVAL_MAX = 999'999'999;
+
+
 	static std::map<std::string, TestCase>
 	test_by_name {
-		{"none",         TEST_NONE},
 		{"all",          TEST_ALL},
-		{"qf",           TEST_FACTOR},
-		{"quick",        TEST_FACTOR},
-		{"factor",       TEST_FACTOR},
-		{"pm",           TEST_P_MINUS_ONE},
-		{"p-min",        TEST_P_MINUS_ONE},
+		{"tf",           TEST_FACTOR},
+		{"trial-factor", TEST_FACTOR},
+		{"p1",           TEST_P_MINUS_ONE},
+		{"p-minus-1",    TEST_P_MINUS_ONE},
 		{"ll",           TEST_LUCAS_LEHMER},
 		{"lucas-lehmer", TEST_LUCAS_LEHMER},
 	};
+
+
+	// Each long option, by the short flag it stands for
+	static std::map<std::string, char>
+	flag_by_option {
+		{"--help",       'h'},
+		{"--version",    'v'},
+		{"--primes",     'p'},
+		{"--skip-ptest", 's'},
+		{"--test",       't'},
+		{"--file",       'f'},
+		{"--debug",      'd'},
+		{"--detailed",   'D'},
+	};
+
 
 	class Interface {
 	public:
@@ -64,6 +81,8 @@ namespace cli {
 		~Interface();
 
 		std::string pval;
+		long unsigned pval_number = 0;
+		void set_pval(const std::string& str);
 
 		TestCase test_case = TEST_ALL;
 		bool opt_test_case = false;
@@ -82,12 +101,14 @@ namespace cli {
 		std::vector<std::string> remaining {};
 		std::vector<std::string> positional {};
 		std::string opt;
-		std::string opt_value;
 		bool positional_only = false; // flagged after '--'
 
 		void parse_args();
 		void check_option_long();
 		void check_option_short();
+		void check_flag(const char flag);
+		void set_value(const char flag, const std::string& value);
+		std::string pop_value(const char flag);
 		void pop_opt();
 	};
 

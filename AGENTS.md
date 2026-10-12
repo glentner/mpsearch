@@ -12,7 +12,9 @@ walltime. Read `README.md` and `ROADMAP.md` first.
 
 ```sh
 make                      # bin/mps from src/*.cpp (objects in lib/)
-make check                # bin/check from tests/*.cpp, run it, then the smoke test tests/cli.sh
+make check                # bin/check from tests/*.cpp and the modules, built with the standard
+                          # libraries' bounds assertions (objects in lib/check/); run it, then
+                          # the smoke test tests/cli.sh
 make clean                # remove the objects in lib/ and the binaries in bin/
 bin/mps --help
 bin/mps -p 100            # primes below 100
