@@ -34,8 +34,8 @@ structure is what GPU kernels parallelise later (`issues/gpu-trial-factoring.md`
 
 ## Why it was deferred
 
-Pre-existing as a stub. It needs `issues/results-and-cli-fixes.md` (a result type that can carry a
-factor) and `issues/reference-big-integer.md` (re-checking a hit, § Invariants 1).
+Pre-existing as a stub. It needs `issues/verdicts-and-exit-statuses.md` (a result type that can
+carry a factor) and `issues/reference-big-integer.md` (re-checking a hit, § Invariants 1).
 
 ## Outcome / vision
 

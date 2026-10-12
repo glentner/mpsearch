@@ -33,11 +33,12 @@ stderr.
 
 ## Why it was deferred
 
-Pre-existing on `main` since 2024. It was half of `issues/results-and-cli-fixes.md`: the factory
-adoption review seeded the parser bugs and the result type together. The `cli-and-sieve-fixes`
-cycle took the mechanical half (the options, PVAL, the sieve) and left this half, the load-bearing
-design, to a cycle of its own (its GOAL's non-goals, 2026-10-11). Every test cycle after it needs a
-result type to return and a verdict line to grade, so it stays early on the roadmap.
+Pre-existing on `main` since 2024. It was half of the factory adoption review's seed, which put the
+parser bugs and the result type together and was retired when its cycle landed. That cycle,
+`cli-and-sieve-fixes`, took the mechanical half (the options, PVAL, the sieve) and left this half,
+the load-bearing design, to a cycle of its own (its GOAL's non-goals, 2026-10-11). Every test cycle
+after it needs a result type to return and a verdict line to grade, so it stays early on the
+roadmap.
 
 ## Outcome / vision
 
@@ -82,8 +83,8 @@ the factor or residue, and the program version, and the log stays on stderr.
   format's paths to the high-blast-radius list.
 - **Coupled core.** The parser, the help text and README usage change together (§ Conventions); the
   README documents no options today.
-- Related: `issues/results-and-cli-fixes.md` (the parent seed), `spec/cli-and-sieve-fixes/GOAL.md`
-  (its non-goals), `issues/burn-in-mode.md`, `issues/lucas-lehmer-test.md`,
+- Related: `spec/cli-and-sieve-fixes/GOAL.md` (its non-goals, and its Seed link to the retired
+  parent seed), `issues/burn-in-mode.md`, `issues/lucas-lehmer-test.md`,
   `issues/prp-gerbicz-test.md`, `issues/trial-factoring.md`.
 - Found by: `cli-and-sieve-fixes` P4 (R11), split from the factory adoption review's seed of
   2026-10-11.
