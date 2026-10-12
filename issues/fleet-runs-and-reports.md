@@ -83,6 +83,9 @@ Starting thresholds, to calibrate with a baseline campaign of three runs per nod
 
 ## Notes
 
+- A run that ends in an error writes no JSON record today: `verdicts-and-exit-statuses` left
+  error records out (its non-goals, 2026-10-12). A node that errors must still show up in the
+  report, so shaping decides between an error record and the coverage check alone.
 - Shaping decides whether `mps report` is a subcommand in C++ (dependency-free, the house style) or a
   script beside the templates.
 - Energy per iteration also feeds the efficiency comparison in the definition of done

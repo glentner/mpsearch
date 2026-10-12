@@ -12,7 +12,8 @@ appetite: big
 ## Problem
 
 Trial factoring is the cheapest of the three tests and the first one run on any exponent. At
-`257acb7` it is a stub that returns `true`. The author's uncommitted 2024 work shows the right idea:
+`257acb7` it was a stub that returned `true`; since `verdicts-and-exit-statuses` it returns no
+verdict. The author's uncommitted 2024 work shows the right idea:
 
 - walk q = 2kp + 1;
 - keep only q ≡ ±1 (mod 8);
@@ -34,8 +35,9 @@ structure is what GPU kernels parallelise later (`issues/gpu-trial-factoring.md`
 
 ## Why it was deferred
 
-Pre-existing as a stub. It needs `issues/verdicts-and-exit-statuses.md` (a result type that can
-carry a factor) and `issues/reference-big-integer.md` (re-checking a hit, § Invariants 1).
+Pre-existing as a stub. It needed a result type that can carry a factor, which
+`verdicts-and-exit-statuses` landed on 2026-10-12 (`spec/verdicts-and-exit-statuses/`). It still
+needs `issues/reference-big-integer.md` (re-checking a hit, § Invariants 1).
 
 ## Outcome / vision
 

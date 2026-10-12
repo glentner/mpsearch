@@ -98,6 +98,9 @@ writes one JSON record per workload plus a node summary, in a versioned schema:
 - Profiles grow per device as backends land (Parts IV, VI and VII); each backend cycle adds its
   profile.
 - Fleet orchestration, telemetry and the outlier report are `issues/fleet-runs-and-reports.md`.
+- Exit statuses 50–59 are reserved for burn-in's outcomes (`verdicts-and-exit-statuses`,
+  2026-10-12, which left them undefined); `--help` lists the range. Shaping decides whether its
+  records extend the `-j/--json` result record (GIMPS field names, its own `record_version`).
 - References: H. D. Dixit et al., "Silent data corruptions at scale", arXiv:2102.11245, 2021; P. H.
   Hochschild et al., "Cores that don't count", HotOS 2021, doi:10.1145/3458336.3465297; S. Wang et
   al., SOSP 2023, doi:10.1145/3600006.3613149; S. Mitra et al., arXiv:2508.01786, 2025; Prime95

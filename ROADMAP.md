@@ -89,7 +89,11 @@ Since then, on `main`:
   target, with the CPU targets under `ci/targets/` (`cluster-test-jobs`, 2026-10-12);
 - an option parser that accepts exactly the names and spellings `--help` lists, grouped short
   flags included; an argument error for a bad PVAL; and a sieve right at its edges, so `mps -p N`
-  lists 2 (`cli-and-sieve-fixes`, 2026-10-12).
+  lists 2 (`cli-and-sieve-fixes`, 2026-10-12);
+- one result type for every test, one verdict line per result on stdout, exit statuses that tell
+  prime (0), composite (40), probable prime (41) and no verdict (42) apart, with 50–59 reserved for
+  burn-in, a `-j/--json` record per result, and an exponent check that answers a composite exponent
+  before any test runs (`verdicts-and-exit-statuses`, 2026-10-12).
 
 ---
 
@@ -97,25 +101,11 @@ Since then, on `main`:
 
 The groundwork every later cycle grades itself against:
 
-- a result type, one verdict line, exit statuses and `--json`;
 - one logger state for the whole program;
 - the mathematics written down;
 - a reference big integer;
 - the known answers with their sources;
 - a standing check for the cluster test job.
-
-## Say what was found: a result type, one verdict line, exit statuses and `--json`
-
-The half of the factory adoption review's seed that the options-and-sieve cycle
-(`cli-and-sieve-fixes`) left for a cycle of its own. The three tests return `bool` and `main`
-discards it, so a run exits 0 whatever it found, and a composite exponent runs every test although
-2^a − 1 already divides M_p. Every test returns one result type; `mps` prints one verdict line and
-exits with a status that tells prime from composite from error, with room for burn-in's "matched
-the expected answer"; `--json` writes one record per result; and `--skip-ptest` gets a check to
-skip, or goes.
-
-*Horizon: near-term · Depends on: — · Refs: cli-and-sieve-fixes P4, 2026-10-12*
-**Seed:** [`issues/verdicts-and-exit-statuses.md`](issues/verdicts-and-exit-statuses.md)
 
 ## One logger state for the whole program
 
@@ -377,7 +367,8 @@ arithmetic overflows above 2^32 and it stops at a ten-million-entry sieve. Class
 (960 surviving classes) and exact multi-word modular arithmetic take it to the 2^70–2^80 depths that
 matter, with every hit re-checked.
 
-*Horizon: mid-term · Depends on: the result type; the reference big integer · Refs: —*
+*Horizon: mid-term · Depends on: the result type (cleared 2026-10-12); the reference big integer ·
+Refs: —*
 **Seed:** [`issues/trial-factoring.md`](issues/trial-factoring.md)
 
 ## Trial factoring on GPUs

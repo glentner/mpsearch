@@ -65,6 +65,8 @@ answer before any transform exists.
   reads the committed vectors.
 - Shaping decides the limb width (32 or 64 bits). `unsigned __int128` is available on GCC and clang
   for every target in view.
+- The exponent check names its factor symbolically, as `2^a-1` (`verdicts-and-exit-statuses`,
+  2026-10-12); printing a large factor in decimal was left for this type's decimal conversion.
 - Shaping decides whether to keep the class name `BigInt`. The decimal-digit stub has no callers.
 - High-blast-radius: `src/mp.*` (§ Invariants).
 - Found by: factory adoption review, 2026-10-11.
