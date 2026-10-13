@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:math-notes-and-references
 kind: docs
 appetite: small
 ---

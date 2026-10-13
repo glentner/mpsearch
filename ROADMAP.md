@@ -108,6 +108,7 @@ The groundwork every later cycle grades itself against:
 - a reference big integer;
 - the known answers with their sources;
 - a standing check for the cluster test job;
+- a standing check for the notes' numbers and citations;
 - `--` ending the options for every flag, in every position.
 
 ## The mathematics, written down: notes and references
@@ -157,6 +158,18 @@ Mac before any cluster time is spent.
 *Horizon: near-term · Depends on: test any commit on a cluster (cleared 2026-10-12) · Refs:
 cluster-test-jobs P4, 2026-10-12*
 **Seed:** [`issues/ci-job-standing-checks.md`](issues/ci-job-standing-checks.md)
+
+## A standing check for the notes' numbers and citations
+
+Every number in `doc/` is tied to a computation or a located citation, and every citation to a
+bibliography entry, but the checks live in the gates of the cycle that wrote the notes, which become
+records once it merges. The first algorithm cycle to update a note could break a span and pass
+everything the repository runs. A standing check, with the evaluator moved out of the cycle record,
+keeps the notes as checked as the day they landed.
+
+*Horizon: near-term · Depends on: the mathematics, written down · Refs: math-notes-and-references
+P5, 2026-10-12*
+**Seed:** [`issues/doc-claims-standing-check.md`](issues/doc-claims-standing-check.md)
 
 ## `--` ends the options, for every flag in every position
 

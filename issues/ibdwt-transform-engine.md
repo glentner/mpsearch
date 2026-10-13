@@ -86,4 +86,12 @@ contract and are tested against the same answers.
   J. Papadopoulos, "The twenty-fourth Fermat number is composite", *Mathematics of Computation*
   72(243), 2003, doi:10.1090/S0025-5718-02-01479-5 (the sizing heuristic); H. V. Sorensen et al.,
   "Real-valued fast Fourier transform algorithms", *IEEE TASSP* 35(6), 1987.
+- Open from `math-notes-and-references` (its P5 ledger, 2026-10-12). `doc/weighted-transforms.md`
+  states Percival's bounds as theorems, Crandall and Fagin's error growth (their eq. (4.5) and (4.6))
+  as their conjecture, and the Crandall–Mayer–Papadopoulos sizing as a heuristic. Only Percival's
+  bound is proved, and it does not reach the lengths practice uses. Which estimate the engine sizes by,
+  and its measured largest rounding error at each length against them, are this cycle's to settle and
+  to record in the note. Sorensen et al. 1987 was read only in its abstract (no open copy) and is cited
+  without a locator: if the engine builds its real-input transform from it, read it first and add a
+  located citation.
 - Found by: factory adoption review, 2026-10-11.

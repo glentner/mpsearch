@@ -1,0 +1,31 @@
+# Reference check for math-notes-and-references, written by: python3 -I -B spec/math-notes-and-references/verify/refs.py --write
+# Each DOI resolved at doi.org; its metadata was compared with the entry. Each URL answered 200 and carries the title.
+
+Barrett1987 | doi:10.1007/3-540-47721-7_24 | book-chapter | title ok | authors ok | year absent, found at https://link.springer.com/chapter/10.1007/3-540-47721-7_24 | venue ok
+BrentZimmermann2010 | doi:10.1007/978-3-642-14518-6_10 | book-chapter | title ok | authors ok | year ok | venue ok
+BrentZimmermannMCA2010 | doi:10.1017/CBO9780511921698 | monograph | title ok | authors ok | year ok | venue ok
+Bruce1993 | doi:10.2307/2324959 | journal-article | title ok | authors ok | year ok | venue ok
+Cole1903 | doi:10.1090/S0002-9904-1903-01079-9 | journal-article | title ok | authors ok | year ok | venue ok
+CrandallFagin1994 | doi:10.1090/S0025-5718-1994-1185244-1 | journal-article | title ok | authors ok | year ok | venue ok
+CrandallMayerPapadopoulos2003 | doi:10.1090/S0025-5718-02-01479-5 | journal-article | title ok | authors ok | year print year (metadata 2002) | venue ok
+CrandallPomerance2005 | doi:10.1007/0-387-28979-8 | book | title ok | authors absent, found at https://link.springer.com/book/10.1007/0-387-28979-8 | year ok | venue ok
+GIMPSMath | url:https://www.mersenne.org/various/math.php | http 200 | title, authors and year found
+Harvey2014 | doi:10.1016/j.jsc.2013.09.002 | journal-article | title ok | authors ok | year ok | venue ok
+Lehmer1930 | doi:10.2307/1968235 | journal-article | title ok | authors ok | year ok | venue ok
+Lehmer1935 | doi:10.1112/jlms/s1-10.2.162 | journal-article | title ok | authors ok | year ok | venue ok
+LiGallot2022 | doi:10.48550/arXiv.2209.15623 | article | title ok | authors ok | year ok | venue ok
+MillerReedTruong1981 | doi:10.1109/TASSP.1981.1163501 | journal-article | title ok | authors ok | year ok | venue ok
+Moller2008 | doi:10.1090/S0025-5718-07-02017-0 | journal-article | title ok | authors ok | year print year (metadata 2007) | venue ok
+Montgomery1985 | doi:10.1090/S0025-5718-1985-0777282-X | journal-article | title ok | authors ok | year ok | venue ok
+Montgomery1987 | doi:10.1090/S0025-5718-1987-0866113-7 | journal-article | title ok | authors ok | year ok | venue ok
+MontgomeryKruppa2008 | doi:10.1007/978-3-540-79456-1_12 | book-chapter | title ok | authors ok | year ok | venue ok
+MontgomerySilverman1990 | doi:10.2307/2008514 | journal-article | title ok | authors ok | year ok | venue ok
+OEIS-A000043 | url:https://oeis.org/A000043 | http 200 | title, authors and year found
+Percival2003 | doi:10.1090/S0025-5718-02-01419-9 | journal-article | title ok | authors ok | year print year (metadata 2002) | venue ok
+Pietrzak2019 | doi:10.4230/LIPIcs.ITCS.2019.60 | - | title ok | authors ok | year ok | venue ok
+Pollard1971 | doi:10.1090/S0025-5718-1971-0301966-0 | journal-article | title ok | authors ok | year ok | venue ok
+Pollard1974 | doi:10.1017/S0305004100049252 | journal-article | title ok | authors ok | year ok | venue ok
+ReedTruong1975 | doi:10.1109/TIT.1975.1055352 | journal-article | title ok | authors ok | year ok | venue ok
+RFC3629 | doi:10.17487/RFC3629 | report | title ok | authors ok | year ok | venue ok
+RFC8259 | doi:10.17487/RFC8259 | report | title ok | authors absent, found at https://www.rfc-editor.org/info/rfc8259 | year ok | venue ok
+Sorensen1987 | doi:10.1109/TASSP.1987.1165220 | journal-article | title ok | authors ok | year ok | venue ok

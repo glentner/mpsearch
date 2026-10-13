@@ -75,6 +75,20 @@ own check. The Gerbicz check makes PRP the default arithmetic of every burn-in p
 - Shaping decides whether to support type 5 and PRP-CF, which are cofactor tests on Mersenne numbers
   with known factors. GIMPS takes the type-5 residue modulo the full number, not the cofactor.
 - PRP proofs are a separate entry, `issues/prp-proofs.md`.
+- Open from `math-notes-and-references` (review cycles 1 and 2, 2026-10-12): the check has one more
+  blind spot than the list above. When checks are spaced, an error in a block that is not itself
+  checked can leave a residue that is not invertible modulo M_p, and Theorem 5 in
+  `doc/prp-and-gerbicz.md` says what the later checks see. A residue that becomes zero passes every
+  later check, since both sides of the identity are then zero (part 2). So does a residue that is
+  zero modulo a factor a of M_p and still correct modulo the cofactor b = M_p/a, with gcd(a, b) = 1:
+  modulo a both sides of every later check are zero (part 2, read modulo a), and modulo b the run is
+  right (part 1, read modulo b). Either is caught only by the check on the block that made it
+  (part 3). If instead it is wrong modulo b, the error shows there: while the residues stay
+  invertible modulo b, a later check fails exactly when the block errors modulo b multiply to
+  something other than 1 (part 1), so a single wrong block is caught by the next check. R3's "the next Gerbicz check
+  SHALL detect it" fails for the first two kinds. The planned test treats a residue that is zero or
+  not invertible as an error at every check (test the product d: d ≠ 0 for a prime M_p,
+  gcd(d, M_p) = 1 in general), or checks every block. The note works an example on M_7.
 - References: GIMPS, "The Math", https://www.mersenne.org/various/math.php; Prime95 `undoc.txt`
   (residue types, compare interval); D. Li and Y. Gallot, "An efficient modular exponentiation proof
   scheme", arXiv:2209.15623, 2022 (the check generalised to any exponent); K. Pietrzak, "Simple

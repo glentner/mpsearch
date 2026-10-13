@@ -41,6 +41,8 @@ clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefil
   and `run_in_order`, which runs them and stops at the first decisive result.
 - `src/result.cpp`, `src/result.hpp`: the result type, the verdict line, the JSON record and the
   exit status.
+- `doc/`: the mathematics, one note per algorithm family, with `README.md` (the index) and
+  `references.md` (the bibliography, each entry checked against the work).
 - `tests/`: the checks. `check.hpp` and `check.cpp` are the runner (a check is a `static void`
   function listed in its file's `check_by_name` table), `check_<module>.cpp` hold one module's
   checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make check` runs
@@ -189,6 +191,8 @@ A cycle that adds an arithmetic engine, a test driver that prints a verdict, a c
 - No spec R#/P# ids in source code.
 - Point to a rule; don't restate it. A rule restated in N places is a same-commit obligation in all N.
 - Comments cite the paper or theorem an algorithm comes from (author, title, year), never another program's source.
+- A cycle that implements or changes an algorithm updates that algorithm's note in `doc/` (its
+  result, what `mps` uses, its provenance) in the same commit.
 - Prose and commit voice follow this section; voice is hygiene, not a review finding.
 
 #### Code style

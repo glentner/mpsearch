@@ -1,0 +1,92 @@
+# Number-theoretic transforms: exact convolution in a finite field
+
+## The result
+
+**Theorem 1 (the convolution theorem in a field).** Let $F$ be a field, $N \ge 1$, and $\omega \in F$ a primitive $N$-th root of unity: $\omega^N = 1$ and $\omega^m \ne 1$ for $0 < m < N$. Then $N \ne 0$ in $F$. For $u = (u_0, \dots, u_{N-1}) \in F^N$ define the transform $U_k = \sum_{j=0}^{N-1} u_j \omega^{jk}$, and for $u, v \in F^N$ the cyclic convolution $(u * v)_k = \sum_{i + j \equiv k \ (\mathrm{mod}\ N)} u_i v_j$. Then
+
+1. the transform is inverted by $u_j = N^{-1} \sum_{k=0}^{N-1} U_k \omega^{-jk}$;
+2. the transform of $u * v$ is the product $U_k V_k$, for every $k$.
+
+So $u * v$ costs two transforms, $N$ products and one inverse transform, each transform $O(N \log N)$ operations in $F$ by a fast Fourier transform. Over the complex numbers, with $\omega = e^{2\pi i/N}$, this is the usual discrete Fourier transform. Over a finite field it is a number-theoretic transform (NTT): a transform analogous to the discrete Fourier transform, defined in a finite field, computed by the fast Fourier transform, and applied to convolutions of long integer sequences by integer arithmetic ([Pollard1971, the abstract](references.md#pollard1971)).
+
+**Corollary (exactness).** Let $u, v$ be integer sequences whose cyclic convolution has $|(u * v)_k| < Q/2$ for every $k$, where $Q = q_1 \cdots q_r$ is a product of distinct odd primes, and suppose that for each $i$ a finite field $F_i$ of characteristic $q_i$, such as $\mathrm{GF}(q_i)$ or $\mathrm{GF}(q_i^2)$, holds a primitive $N$-th root of unity. Computing $u * v$ in each $F_i$ by Theorem 1, combining the residues by the Chinese remainder theorem, and taking the representative in $(-Q/2, Q/2)$ gives $(u * v)_k$ exactly. There is no rounding error, only a condition on size. This is the "microscopic" CRT approach of [CrandallFagin1994, p. 317](references.md#crandallfagin1994), with one weighted convolution per prime, and their bound for one prime and a fixed base $W$ is $N W^2/4 < q/2$ ([CrandallFagin1994, eq. (8.1) and eq. (8.3)](references.md#crandallfagin1994)).
+
+**Which fields hold the roots.** The multiplicative group of $\mathrm{GF}(q^m)$ is cyclic of order $q^m - 1$, so it holds a primitive $N$-th root of unity exactly when $N$ divides $q^m - 1$. For a prime field $\mathrm{GF}(q)$ the modulus is therefore chosen with $q - 1$ divisible by every length wanted. <!-- check: isprime(2**64 - 2**32 + 1) and 2**64 - 2**32 == 2**32 * 3 * 5 * 17 * 257 * 65537 and order(7, 2**64 - 2**32 + 1) == 2**64 - 2**32 --> For example $q = 2^{64} - 2^{32} + 1$ is prime, $q - 1 = 2^{32} \cdot 3 \cdot 5 \cdot 17 \cdot 257 \cdot 65537$, and 7 has order $q - 1$ modulo $q$, so $\omega = 7^{(q-1)/N}$ is a primitive $N$-th root of unity for every $N$ dividing $q - 1$, every power of two up to $2^{32}$ among them<!-- /check -->.
+
+### The weighted transform in a field
+
+**Theorem 2 (the IBDWT in a field).** Take $p$, $N \le p$, the positions $c_j = \lceil pj/N \rceil$ and the integers $e_{ij} \in \{0, 1\}$ of [the note on weighted transforms](weighted-transforms.md), Theorem 1. Let $F$ be a field of characteristic other than 2 that holds a primitive $N$-th root of unity and an element $r$ with $r^N = 2$, and put
+
+$$a_j = r^{\,N c_j - pj} \qquad (0 \le N c_j - pj < N).$$
+
+Then $a_i a_j = a_k 2^{e_{ij}}$ in $F$ whenever $i + j \equiv k \pmod N$, so the weighted note's Theorem 1 holds in $F$ word for word: for integer digits $x_j, y_j$, the weighted cyclic convolution $a^{-1}((a x) * (a y))$, computed in $F$, is the vector of integers $z_k$, reduced into $F$, with $XY \equiv \sum_k z_k 2^{c_k} \pmod{M_p}$. With balanced digits $|z_k| < N \, 2^{2\beta}$, $\beta = p/N$ (the weighted note's bound), so by the corollary the product modulo $M_p$ is exact whenever
+
+$$2N \cdot 2^{2\beta} \le Q.$$
+
+This bound is the project's own; it is Crandall and Fagin's condition of eq. (8.3) carried over to the irrational base. The weighted transform needs both kinds of root: roots of unity of order $N$ for the transform, and an $N$-th root of 2 for the weights.
+
+**Lemma 1 (when 2 has an $N$-th root).** Let $q$ be an odd prime and $N$ a divisor of $q - 1$. Then $\mathrm{GF}(q)$ holds an $r$ with $r^N = 2$ exactly when $2^{(q-1)/N} = 1$, that is, when the order $\mathrm{ord}_q(2)$ of 2 modulo $q$ divides $(q - 1)/N$. So the lengths at which $\mathrm{GF}(q)$ carries the weights are exactly the divisors of $(q - 1)/\mathrm{ord}_q(2)$.
+
+**Ordinary NTT primes.** <!-- check: order(2, 2**64 - 2**32 + 1) == 192 and (2**64 - 2**32) // 192 == 2**26 * 5 * 17 * 257 * 65537 and (2**64 - 2**32) // 192 % 3 != 0 --> For $q = 2^{64} - 2^{32} + 1$, 2 has order 192, and $(q - 1)/192 = 2^{26} \cdot 5 \cdot 17 \cdot 257 \cdot 65537$: the weights exist at every length dividing that number, among them every power of two up to $2^{26}$ and 5 times each of these, but never at a length divisible by 3<!-- /check -->. The 32-bit primes common in NTTs do far worse: <!-- check: isprime(3 * 2**30 + 1) and (3 * 2**30) // order(2, 3 * 2**30 + 1) == 4 and isprime(15 * 2**27 + 1) and (15 * 2**27) // order(2, 15 * 2**27 + 1) == 2 and isprime(7 * 2**26 + 1) and (7 * 2**26) // order(2, 7 * 2**26 + 1) == 4 --> for the primes $3 \cdot 2^{30} + 1$, $15 \cdot 2^{27} + 1$ and $7 \cdot 2^{26} + 1$, the quotient $(q - 1)/\mathrm{ord}_q(2)$ is 4, 2 and 4<!-- /check -->, so they carry the weights at no useful length. Their roots of unity of large power-of-two order exist, but 2 is far from being a $2^m$-th power: almost all of the power of two in $q - 1$ is used up by the order of 2. A product modulo $M_p$ over such primes must zero-pad to twice the length and reduce separately. <!-- check: 3539599361 == 27005 * 2**17 + 1 and isprime(3539599361) and (3539599361 - 1) // order(2, 3539599361) == 2**16 --> The prime $q = 27005 \cdot 2^{17} + 1 = 3539599361$ does better: $(q - 1)/\mathrm{ord}_q(2) = 2^{16}$<!-- /check -->. By Lemma 1, a prime $q$ carries the weights at some power-of-two length longer than $2^{16}$ exactly when $2^{17}$ divides $q - 1$ and $2^{(q-1)/2^{17}} = 1$, since the lengths it allows are closed under taking divisors. Whether any prime below $2^{32}$ does so is a finite search that no check here runs, and this note makes no claim about it.
+
+### Fields over Mersenne primes
+
+**Theorem 3 (the Gaussian field over a Mersenne prime).** Let $q = 2^k - 1$ be prime, so that $k$ is prime ([the note on Mersenne numbers](mersenne-numbers.md)). Then:
+
+1. $q \equiv 3 \pmod 4$, so $-1$ is not a square modulo $q$, and $\mathrm{GF}(q^2) = \mathrm{GF}(q)[i]$ with $i^2 = -1$: its elements are the "complex integers" $a + bi$ with $a, b$ taken modulo $q$;
+2. $q^2 - 1 = 2^{k+1} (2^{k-1} - 1)$ with $2^{k-1} - 1$ odd, so $\mathrm{GF}(q^2)$ holds a primitive $N$-th root of unity for every power of two $N \le 2^{k+1}$, and more generally for every $N$ dividing $q^2 - 1$;
+3. 2 has order $k$ modulo $q$, so for every $N$ prime to $k$ the element $r = 2^u$, with $uN \equiv 1 \pmod k$, satisfies $r^N = 2$: every weight $a_j$ of Theorem 2 is a power of 2 in $\mathrm{GF}(q)$;
+4. multiplying a residue $0 \le x < q$, written in $k$ bits, by $2^t$ modulo $q$ rotates those $k$ bits by $t$ places, and a product $x < q^2$ reduces as $x \equiv (x \bmod 2^k) + \lfloor x / 2^k \rfloor$, which is below $2q$ and needs at most one subtraction of $q$.
+
+So in $\mathrm{GF}(q^2)$ the weights cost rotations, with no table, and the reduction costs a shift and an add. Reed and Truong define a transform over $\mathrm{GF}(q^2)$ for a prime $q$ with $-1$ not a quadratic residue, show that it acts as the discrete Fourier transform of complex integers of finite dynamic range, and observe that for a Mersenne prime $q$ the fast Fourier transform gives a fast convolution without the roundoff of complex numbers ([ReedTruong1975, the abstract](references.md#reedtruong1975)). Crandall and Fagin call these Galois transforms, and note the factor $2^{k+1}$ of $q^2 - 1$ that allows power-of-two lengths ([CrandallFagin1994, § 8 and p. 318](references.md#crandallfagin1994)). <!-- cited --> They also give a closed form for a primitive $2^{k+1}$-th root of unity, $h = 2^{2^{k-2}} + (-3)^{2^{k-2}} i$, by a theorem of Creutzburg and Tasche ([CrandallFagin1994, eq. (8.7)](references.md#crandallfagin1994))<!-- /cited -->; Miller, Reed and Truong show that the method that finds primitive elements of $\mathrm{GF}(q^2)$ for a Mersenne prime $q$ works for $\mathrm{GF}(q^n)$ exactly when $q$ is a Mersenne prime and $n = 2$ ([MillerReedTruong1981, the abstract](references.md#millerreedtruong1981)).
+
+**The two fields the planned engine names.** <!-- check: (2**31 - 1)**2 - 1 == 2**32 * 3**2 * 7 * 11 * 31 * 151 * 331 and isprime(151) and isprime(331) --> $M_{31}^2 - 1 = 2^{32} \cdot 3^2 \cdot 7 \cdot 11 \cdot 31 \cdot 151 \cdot 331$, with 151 and 331 prime<!-- /check -->, and <!-- check: (2**61 - 1)**2 - 1 == 2**62 * 3**2 * 5**2 * 7 * 11 * 13 * 31 * 41 * 61 * 151 * 331 * 1321 and isprime(1321) --> $M_{61}^2 - 1 = 2^{62} \cdot 3^2 \cdot 5^2 \cdot 7 \cdot 11 \cdot 13 \cdot 31 \cdot 41 \cdot 61 \cdot 151 \cdot 331 \cdot 1321$, with 1321 prime<!-- /check -->. <!-- check: ((2**31 - 1)**2 - 1) % 5 != 0 and ((2**61 - 1)**2 - 1) % (9 * 5 * 7 * 11 * 13) == 0 and ((2**61 - 1)**2 - 1) % 3 == 0 and ((2**61 - 1)**2 - 1) % 15 == 0 --> So $\mathrm{GF}(M_{31}^2)$ allows no length with a factor 5, while $\mathrm{GF}(M_{61}^2)$ allows the odd factors 3, 5, 7, 9, 11, 13 and 15, among others<!-- /check -->. <!-- check: order(2, 2**31 - 1) == 31 and order(2, 2**61 - 1) == 61 --> The order of 2 is 31 modulo $M_{31}$ and 61 modulo $M_{61}$<!-- /check -->, as part 3 says. <!-- check: 49 * 2**22 % 61 == 1 and pow(2, 49 * 2**22, 2**61 - 1) == 2 and 8 * 2**22 % 31 == 1 and pow(2, 8 * 2**22, 2**31 - 1) == 2 --> At $N = 2^{22}$, $49 \cdot 2^{22} \equiv 1 \pmod{61}$ and $8 \cdot 2^{22} \equiv 1 \pmod{31}$, so $(2^{49})^{2^{22}} = 2$ in $\mathrm{GF}(M_{61})$ and $(2^8)^{2^{22}} = 2$ in $\mathrm{GF}(M_{31})$<!-- /check -->.
+
+**The pair, by the Chinese remainder theorem.** <!-- check: gcd((2**31 - 1)**2 - 1, (2**61 - 1)**2 - 1) == 2**32 * 3**2 * 7 * 11 * 31 * 151 * 331 --> The group orders $M_{31}^2 - 1$ and $M_{61}^2 - 1$ have the greatest common divisor $2^{32} \cdot 3^2 \cdot 7 \cdot 11 \cdot 31 \cdot 151 \cdot 331$<!-- /check -->, so a length that divides it and is prime to 31 and 61 works in both fields at once, and the corollary applies with the modulus $Q = M_{31} M_{61}$. <!-- check: 2 * 2**22 * 2**(2 * 34) <= (2**31 - 1) * (2**61 - 1) and 2 * 2**22 * 2**69 > (2**31 - 1) * (2**61 - 1) and 34 * 2**22 == 142606336 --> With $Q = M_{31} M_{61}$ and $N = 2^{22}$, the condition $2N \cdot 2^{2\beta} \le Q$ of Theorem 2 holds at $\beta = 34$ and fails at $2\beta = 69$, so the pair squares exactly modulo $M_p$ for every $p \le 34 \cdot 2^{22} = 142606336$<!-- /check -->. Beyond the bound the outputs are no longer sure to fit; a run that relies on their typical size instead must check every reconstruction.
+
+### Harvey's lazy reduction
+
+In an NTT over $\mathrm{GF}(q)$ with $q$ a prime below the machine word size $2^w$, the butterfly $(X, Y) \mapsto (X + Y, W(X - Y))$, for a root of unity $W$, usually reduces each result to the range $0 \le x < q$ with a conditional correction. <!-- cited --> Harvey keeps each element as an integer $x$ with $0 \le x < 2q$ instead, with $q < 2^w/4$, and then the butterfly needs a single conditional subtraction, and its product by $W$ none, since its quotient is estimated from a precomputed $\lfloor W 2^w / q \rfloor$ ([Harvey2014, § 3, Algorithm 3 and Theorem 2](references.md#harvey2014))<!-- /cited -->. <!-- cited --> The inverse butterfly $(X, Y) \mapsto (X + WY, X - WY)$ works the same way on integers $0 \le x < 4q$ ([Harvey2014, § 4, Algorithm 4 and Theorem 3](references.md#harvey2014))<!-- /cited -->. Values are brought below $q$ once, at the end. <!-- cited --> Harvey records that a redundant representation had been suggested earlier for a transform over $\mathrm{GF}(q^2)$ with $q = 2^{61} - 1$ ([Harvey2014, § 3](references.md#harvey2014))<!-- /cited -->.
+
+## Proof
+
+**Theorem 1.** If the characteristic $\ell$ of $F$ divided $N$, then $x^N - 1 = (x^{N/\ell} - 1)^\ell$ in $F[x]$, so $\omega^{N/\ell} = 1$, against primitivity; hence $N \ne 0$ in $F$. For an integer $m$, let $S(m) = \sum_{k=0}^{N-1} \omega^{mk}$. If $N \mid m$ every term is 1 and $S(m) = N$; otherwise $\omega^m \ne 1$ and $S(m) = (\omega^{mN} - 1)/(\omega^m - 1) = 0$. Then
+
+$$N^{-1} \sum_k U_k \omega^{-jk} = N^{-1} \sum_i u_i \, S(i - j) = u_j,$$
+
+which is part 1. For part 2, since $\omega^N = 1$ the power $\omega^{mk}$ depends only on $m$ modulo $N$, so
+
+$$\sum_m (u * v)_m \, \omega^{mk} = \sum_{i, j} u_i v_j \, \omega^{(i + j) k} = U_k V_k. \qquad \square$$
+
+**The corollary.** In $F_i$ the computed value is $(u * v)_k$ reduced modulo $q_i$, an element of the prime field $\mathrm{GF}(q_i) \subseteq F_i$, since by Theorem 1 the result equals the convolution, which uses only additions and multiplications of the integer inputs. By the Chinese remainder theorem the residues fix $(u * v)_k$ modulo $Q$, and exactly one integer in $(-Q/2, Q/2)$ has that residue, $Q$ being odd. $\square$
+
+**Lemma 1.** The group $G = \mathrm{GF}(q)^\times$ is cyclic of order $n = q - 1$, and $N \mid n$. The map $x \mapsto x^N$ on $G$ has as kernel the $N$-th roots of unity, of which a cyclic group has exactly $N$, so its image has $n/N$ elements. Each image element $y = x^N$ satisfies $y^{n/N} = x^n = 1$, and the polynomial $y^{n/N} - 1$ has at most $n/N$ roots, so the image is exactly the set of roots. Hence 2 is an $N$-th power exactly when $2^{n/N} = 1$, that is, when $\mathrm{ord}_q(2)$ divides $n/N$, or equivalently when $N$ divides $n / \mathrm{ord}_q(2)$. $\square$
+
+**Theorem 2.** Write $N c_j - pj = N f_j$, with $0 \le f_j = c_j - pj/N < 1$ as in the weighted note, so the exponent is an integer from 0 to $N - 1$. The weighted note shows that $e_{ij} = f_i + f_j - f_k$ when $i + j \equiv k$. So $a_i a_j / a_k = r^{N(f_i + f_j - f_k)} = (r^N)^{e_{ij}} = 2^{e_{ij}}$, and $r$ is invertible because $r^N = 2 \ne 0$. Parts 2 and 3 of the weighted note's Theorem 1 use only this identity, $2^p \equiv 1 \pmod{M_p}$ in the integers, and the ring operations, so they hold in $F$. The $z_k$ are integers, and their residues in $F$ are what the transform computes, so the corollary applies once $|z_k| < Q/2$, which $N \, 2^{2\beta} \le Q/2$ guarantees. $\square$
+
+**Theorem 3.** Part 1: $k \ge 2$, so $2^k \equiv 0 \pmod 4$ and $q \equiv -1 \equiv 3 \pmod 4$. By Euler's criterion $-1$ is a square modulo $q$ exactly when $(-1)^{(q-1)/2} = 1$, and $(q - 1)/2$ is odd, so it is not; then $x^2 + 1$ has no root in $\mathrm{GF}(q)$, is irreducible, and $\mathrm{GF}(q)[i]$ is a field of $q^2$ elements. Part 2: $q^2 - 1 = (q - 1)(q + 1) = (2^k - 2) \, 2^k = 2^{k+1} (2^{k-1} - 1)$, and the roots of unity follow from the cyclic group of order $q^2 - 1$. Part 3: $2^k = q + 1 \equiv 1 \pmod q$, so the order of 2 divides the prime $k$, and it is not 1 since $q > 1$. If $uN = 1 + mk$, then $(2^u)^N = 2 \cdot (2^k)^m = 2$; the weights of Theorem 2 are powers of $r$, hence of 2. Part 4: write $x = h \, 2^{k-t} + \ell$ with $0 \le \ell < 2^{k-t}$ and $0 \le h < 2^t$; then $2^t x = h \, 2^k + \ell \, 2^t \equiv h + \ell \, 2^t \pmod q$, which is the rotation. For $x < q^2 < 2^{2k}$, write $x = h \, 2^k + \ell$ with $h, \ell < 2^k$; then $x \equiv h + \ell$, and $h + \ell < 2q$ because $h = q$ and $\ell = q$ together would give $x \ge q^2$. $\square$
+
+The numbers for the fields over $M_{31}$ and $M_{61}$, and for the other primes above, are the check spans' computations.
+
+## What mps uses
+
+The integer-transform engine does not exist yet. Today `mps` has no arithmetic on numbers wider than 64 bits, and no transform of any kind.
+
+The planned engine will compute the weighted convolution of Theorem 2 in $\mathrm{GF}(M_{31}^2)$ and $\mathrm{GF}(M_{61}^2)$, with the weights as rotations and the reductions by shift and add of Theorem 3, and combine the two by the Chinese remainder theorem. In its exact mode each length will carry the largest exponent that the bound $2N \cdot 2^{2\beta} \le Q$ allows. A single-field engine over $\mathrm{GF}(M_{61}^2)$ or over $2^{64} - 2^{32} + 1$ may serve as a slow, exact oracle for testing. Lazy reduction is an optimization for later work.
+
+## Sources
+
+- [Pollard1971, the abstract](references.md#pollard1971): the transform in a finite field, by the FFT, for convolutions of integer sequences.
+- [ReedTruong1975, the abstract](references.md#reedtruong1975): transforms over $\mathrm{GF}(q^2)$, and fast exact convolution for a Mersenne prime $q$.
+- [MillerReedTruong1981, the abstract](references.md#millerreedtruong1981): primitive elements of $\mathrm{GF}(q^2)$ for a Mersenne prime $q$.
+- [CrandallFagin1994, p. 317](references.md#crandallfagin1994): weighted convolutions modulo several primes, combined by the CRT.
+- [CrandallFagin1994, eq. (8.1) and eq. (8.3)](references.md#crandallfagin1994): the size of the convolution outputs, and the condition on the prime.
+- [CrandallFagin1994, § 8 and p. 318](references.md#crandallfagin1994): Galois transforms over $\mathrm{GF}(q^2)$ for a Mersenne prime $q$.
+- [CrandallFagin1994, eq. (8.7)](references.md#crandallfagin1994): a primitive root of unity in closed form.
+- [Harvey2014, § 3, Algorithm 3 and Theorem 2](references.md#harvey2014): the butterfly on a redundant representation.
+- [Harvey2014, § 4, Algorithm 4 and Theorem 3](references.md#harvey2014): the inverse butterfly.
+- [Harvey2014, § 3](references.md#harvey2014): the earlier suggestion for a transform over $\mathrm{GF}(q^2)$, $q = 2^{61} - 1$.
+
+## Provenance
+
+Theorem 1, its corollary, Lemma 1 and Theorem 3 are standard algebra, proved in full here. The finite-field transform is [Pollard1971](references.md#pollard1971); the fields over Mersenne primes are [ReedTruong1975](references.md#reedtruong1975) and [MillerReedTruong1981](references.md#millerreedtruong1981), with the weighted and Galois transforms of [CrandallFagin1994](references.md#crandallfagin1994); the redundant representation is [Harvey2014](references.md#harvey2014). Theorem 2's bound, and the checks of the fields' numbers, are the project's own. The planned engine will be built from these papers, and from nothing drawn from another program.

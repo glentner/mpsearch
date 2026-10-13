@@ -90,4 +90,15 @@ FP64 FFT stays faster.
   1975; R. Miller, I. S. Reed and T. K. Truong, "A theorem for computing primitive elements in the
   field of complex integers of a characteristic Mersenne prime", *IEEE TASSP* 29(1), 1981;
   D. Harvey, "Faster arithmetic for number-theoretic transforms", *J. Symbolic Comput.* 60, 2014.
+- Open from `math-notes-and-references` (its P5 ledger, 2026-10-12). `doc/number-theoretic-transforms.md`
+  states when GF(q) holds an N-th root of 2 (its Lemma 1: exactly when N divides (q − 1)/ord_q(2)) and
+  checks it for 2^64 − 2^32 + 1, three common 32-bit NTT primes and 27005·2^17 + 1, but makes no
+  claim about the other primes below 2^32: this seed's exhaustive search is unchecked (review cycle 1,
+  2026-10-12). This cycle reruns that search as a recorded check before relying on it, and updates
+  the note in the same commit.
+- Also from that ledger: the note derives the exact condition for the GF(M31²)×GF(M61²) pair,
+  2N·2^(2β) ≤ M31·M61 with β the average bits per word. At N = 2^22 it holds for β = 34 and fails at
+  2β = 69, so the "34.5 bits per word exactly" above is a limit the pair approaches and never reaches.
+  Pollard 1971, Reed–Truong 1975 and Miller–Reed–Truong 1981 were read only in their abstracts (no open
+  copy); the note proves what it uses, and a cycle that builds on more than that reads them first.
 - Found by: factory adoption review, 2026-10-11.

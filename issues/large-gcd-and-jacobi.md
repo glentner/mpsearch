@@ -61,4 +61,8 @@ where both run.
   *Mathematics of Computation* 77(261), 2008, doi:10.1090/S0025-5718-07-02017-0; D. Stehlé and
   P. Zimmermann, "A binary recursive gcd algorithm", ANTS VI, LNCS 3076, 2004; R. P. Brent and
   P. Zimmermann, "An O(M(n) log n) algorithm for the Jacobi symbol", ANTS IX, LNCS 6197, 2010.
+- Open from `math-notes-and-references` (its P5 ledger, 2026-10-12). Möller 2008 refused every fetch,
+  so `doc/lucas-lehmer.md` and `doc/p-1.md` cite it without a locator, for subquadratic GCD as its
+  title states. This cycle reads it before building from it, and adds a located citation to both
+  notes.
 - Found by: factory adoption review, 2026-10-11.

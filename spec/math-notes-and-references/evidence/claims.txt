@@ -1,0 +1,68 @@
+# Claims record for math-notes-and-references, written by: python3 -I -B spec/math-notes-and-references/verify/notes.py report
+# Each check span's expression evaluated to True, and its visible integers match it.
+
+doc/mersenne-numbers.md:14: primes(11) == [2, 3, 5, 7, 11] and isprime(mersenne(2)) and isprime(mersenne(3)) and isprime(mersenne(5)) and isprime(mersenne(7)) and mersenne(11) == 2047 and 2047 == 23 * 89
+doc/mersenne-numbers.md:26: 15 == 3 * 5 and 2**15 - 1 == 32767 and 32767 == 7 * 31 * 151 and 2**3 - 1 == 7 and 2**5 - 1 == 31 and 2**15 - 1 == (2**5 - 1) * (2**10 + 2**5 + 1)
+doc/mersenne-numbers.md:32: 2**4 - 1 == 15 and 2**6 - 1 == 63 and 63 % 15 != 0 and 6 % 4 != 0
+doc/mersenne-numbers.md:34: mersenne(1) == 1 and not isprime(1)
+doc/lucas-lehmer.md:9: 4**2 - 2 == 14 and 14**2 - 2 == 194 and 194**2 - 2 == 37634
+doc/lucas-lehmer.md:15: mersenne(7) == 127 and lucas_seq(7, 0) == 4 and lucas_seq(7, 1) == 14 and lucas_seq(7, 2) == 67 and lucas_seq(7, 3) == 42 and lucas_seq(7, 4) == 111 and lucas_seq(7, 5) == 0 and 7 - 2 == 5
+doc/lucas-lehmer.md:15: mersenne(11) == 2047 and 2047 == 23 * 89 and ll_residue(11) == 1736
+doc/lucas-lehmer.md:19: mersenne(2) == 3 and isprime(3) and 4 % 3 == 1
+doc/lucas-lehmer.md:22: ll_exponents(2500) == [2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281] and len(ll_exponents(2500)) == 17 and len(primes(2500)) == 367 and 367 - 17 == 350
+    ll_exponents(2500): M_p prime for p in [2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281] (p = 2 by M_2 = 3; the rest by a zero Lucas-Lehmer residue); composite for the other 350 prime p <= 2500, each by a nonzero residue and again by a failed base-3 Fermat test; equal to OEIS A000043 up to 2500
+    ll_exponents(2500): M_p prime for p in [2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281] (p = 2 by M_2 = 3; the rest by a zero Lucas-Lehmer residue); composite for the other 350 prime p <= 2500, each by a nonzero residue and again by a failed base-3 Fermat test; equal to OEIS A000043 up to 2500
+doc/lucas-lehmer.md:68: 14 - 2 == 12
+doc/lucas-lehmer.md:72: 194 - 2 == 12 * 4**2 and 37634 - 2 == 12 * 4**2 * 14**2
+doc/lucas-lehmer.md:96: mersenne(3) == 7 and mersenne(9) % 7 == 0 and mersenne(15) % 7 == 0 and mersenne(21) % 7 == 0 and 14 % 7 == 0 and mersenne(5) == 31 and mersenne(25) % 31 == 0 and 37634 % 31 == 0
+doc/lucas-lehmer.md:98: jacobi_sweep(521) == []
+    jacobi_sweep(521): every odd prime p <= 521, every iteration 1 <= i <= p - 2, unshifted and with three shifts; cases where the symbol is not -1: none
+doc/lucas-lehmer.md:98: jacobi_first_zero(25) == [(9, 3), (15, 3), (21, 3), (25, 5)]
+    jacobi_first_zero(25): every odd p <= 25, prime or not; first 0 at (p, i): [(9, 3), (15, 3), (21, 3), (25, 5)]; every such case excluded by the hypothesis
+doc/prp-and-gerbicz.md:11: pow(3, 2**7, 127) == 9 and mersenne(7) == 127 and isprime(127)
+doc/prp-and-gerbicz.md:11: prp3_known(11213) == 22
+    prp3_known(11213): 3^(M_p - 1) = 1 mod M_p for all 22 published odd exponents p <= 11213
+doc/prp-and-gerbicz.md:13: mersenne(11) == 2047 and 2047 == 23 * 89 and pow(2, 2047 - 1, 2047) == 1 and pow(3, 2047 - 1, 2047) == 1013
+doc/prp-and-gerbicz.md:42: mersenne(7) == 127 and pow(3, 2**2, 127) == 81 and 3 * 81 % 127 == 116 and 3 * pow(3, 2**2, 127) % 127 == 116
+doc/prp-and-gerbicz.md:42: pow(0, 2, 127) == 0 and 3 * pow(116, 2**2, 127) % 127 == 108
+doc/prp-and-gerbicz.md:42: 3 * pow(0, 2**2, 127) % 127 == 0
+doc/prp-and-gerbicz.md:42: 0**2 == 0 and 0 != 9
+doc/prp-and-gerbicz.md:56: gerbicz_ok(127, 10, 5) and gerbicz_detects(127, 10, 5, 1) and gerbicz_detects(127, 10, 5, 23) and gerbicz_detects(127, 10, 5, 50) and 10 * 5 == 50
+doc/prp-and-gerbicz.md:78: 127 - 1 == 126 and 2**6 <= 126 and 126 < 2**7 and 2**6 - 1 == 63 and 2**6 == 64
+doc/prp-and-gerbicz.md:90: mersenne(2) == 3 and 2**(3 - 1) == 4 and 4 % 3 == 1
+doc/factors-and-trial-factoring.md:14: mersenne(11) == 23 * 89 and 23 == 2 * 1 * 11 + 1 and 89 == 2 * 4 * 11 + 1 and 23 % 8 == 7 and 89 % 8 == 1
+doc/factors-and-trial-factoring.md:14: mersenne(29) == 233 * 1103 * 2089 and isprime(233) and isprime(1103) and isprime(2089) and 233 == 2 * 4 * 29 + 1 and 1103 == 2 * 19 * 29 + 1 and 2089 == 2 * 36 * 29 + 1 and 233 % 8 == 1 and 1103 % 8 == 7 and 2089 % 8 == 1
+doc/factors-and-trial-factoring.md:14: 11 % 4 == 3 and 1 % 4 == 1 and 4 % 4 == 0 and 29 % 4 == 1 and 19 % 4 == 3 and 36 % 4 == 0
+doc/factors-and-trial-factoring.md:16: factor_form(100, 2**20) == 27
+    factor_form(100, 1048576): 27 prime factors q <= 1048576 of M_p, odd prime p <= 100, found by trying every prime; each is 2kp + 1 and +-1 mod 8
+doc/factors-and-trial-factoring.md:16: mersenne(67) == 193707721 * 761838257287 and isprime(193707721) and divides_mersenne(193707721, 67) and has_factor_form(193707721, 67) and isprime(761838257287) and divides_mersenne(761838257287, 67) and has_factor_form(761838257287, 67)
+doc/factors-and-trial-factoring.md:16: 193707721 == 2 * 1445580 * 67 + 1 and 761838257287 == 2 * 5685360129 * 67 + 1 and 193707721 % 8 == 1 and 761838257287 % 8 == 7
+doc/factors-and-trial-factoring.md:33: pow(2, 1, 47) == 2 and pow(2, 2, 47) == 4 and pow(2, 5, 47) == 32 and pow(2, 11, 47) == 27 and pow(2, 23, 47) == 1 and 47 == 2 * 1 * 23 + 1
+doc/factors-and-trial-factoring.md:35: 4 * 3 * 5 * 7 * 11 == 4620 and 2 * 2 * 4 * 6 * 10 == 960
+doc/factors-and-trial-factoring.md:39: 1 * 2 * 4 * 6 * 10 * 4620 == 960 * 2 * 3 * 5 * 7 * 11
+doc/p-1.md:42: 193707721 - 1 == 2 * 67 * 1445580 and 1445580 == 2**2 * 3**3 * 5 * 2677 and isprime(2677)
+doc/p-1.md:42: 2**2 <= 30 and 3**3 <= 30 and 5 <= 30 and 30 < 2677 and 2677 <= 3000
+doc/p-1.md:42: pm1(67, 30, 3000) == (1, 193707721)
+    pm1(67, 30, 3000): stage 1 gcd 1, stage 2 gcd 193707721
+doc/p-1.md:42: pm1(67, 30, 2000) == (1, 1) and 2677 > 2000
+    pm1(67, 30, 2000): stage 1 gcd 1, stage 2 gcd 1
+doc/p-1.md:42: 761838257287 - 1 == 2 * 67 * 5685360129 and 5685360129 == 3**2 * 29 * 2551 * 8539 and isprime(2551) and isprime(8539) and 8539 > 3000
+doc/p-1.md:42: 193707721 - 1 == 2**3 * 3**3 * 5 * 67 * 2677 and 67 > 30 and 2677 > 30
+doc/weighted-transforms.md:43: dwt_widths(37, 4) == (10, 9, 9, 9) and 37 % 4 == 1
+doc/weighted-transforms.md:43: 78314567209 == 553 + 93 * 2**10 + 381 * 2**19 + 291 * 2**28
+doc/weighted-transforms.md:43: 4 * 10 - 37 * 1 == 3 and 4 * 19 - 37 * 2 == 2 and 4 * 28 - 37 * 3 == 1
+doc/weighted-transforms.md:43: 1 + 3 == 4 and 2 + 2 == 4 and 10 + 28 - 37 == 1 and 19 + 19 - 37 == 1
+doc/weighted-transforms.md:43: 553**2 + 2 * 2 * 93 * 291 + 2 * 381**2 == 704383
+doc/weighted-transforms.md:43: 78314567209**2 % (2**37 - 1) == (704383 + 324600 * 2**10 + 523365 * 2**19 + 463578 * 2**28) % (2**37 - 1)
+doc/weighted-transforms.md:43: dwt_product_ok(521, 16, 20) and dwt_product_ok(4423, 64, 5) and dwt_product_ok(127, 10, 20)
+doc/number-theoretic-transforms.md:14: isprime(2**64 - 2**32 + 1) and 2**64 - 2**32 == 2**32 * 3 * 5 * 17 * 257 * 65537 and order(7, 2**64 - 2**32 + 1) == 2**64 - 2**32
+doc/number-theoretic-transforms.md:30: order(2, 2**64 - 2**32 + 1) == 192 and (2**64 - 2**32) // 192 == 2**26 * 5 * 17 * 257 * 65537 and (2**64 - 2**32) // 192 % 3 != 0
+doc/number-theoretic-transforms.md:30: isprime(3 * 2**30 + 1) and (3 * 2**30) // order(2, 3 * 2**30 + 1) == 4 and isprime(15 * 2**27 + 1) and (15 * 2**27) // order(2, 15 * 2**27 + 1) == 2 and isprime(7 * 2**26 + 1) and (7 * 2**26) // order(2, 7 * 2**26 + 1) == 4
+doc/number-theoretic-transforms.md:30: 3539599361 == 27005 * 2**17 + 1 and isprime(3539599361) and (3539599361 - 1) // order(2, 3539599361) == 2**16
+doc/number-theoretic-transforms.md:43: (2**31 - 1)**2 - 1 == 2**32 * 3**2 * 7 * 11 * 31 * 151 * 331 and isprime(151) and isprime(331)
+doc/number-theoretic-transforms.md:43: (2**61 - 1)**2 - 1 == 2**62 * 3**2 * 5**2 * 7 * 11 * 13 * 31 * 41 * 61 * 151 * 331 * 1321 and isprime(1321)
+doc/number-theoretic-transforms.md:43: ((2**31 - 1)**2 - 1) % 5 != 0 and ((2**61 - 1)**2 - 1) % (9 * 5 * 7 * 11 * 13) == 0 and ((2**61 - 1)**2 - 1) % 3 == 0 and ((2**61 - 1)**2 - 1) % 15 == 0
+doc/number-theoretic-transforms.md:43: order(2, 2**31 - 1) == 31 and order(2, 2**61 - 1) == 61
+doc/number-theoretic-transforms.md:43: 49 * 2**22 % 61 == 1 and pow(2, 49 * 2**22, 2**61 - 1) == 2 and 8 * 2**22 % 31 == 1 and pow(2, 8 * 2**22, 2**31 - 1) == 2
+doc/number-theoretic-transforms.md:45: gcd((2**31 - 1)**2 - 1, (2**61 - 1)**2 - 1) == 2**32 * 3**2 * 7 * 11 * 31 * 151 * 331
+doc/number-theoretic-transforms.md:45: 2 * 2**22 * 2**(2 * 34) <= (2**31 - 1) * (2**61 - 1) and 2 * 2**22 * 2**69 > (2**31 - 1) * (2**61 - 1) and 34 * 2**22 == 142606336

@@ -72,4 +72,11 @@ probability. Stage 1 is a left-to-right exponentiation, so it can carry a Gerbic
   the P−1 factoring algorithm", *Mathematics of Computation* 54(190), 1990, doi:10.2307/2008514;
   P. L. Montgomery and A. Kruppa, "Improved stage 2 to P±1 factoring algorithms", ANTS VIII,
   LNCS 5011, 2008, doi:10.1007/978-3-540-79456-1_12.
+- Open from `math-notes-and-references` (its P5 ledger, 2026-10-12). Pollard 1974 refused every fetch
+  and has no open copy, so `doc/p-1.md` cites it without a locator, as the origin of the method, and
+  attributes no stage 2 to it. Montgomery and Silverman's abstract says Pollard's paper stated the
+  algorithm in theoretical terms that use FFT techniques. Read Pollard 1974 before attributing a
+  stage 2 to it or building from it, and add a located citation to the note. The faster stage 2s
+  (Montgomery 1987, Montgomery–Silverman 1990, Montgomery–Kruppa 2008) were read only in their
+  abstracts; a stage 2 built from one reads it in full.
 - Found by: factory adoption review, 2026-10-11.

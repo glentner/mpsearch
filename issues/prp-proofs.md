@@ -54,6 +54,17 @@ which compares against known answers.
   on 2026-10-11, beyond a JSON block carrying version 2, power, hashsize 64 and an MD5. Matching it
   would need a specification from GIMPS's maintainers, never their code (§ Invariants 4). Otherwise
   `mps` defines its own format. Shaping decides.
+- Open from `math-notes-and-references` (review cycle 2, 2026-10-12): modulo M_p, -1 has order 2,
+  so the low order assumption, on which the scheme's soundness rests for a general modulus, is false
+  there. A prover who sends -μ in place of the midpoint μ keeps a false claim y = -x^(2^T) false
+  through every halving whose challenge r is even, and makes it true at the first odd r. With the
+  note's recursion computed modulo M_p (an odd half rewritten exactly), a false final residue is
+  accepted with probability 1 - 2^(-h) over h halvings. With Pietrzak's § 3.1 Step 4 read literally
+  (an odd half passed on as (T+1)/2 with y'^2), the squaring removes the sign at the first odd half,
+  and the false claim is accepted with certainty for every p whose p - 1 is not a power of 2: the
+  review cycle 3 enumeration with a 1-bit challenge, p from 7 to 127. The proof must be built in a group where squaring is one-to-one, as
+  Pietrzak's signed quadratic residues are for his modulus, or must fix the sign; shaping decides
+  which, and the cycle proves it sound. Proved in `doc/prp-and-gerbicz.md`, "The sign of μ".
 - References: K. Pietrzak, "Simple verifiable delay functions", ITCS 2019,
   doi:10.4230/LIPIcs.ITCS.2019.60; B. Wesolowski, "Efficient verifiable delay functions",
   *J. Cryptology* 33, 2020, doi:10.1007/s00145-020-09364-x; D. Li and Y. Gallot, "An efficient
