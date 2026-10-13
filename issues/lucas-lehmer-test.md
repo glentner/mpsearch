@@ -25,7 +25,8 @@ A trustworthy LL test needs four things, and the stub has none of them:
   residue shift leaves it unchanged. A random error flips the symbol with probability ½: a simulation
   caught 49% of single-bit errors injected into M1277 runs. Prime95 runs the check every 12 hours, at
   about 30 s each, and keeps two save files that passed it. No citable published statement of the
-  invariant turned up, so the derivation belongs in `doc/`.
+  invariant turned up, so it is derived in `doc/lucas-lehmer.md`, "The Jacobi invariant (the
+  project's own derivation)", landed with `math-notes-and-references` (2026-10-12).
 - **A shift.** Store s·2^k. Each squaring doubles k modulo p, and the "−2" becomes a subtraction of
   2^((2k+1) mod p), a single bit fused into the carry pass. Two runs with different shifts push
   different data through the transform and must agree. GIMPS shifts every test for this reason.

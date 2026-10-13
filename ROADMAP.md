@@ -96,7 +96,12 @@ Since then, on `main`:
   before any test runs (`verdicts-and-exit-statuses`, 2026-10-12);
 - one logger state for the whole program, so the detailed style, the debug level, the hostname and
   `TASK_ID` reach every message from every source file, with `-D` and `-d` taking effect where the
-  parser reads them (`logger-state-per-translation-unit`, 2026-10-12).
+  parser reads them (`logger-state-per-translation-unit`, 2026-10-12);
+- `doc/`, the mathematics written down: an index, one note for each of seven algorithm families
+  (each with its result, its proof, what `mps` uses, its sources and its provenance), and a
+  bibliography whose every entry was checked against the work, with the rule in `AGENTS.md`
+  § Conventions that a cycle implementing or changing an algorithm updates its note in the same
+  commit (`math-notes-and-references`, 2026-10-12).
 
 ---
 
@@ -104,22 +109,11 @@ Since then, on `main`:
 
 The groundwork every later cycle grades itself against:
 
-- the mathematics written down;
 - a reference big integer;
 - the known answers with their sources;
 - a standing check for the cluster test job;
 - a standing check for the notes' numbers and citations;
 - `--` ending the options for every flag, in every position.
-
-## The mathematics, written down: notes and references
-
-The author's 2024 TODO, "a comprehensive listing of notes and references", becomes `doc/`: short
-notes on each algorithm family and a reference list with DOIs. The clean-room rule makes it
-load-bearing. Every algorithm here comes from the mathematics and the papers, and builders start from
-the note, never from another program.
-
-*Horizon: near-term · Depends on: — · Refs: —*
-**Seed:** [`issues/math-notes-and-references.md`](issues/math-notes-and-references.md)
 
 ## A reference big integer to check every engine against
 
@@ -167,8 +161,8 @@ records once it merges. The first algorithm cycle to update a note could break a
 everything the repository runs. A standing check, with the evaluator moved out of the cycle record,
 keeps the notes as checked as the day they landed.
 
-*Horizon: near-term · Depends on: the mathematics, written down · Refs: math-notes-and-references
-P5, 2026-10-12*
+*Horizon: near-term · Depends on: the mathematics, written down (cleared 2026-10-12) · Refs:
+math-notes-and-references P5, 2026-10-12*
 **Seed:** [`issues/doc-claims-standing-check.md`](issues/doc-claims-standing-check.md)
 
 ## `--` ends the options, for every flag in every position
