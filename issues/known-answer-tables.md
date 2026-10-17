@@ -87,4 +87,30 @@ A check in `make check` fails on any row without a source, and on any key with t
 - References: GIMPS, "List of Known Mersenne Prime Numbers", https://www.mersenne.org/primes/; GIMPS
   reports, https://www.mersenne.org/report_LL/, https://www.mersenne.org/report_prp/,
   https://www.mersenne.org/report_factors/; E. Mayer, Mlucas README (self-test residues).
+- The prime list exists already (`reference-big-integer`, its P5 ledger, 2026-10-16). The Mersenne
+  prime exponents up to 10000, 2 to 9941, live in `tests/vectors/mersenne-exponents.txt`, with their
+  source (OEIS A000043, `doc/references.md` entry `OEIS-A000043`) and the command that reproduces the
+  file, which embeds the terms and exits non-zero unless a Lucas–Lehmer sweep in Python over every
+  odd prime up to 10000 finds exactly the odd ones. `make check` reads it (`tests/check_reference.cpp`).
+  This cycle takes the file over as R3's single table. Moving it keeps the old path on the
+  high-blast-radius list (the list only widens) and adds the new one. Rows above 10000 cannot be
+  recomputed by that command, whose sweep stops at 10000: they need a published source per row, and
+  a command that reproduces the file without claiming to recompute them.
+- The generator's sanity check (`reference-big-integer` P5 ledger). `tests/vectors/generate.py`
+  computes the Lucas–Lehmer residues of M1237 and M1277 among its composite set, and its comment
+  points here for their published Res64, `DF5E6622F83F5BE2` and `5613A480590E78BA` above, since
+  `doc/references.md` has no entry for the GIMPS reports. When this cycle lands the published
+  residues with their sources, repoint that comment at the table: this file goes when the cycle
+  lands.
+- The vector files' append order (found in `reference-big-integer` review cycle 3).
+  `tests/vectors/hex.txt` and `tests/vectors/decimal.txt` hold one record per operand of
+  `every_operand()` in `tests/vectors/generate.py`, in its order: the edges and M_p of the folding
+  exponents, then every operand of the `arith`, `folding`, `products` and `modular` families, then
+  M_p of the `COMPOSITE` exponents. A later cycle that appends a record with a **new** operand to
+  any of those families (a `POWERS` or other modular record among them) puts its new `hex` and
+  `dec` records before the `COMPOSITE` M_p records, in the middle of both files, against
+  § Invariants 3's append-only rule. A new operand must land after every existing one: append new
+  operands at the very end of `every_operand()`'s list, or reorder its families only in a way that
+  leaves every existing record where it is. `reference-big-integer` avoided it by giving its four
+  appended `powmod` records existing operands only, so both files stayed unchanged.
 - Found by: factory adoption review, 2026-10-11.

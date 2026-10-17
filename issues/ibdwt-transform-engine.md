@@ -94,4 +94,10 @@ contract and are tested against the same answers.
   to record in the note. Sorensen et al. 1987 was read only in its abstract (no open copy) and is cited
   without a locator: if the engine builds its real-input transform from it, read it first and add a
   located citation.
+- The balanced digit form, deferred from `reference-big-integer` (its GOAL, Non-goals; its P5
+  ledger, 2026-10-16). The balanced variable-base digit form the transform works in (N words of
+  ⌈p/N⌉ or ⌊p/N⌋ bits, as Problem describes, each digit in a balanced range), and its round-trip with
+  `BigInt` in both directions, are this cycle's. That cycle built `BigInt` as 64-bit limbs,
+  little-endian, with no high zero limb (`src/mp.hpp`), so the conversions build on
+  `BigInt::from_limbs` and `limbs()`, and R1's comparison against the reference goes through them.
 - Found by: factory adoption review, 2026-10-11.

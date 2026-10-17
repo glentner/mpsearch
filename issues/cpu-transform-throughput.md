@@ -75,3 +75,8 @@ portable engine's residues (§ Invariants 2), and the round-off monitor stays on
 - The logger's thread safety is this seed's to decide: its one shared state was built for a
   single-threaded `mps` (`spec/logger-state-per-translation-unit/GOAL.md`, Non-goals).
 - Found by: factory adoption review, 2026-10-11.
+- Retuning `KARATSUBA_THRESHOLD` changes `tests/vectors/products.txt`, and through its operands
+  `hex.txt` and `decimal.txt`: `tests/vectors/generate.py` reads the live constant to size the
+  records. A retune breaks R8's byte-for-byte reproduction, which `make check` can't see, and
+  regenerating rewrites expected values against § Invariants 3. Decouple the vector sizes from the
+  live constant before retuning (deferred from `reference-big-integer`, review cycle 1, O1).

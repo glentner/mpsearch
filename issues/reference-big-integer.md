@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:reference-big-integer
 kind: feature
 appetite: big
 ---

@@ -35,7 +35,12 @@ clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefil
 - `src/ansi.cpp`, `src/ansi.hpp`: terminal colour, honouring `NO_COLOR` and `FORCE_COLOR`.
 - `src/exc.hpp`: `mps_error`, the base of the project's exceptions.
 - `src/io.cpp`, `src/io.hpp`: the `.mps` checkpoint file (format sketch only).
-- `src/mp.cpp`, `src/mp.hpp`: `BigInt`, the multiple-precision type (a stub).
+- `src/mp.cpp`, `src/mp.hpp`: `BigInt`, the reference multiple-precision integer every engine is
+  checked against, and its operations (`mp_error` for their errors); `hex64`, the Res64 text the
+  result printer uses.
+- `src/reference.cpp`, `src/reference.hpp`: the reference Lucas–Lehmer and base-3 PRP tests on
+  `BigInt` (`reference::lucas_lehmer`, `reference::prp3`), which return residues and decide nothing;
+  `make check` runs them, and nothing in `bin/mps` calls them, `-t` included.
 - `src/math.cpp`, `src/math.hpp`: the prime sieve; the exponent check (`check_exponent`), which
   reports a factor only through its re-check (`composite_by_exponent`); the three tests (stubs);
   and `run_in_order`, which runs them and stops at the first decisive result.
@@ -46,9 +51,13 @@ clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefil
 - `tests/`: the checks. `check.hpp` and `check.cpp` are the runner (a check is a `static void`
   function listed in its file's `check_by_name` table), `check_<module>.cpp` hold one module's
   checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make check` runs
-  both. `log_peer.hpp` and `log_peer.cpp` are a second unit the logger's checks log from, so a
-  state that isn't shared shows; they hold the checks' guards (`SavedLogger` restores the logger's
-  state, `CaptureCerr` captures `std::cerr`) and, run last, the check that the state is restored.
+  both. `vector_reader.hpp` and `vector_reader.cpp` read the vector families in `vectors/`, which
+  `vectors/generate.py` wrote once with Python's integers, each file carrying the command that
+  reproduces it; they hold SHA-256 and SplitMix64 too. `vectors/mersenne-exponents.txt` is the
+  Mersenne prime exponents with their published source. `log_peer.hpp` and `log_peer.cpp` are a
+  second unit the logger's checks log from, so a state that isn't shared shows; they hold the
+  checks' guards (`SavedLogger` restores the logger's state, `CaptureCerr` captures `std::cerr`)
+  and, run last, the check that the state is restored.
 - `ci/test-commit.sh`: the cluster test job. It builds and checks one commit on one target in a
   fresh run directory in scratch and leaves the logs and `result.json` there; its header is the
   manual. `ci/targets/`: one `key=value` file per target, naming its partition, resources, modules
@@ -144,6 +153,9 @@ A CONFIRMED finding in any of these files needs a human decision before the cycl
 - `src/io.hpp`, `src/io.cpp`
 - `src/result.hpp`, `src/result.cpp`
 - `src/main.cpp`
+- `tests/vectors/` (the generator and every vector file: expected values)
+- `src/reference.hpp`, `src/reference.cpp`
+- `tests/vectors/mersenne-exponents.txt` (the Mersenne prime exponents)
 
 A cycle that adds an arithmetic engine, a test driver that prints a verdict, a checkpoint or result format of `mps`, or a table of known answers adds its paths here in the same commit.
 

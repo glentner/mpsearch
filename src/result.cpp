@@ -20,6 +20,7 @@
 // Internal libs
 #include "main.hpp"
 #include "log.hpp"
+#include "mp.hpp"
 #include "result.hpp"
 
 
@@ -93,20 +94,6 @@ label_by_outcome {
 	{OUTCOME_COMPOSITE,       "composite"},
 	{OUTCOME_NO_VERDICT,      "no-verdict"},
 };
-
-
-static std::string hex64(std::uint64_t value) {
-	//
-	// A 64-bit residue as 16 uppercase hexadecimal digits, zero-padded
-
-	static const char DIGITS[] = "0123456789ABCDEF";
-	std::string text(16, '0');
-	for (int i = 15; i >= 0; i--) {
-		text[i] = DIGITS[value & 0xf];
-		value >>= 4;
-	}
-	return text;
-}
 
 
 static std::string line_text(const std::string& text) {

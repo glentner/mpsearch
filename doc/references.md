@@ -92,6 +92,24 @@ Every work the notes in this folder or the comments in `src/` cite, one entry pe
 - **DOI:** [10.1016/j.jsc.2013.09.002](https://doi.org/10.1016/j.jsc.2013.09.002)
 - **Verified:** 2026-10-12 against the DOI's metadata at doi.org, which gives a journal article by David Harvey with this title in the Journal of Symbolic Computation, volume 60, pages 113–119, printed in January 2014, and against the author's version, arXiv:1205.2926v2, https://arxiv.org/abs/1205.2926, whose page names this DOI and which was read in full. The section, algorithm and theorem numbers the notes cite are that version's: section 3 holds Algorithm 3 and Theorem 2, and section 4 holds Algorithm 4 and Theorem 3.
 
+### KaratsubaOfman1962
+
+- **Authors:** A. Karatsuba and Yu. Ofman
+- **Title:** Multiplication of multidigit numbers on automata
+- **Venue:** Doklady Akademii Nauk SSSR 145(2), 293–294, in Russian; translated in Soviet Physics Doklady 7 (1963), 595–596
+- **Year:** 1962
+- **URL:** <https://mathnet.ru/eng/dan26729>
+- **Verified:** 2026-10-16 against the bibliography of the authors' version of BrentZimmermannMCA2010, version 0.5.1, arXiv:1004.4710, read for this entry: its entry 136 gives Anatolii A. Karatsuba and Yuri Ofman, this title (the Russian original), Doklady Akad. Nauk SSSR volume 145, issue 2, pages 293–294, 1962, and the translation in Soviet Physics-Doklady 7 (1963), 595–596; its section 1.3.2 presents the method and names the additive variant. The journal's record at the URL above, on Math-Net.Ru, refused connections from this checker on 2026-10-16, as on three tries on 2026-10-12, and the paper itself was not read, so the notes cite it without a locator, for the method its title and that section describe. A web search index's copy of the record gives the same volume, issue and pages and the Russian title.
+
+### Knuth1997
+
+- **Authors:** D. E. Knuth
+- **Title:** The Art of Computer Programming, Volume 2: Seminumerical Algorithms
+- **Venue:** Addison-Wesley, Reading, Massachusetts, third edition
+- **Year:** 1997
+- **URL:** <https://www-cs-faculty.stanford.edu/~knuth/taocp.html>
+- **Verified:** 2026-10-16 against the author's page for the series at the URL above, fetched and read: it lists Volume 2, Seminumerical Algorithms, Third Edition (Reading, Massachusetts: Addison-Wesley, 1997), xiv+762pp., ISBN 0-201-89684-2, by Donald E. Knuth. The book itself was not read. Its section 4.3.1, The Classical Algorithms of multiple-precision arithmetic, is cited as the authors' version of BrentZimmermannMCA2010, version 0.5.1, cites it, for the theorem behind its Theorem 1.4.1 on long division; no algorithm is cited from it by its letter.
+
 ### Lehmer1930
 
 - **Authors:** D. H. Lehmer

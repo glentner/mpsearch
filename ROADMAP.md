@@ -113,7 +113,8 @@ The groundwork every later cycle grades itself against:
 - the known answers with their sources;
 - a standing check for the cluster test job;
 - a standing check for the notes' numbers and citations;
-- `--` ending the options for every flag, in every position.
+- `--` ending the options for every flag, in every position;
+- a compiler change that rebuilds every object.
 
 ## A reference big integer to check every engine against
 
@@ -176,6 +177,16 @@ new option is covered when it is added.
 2026-10-12*
 **Seed:** [`issues/end-of-options-checks.md`](issues/end-of-options-checks.md)
 
+## A compiler change rebuilds every object
+
+The objects in `lib/` don't depend on the compiler, so a plain `make` after building with the other
+compiler links stale objects and fails, and the profile's `verify` says to run `make -B check` after
+changing `CXX`. Keying the objects on the compiler and its flags makes the switch free and retires
+the workaround.
+
+*Horizon: near-term · Depends on: — · Refs: reference-big-integer P5, 2026-10-16*
+**Seed:** [`issues/objects-follow-the-compiler.md`](issues/objects-follow-the-compiler.md)
+
 ---
 
 # Part II — Correct on the CPU
@@ -191,9 +202,11 @@ The core of everything after it: Crandall and Fagin's irrational-base discrete w
 Reduction modulo 2^p − 1 comes free, with roughly 17–20 bits per word, so the largest known exponent
 fits about 7.5 million words. This entry defines the engine contract every backend implements, and
 builds the first, portable implementation with a round-off monitor and a measured table of lengths
-and maximum exponents.
+and maximum exponents. It also defines the balanced digit form the transform works in, and its
+round-trip with the reference big integer, deferred here from that cycle.
 
-*Horizon: near-term · Depends on: the reference big integer; the known answers · Refs: —*
+*Horizon: near-term · Depends on: the reference big integer; the known answers · Refs:
+reference-big-integer P5, 2026-10-16*
 **Seed:** [`issues/ibdwt-transform-engine.md`](issues/ibdwt-transform-engine.md)
 
 ## Lucas–Lehmer with error checks, shifts and checkpoints

@@ -69,3 +69,20 @@ outside a cycle at all.
 - `claims.py` bounds every function's arguments, so the checks of all seven notes, with the
   structure and citation rules, ran in about 15 s on the author's Mac.
 - Found by: `math-notes-and-references` P5 (the deferral ledger).
+- The rule covers small numbers too. `reference-big-integer`'s review (cycle 1, F1) found worked values
+  below 100 stated outside markers in `doc/prp-and-gerbicz.md` and `doc/reference-arithmetic.md`,
+  because that cycle's docs gate enforced markers only on numbers of 100 or more. That review's
+  cycle 3 ended in Geoffrey's ruling on what "concrete number" covers, which `doc/README.md` now
+  states: definitions, format constants and theorem values (the general results a proof
+  establishes) take no markers; a number stated about a specific instance, or a restatement of a
+  number the note marks elsewhere, does. The standing check enforces the rule as amended.
+- Shaping also settles a convention `doc/README.md` leaves open: whether and how a note may state a
+  measured value, such as a threshold or a time measured on one machine. No check computes it and no
+  work publishes it, so neither marker can carry it; until the convention exists, a note states no
+  measured value and points to the constant in the code that holds it.
+- The check should also verify that every locator a note cites (a section, theorem, exercise or
+  algorithm) is covered by that entry's verification record in `doc/references.md`.
+  `reference-big-integer`'s review (cycle 4) found that `BrentZimmermannMCA2010`'s record lists only
+  §§ 2.4.1, 2.4.2 and 2.9 as read, while the notes cite §§ 1.3–1.7, 2.4.4 and 2.6.1 and Exercises
+  1.19 and 1.20. The same review found that MCA's bibliography dates Knuth's third edition 1998,
+  where `Knuth1997` gives 1997 from Knuth's page.

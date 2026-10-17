@@ -14,7 +14,7 @@ BOUNDS   := -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MOD
 
 EXE      := bin/mps
 CHECK    := bin/check
-MODULES  := ansi cli io mp math result
+MODULES  := ansi cli io mp math reference result
 OBJECTS  := $(addprefix lib/,$(addsuffix .o,$(MODULES)))
 CHECKED  := $(addprefix lib/check/,$(addsuffix .o,$(MODULES)))
 CHECKS   := $(patsubst tests/%.cpp,lib/check/%.o,$(sort $(wildcard tests/*.cpp)))
