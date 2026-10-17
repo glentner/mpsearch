@@ -114,23 +114,18 @@ Since then, on `main`:
   and published and computed residues after a stated number of iterations; a command that
   reproduces the tables offline; one loader, `src/known.*`, through which `make check` refuses a
   row without a source and a key with two answers; and the row format for burn-in fingerprints,
-  which waits for two engines (`known-answer-tables`, 2026-10-17).
+  which waits for two engines (`known-answer-tables`, 2026-10-17);
+- a build that follows its compiler and flags: `lib/settings` records the settings that built
+  `lib/` and `bin/`, and a run with other settings rebuilds every object it links, so switching
+  between clang and GCC needs neither `make -B` nor `make clean`; and `.gitignore` covers
+  `__pycache__/` (`objects-follow-the-compiler`, 2026-10-17).
 
 ---
 
 # Part I — Foundation
 
-One fix to the build before the engine work begins: a compiler change that rebuilds every object.
-
-## A compiler change rebuilds every object
-
-The objects in `lib/` don't depend on the compiler, so a plain `make` after building with the other
-compiler links stale objects and fails, and the profile's `verify` says to run `make -B check` after
-changing `CXX`. Keying the objects on the compiler and its flags makes the switch free and retires
-the workaround.
-
-*Horizon: near-term · Depends on: — · Refs: reference-big-integer P5, 2026-10-16*
-**Seed:** [`issues/objects-follow-the-compiler.md`](issues/objects-follow-the-compiler.md)
+Every entry in this Part has shipped and is listed under *Delivered to date*; its standing checks
+moved to the section after Part III. The heading stays so that the later Parts keep their numbers.
 
 ---
 
