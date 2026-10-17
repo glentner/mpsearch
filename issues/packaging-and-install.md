@@ -47,4 +47,23 @@ matters.
   integration to sites.
 - The release recipe in `AGENTS.md` § Factory gets its `gate` updated in the same commit
   (§ Conventions).
+- **Keep the settings record** (deferred from `objects-follow-the-compiler`, 2026-10-17). The
+  `Makefile` records the compile settings that built `lib/` and `bin/` in `lib/settings` (`CXX`,
+  `CPPFLAGS`, `CXXFLAGS`, `IEEE`, `BOUNDS`), and while make reads the file, before it examines any
+  target, it compares this run's settings with the record. On a difference every object (in its
+  pattern rule), both binaries and the record take the phony `$(CHANGED)`, none of them phony itself
+  so each keeps `.DELETE_ON_ERROR` and make's interrupt cleanup, and the record's recipe, which
+  every object waits for, removes `BUILT` before the first compile; nothing is removed while make
+  reads the file, so a run that builds nothing (`make -n`, `make -q`, a goal with no rule) changes
+  nothing. `BUILT` is the one list of everything the build writes, and it is what `make clean`
+  removes. An install target and any backend keep all three: `lib/settings`, the comparison before
+  any target with the removal only in the record's recipe, and `BUILT` as what `make clean` removes;
+  they add their own outputs (a backend's objects or kernels) to `BUILT`, give each new output rule
+  `$(CHANGED)` and never make an output phony (when its recipe names its prerequisites, it filters
+  `FORCE` out, as `bin/mps`'s link does), and add any variable that picks a backend's compiler or
+  flags to the recorded settings, so a switch can't link another configuration's objects. An install
+  target reads the built binary and writes nothing under the source tree outside `lib/` and `bin/`.
+  If `--version`'s build identity probes the compiler's version, that version can join the record,
+  which would also catch a compiler upgraded in place under the same name (a non-goal there, where
+  `make -B` stays the answer).
 - Found by: factory adoption review, 2026-10-11.

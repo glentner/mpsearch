@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:objects-follow-the-compiler
 kind: fix
 appetite: small
 ---

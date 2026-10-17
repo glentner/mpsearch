@@ -1,0 +1,12 @@
+mkdir -p lib
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/main.cpp -o lib/main.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/ansi.cpp -o lib/ansi.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/cli.cpp -o lib/cli.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/io.cpp -o lib/io.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/known.cpp -o lib/known.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/mp.cpp -o lib/mp.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/math.cpp -o lib/math.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/reference.cpp -o lib/reference.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off -c src/result.cpp -o lib/result.o
+mkdir -p bin
+g++ -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off lib/main.o lib/ansi.o lib/cli.o lib/io.o lib/known.o lib/mp.o lib/math.o lib/reference.o lib/result.o -o bin/mps

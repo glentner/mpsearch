@@ -1,0 +1,33 @@
+# Written only by $KB/bin/factory/metrics.py. Observation, never state: nothing routes on it.
+slug: objects-follow-the-compiler
+escaped_from: build-and-test-foundation
+planned: {date: '2026-10-17', phases: 2}
+landed: {date: '2026-10-17', phases: 2, failed_verifies: 0}
+open: null
+runs:
+- {step: feature, start: '2026-10-17T08:27:54-04:00', stop: '2026-10-17T08:31:17-04:00', seconds: 203, end: gate, agent: claude-opus-5-5}
+- {step: plan, start: '2026-10-17T08:31:17-04:00', stop: '2026-10-17T10:19:53-04:00', seconds: 6516, end: gate, agent: claude-opus-5-5}
+- {step: 'build:P1', start: '2026-10-17T10:20:02-04:00', stop: '2026-10-17T10:43:48-04:00', seconds: 1426, end: gate, agent: claude-opus-5-5}
+- {step: 'build:P2', start: '2026-10-17T10:55:32-04:00', stop: '2026-10-17T11:43:13-04:00', seconds: 2861, end: gate, agent: claude-opus-5-5}
+- {step: review, start: '2026-10-17T11:54:44-04:00', stop: '2026-10-17T12:27:36-04:00', seconds: 1972, end: gate, agent: claude-opus-5-5}
+- {step: 'build:P2', start: '2026-10-17T12:27:54-04:00', stop: '2026-10-17T13:17:20-04:00', seconds: 2966, end: gate, agent: claude-opus-5-5}
+- {step: review, start: '2026-10-17T13:29:17-04:00', stop: '2026-10-17T14:29:36-04:00', seconds: 3619, end: gate, agent: claude-opus-5-5}
+- {step: 'build:P2', start: '2026-10-17T14:29:37-04:00', stop: '2026-10-17T15:16:42-04:00', seconds: 2825, end: gate, agent: claude-opus-5-5}
+- {step: review, start: '2026-10-17T15:30:29-04:00', stop: '2026-10-17T16:16:53-04:00', seconds: 2784, end: gate, agent: claude-opus-5-5}
+- {step: publish, start: '2026-10-17T16:17:02-04:00', stop: '2026-10-17T16:17:02-04:00', seconds: 0, end: done, agent: claude-opus-5-5}
+reviews:
+- cycle: 1
+  date: '2026-10-17'
+  verdict: changes-requested
+  confirmed: {critical: 0, high: 0, medium: 1, low: 0}
+  plausible: 0
+- cycle: 2
+  date: '2026-10-17'
+  verdict: changes-requested
+  confirmed: {critical: 0, high: 0, medium: 0, low: 1}
+  plausible: 0
+- cycle: 3
+  date: '2026-10-17'
+  verdict: approved
+  confirmed: {critical: 0, high: 0, medium: 0, low: 0}
+  plausible: 0
