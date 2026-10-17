@@ -1,0 +1,29 @@
+# mps known 1
+# command: python3 tests/known/generate.py partial-residues > tests/known/partial-residues.txt
+# ll <p> <start> <k> <Res64>: the low 64 bits of s_k mod M_p, s_0 = start, s_(i+1) = s_i^2 - 2. prp <p> <start> <k> <Res64>: of start^(2^k) mod M_p.
+# Unshifted: op, p, start and k determine the value, so one row answers a run at any transform length and shift. The final Lucas-Lehmer residue, ll <p> 4 <p-2>, belongs in final-residues.txt and is refused here.
+# This command recomputes every row under a published or computed source.
+# A fingerprint is a row under a '# from runs: <text>' line: the key and Res64 as above, then run=<engine>:<length>:<shift> for each agreeing run, two or more of them from two or more engines. It supersedes no row, and one that disagrees with a row of its key is refused.
+# from published MlucasREADME retrieved 2026-10-17: the README's basic build self-test, the Res64 after 100 iterations of M3888509, which this command recomputes as s_100 from s_0 = 4
+ll 3888509 4 100 71E61322CCFB396C
+# from computed: s_k and start^(2^k) modulo M_p by folding, with Python's integers, in this command
+ll 1277 4 100 EE3E8EF89BAFBDCD
+prp 1277 3 100 C6D7DFE3FCAEDC31
+ll 1277 4 1000 3D43F5D86DECC8F5
+prp 1277 3 1000 36F834F2D5842CF5
+ll 10303 4 100 443391E534C210F2
+prp 10303 3 100 088D6D3D863CB0C7
+ll 10303 4 1000 7841BFAB20749B83
+prp 10303 3 1000 3C30472597BE7B6C
+ll 10303 4 10000 FB3AC33F5A26CC71
+prp 10303 3 10000 65CE30B46EF0AA1B
+ll 100069 4 100 03DFC5B4407ED178
+prp 100069 3 100 05DC064E3050BCD0
+ll 100069 4 1000 7AA9194B9ED5BBBC
+prp 100069 3 1000 D87224FAC22ABDEF
+ll 1000193 4 100 F1234B20ACFD642F
+prp 1000193 3 100 44DEBFC2AA1782BA
+prp 3888509 3 100 79FA4A9B6D077D31
+ll 10000019 4 32 3DC2608FC9C15BE6
+prp 10000019 3 32 B6DF55F5DE80E01A
+# end 20 rows

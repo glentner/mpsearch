@@ -1,6 +1,6 @@
 # References
 
-Every work the notes in this folder or the comments in `src/` cite, one entry per work, under the key the citations link to. Each entry was checked against the work itself: its DOI resolved at doi.org and its metadata compared with the entry's authors, title, venue and year, or its page fetched and read. The Verified line says what it was checked against, and when; where the DOI's metadata lacks a field, it names the second source that shows it.
+Every work the notes in this folder, the comments in `src/` or the tables in `tests/known/` cite, one entry per work, under the key the citations link to. Each entry was checked against the work itself: its DOI resolved at doi.org and its metadata compared with the entry's authors, title, venue and year, or its page fetched and read. The Verified line says what it was checked against, and when; where the DOI's metadata lacks a field, it names the second source that shows it.
 
 ### Barrett1987
 
@@ -83,6 +83,33 @@ Every work the notes in this folder or the comments in `src/` cite, one entry pe
 - **URL:** <https://www.mersenne.org/various/math.php>
 - **Verified:** 2026-10-12 against the page itself, fetched and read: its title is "GIMPS - The Math - PrimeNet", it says it was last updated on 16 October 2024, and it carries the copyright of Mersenne Research, Inc. and no personal byline. It has sections on PRP testing, Lucas–Lehmer testing and double-checking. The page numbers neither sections nor paragraphs, so the notes cite it as documentation without a locator, except where the PRP note locates a statement by the heading of its section: Section PRP is the one headed "PRP (Probable Prime) Testing", and Section Double-Checking the one headed "Double-Checking"; both were reread on 2026-10-12.
 
+### GIMPSPrimes
+
+- **Authors:** Mersenne Research, Inc.
+- **Title:** List of Known Mersenne Prime Numbers
+- **Venue:** Great Internet Mersenne Prime Search (GIMPS), PrimeNet
+- **Year:** 2026
+- **URL:** <https://www.mersenne.org/primes/>
+- **Verified:** 2026-10-17 against the page itself, fetched and read as retrieved at 04:30 UTC that day: its title is "List of known Mersenne prime numbers - PrimeNet", its heading "List of Known Mersenne Prime Numbers", and it carries the copyright of Mersenne Research, Inc. (1996–2026) and no personal byline. Its table gives the 52 known Mersenne primes, ranked, each with its exponent, from 2 to 136,279,841, and stars the 52nd: "Provisional ranking, not all candidates between M82,589,933 and M136,279,841 have been eliminated". The page is revised as primes are found, so its year is that of the version read, and a table citing it gives the date it was retrieved.
+
+### GIMPSReportLL
+
+- **Authors:** Mersenne Research, Inc.
+- **Title:** Lucas-Lehmer test results
+- **Venue:** Great Internet Mersenne Prime Search (GIMPS), PrimeNet
+- **Year:** 2026
+- **URL:** <https://www.mersenne.org/report_LL/>
+- **Verified:** 2026-10-17 against the report itself, fetched and read as retrieved between 04:27 and 04:47 UTC that day: its form page is titled "Lucas-Lehmer test results - PrimeNet", headed "PrimeNet Lucas-Lehmer test results of Mersenne Numbers", and carries the copyright of Mersenne Research, Inc. (1996–2026) and no personal byline. Its plaintext output (`?exp_lo=<p>&exp_hi=<p>&txt=2`), read for each exponent the tables cite, lists the results in sections such as "Verified LL test results", "Bad LL test results" and "Later Factored LL test results", under the columns Exponent, User name, Computer name, Residue, Shift count, Error code, LL, PRP, Software and Date found. The report changes as results arrive, so its year is that of the version read, and a table citing it gives the date it was retrieved.
+
+### GIMPSReportPRP
+
+- **Authors:** Mersenne Research, Inc.
+- **Title:** PRP test results
+- **Venue:** Great Internet Mersenne Prime Search (GIMPS), PrimeNet
+- **Year:** 2026
+- **URL:** <https://www.mersenne.org/report_PRP/>
+- **Verified:** 2026-10-17 against the report itself, fetched and read as retrieved between 04:28 and 04:50 UTC that day: its form page is titled "PRP test results - PrimeNet", headed "PrimeNet PRP test results of Mersenne Numbers", and carries the copyright of Mersenne Research, Inc. (1996–2026) and no personal byline. Its plaintext output (`?exp_lo=<p>&exp_hi=<p>&txt=2`), read for each exponent the tables cite, lists the results in sections such as "Verified PRP test results" and "Factored PRP test results", under the columns Exponent, User name, Computer name, Residue, Shift count, ResidueType, ResidueBase, Error code, Software and Date found. The report changes as results arrive, so its year is that of the version read, and a table citing it gives the date it was retrieved.
+
 ### Harvey2014
 
 - **Authors:** D. Harvey
@@ -145,6 +172,15 @@ Every work the notes in this folder or the comments in `src/` cite, one entry pe
 - **Year:** 1981
 - **DOI:** [10.1109/TASSP.1981.1163501](https://doi.org/10.1109/TASSP.1981.1163501)
 - **Verified:** 2026-10-12 against the DOI's metadata at doi.org, which gives a journal article by R. Miller, I. Reed and T. Truong with this title in IEEE Transactions on Acoustics, Speech, and Signal Processing, volume 29, issue 1, pages 119–120, February 1981, and against its abstract, read in OpenAlex's record of the DOI, https://api.openalex.org/works/doi:10.1109/TASSP.1981.1163501, which names the same authors and year. The publisher's page served this checker no content.
+
+### MlucasREADME
+
+- **Authors:** E. W. Mayer
+- **Title:** Mlucas README
+- **Venue:** web page at mersenneforum.org
+- **Year:** 2022
+- **URL:** <https://www.mersenneforum.org/mayer/README.html>
+- **Verified:** 2026-10-17 against the page itself, fetched at 04:31 UTC that day and read in the copy saved then: its title is "Mlucas README", its footer reads "README.html − Last Revised: 12 Jul 2022", and its copyright notice reads "Copyright (C) 2021 Ernst W. Mayer", under the GNU Free Documentation License (its copyright meta tag gives 2022). A note at its top says that Ernst Mayer died on September 10, 2023, and that the page is available for posterity and no longer up to date. The tables cite only its section headed "BASIC BUILD SELF-TEST; The -nthread and -cpu flags", whose sample output for `-fft 192 -iters 100` reads "100 iterations of M3888509 with FFT length 196608 = 192 K, final residue shift count = 744463" and "Res64: 71E61322CCFB396C"; the section does not name the test, and the table's command recomputes the value as the Lucas–Lehmer s_100 from s_0 = 4. The tables take that one number and none of the page's text. The program's source was not opened (`AGENTS.md`, § Invariants 4).
 
 ### Moller2008
 

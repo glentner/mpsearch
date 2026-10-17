@@ -3,11 +3,12 @@
 //
 // Checks: reference tests
 //
-// The reference Lucas-Lehmer and base-3 PRP tests against the prime list
-// (tests/vectors/mersenne-exponents.txt, the Mersenne prime exponents with their published source)
-// and against the full residues Python's integers computed for prime exponents with M_p composite
-// (tests/vectors/reference.txt). Each check runs every record of its ops, prints at most three
-// that disagree, by bit length and low limb, and then expects that all of them agree.
+// The reference Lucas-Lehmer and base-3 PRP tests against the Mersenne prime exponents from 3 to
+// 10000 (tests/known/mersenne-exponents.txt, read through src/known.*; above 10000 the tests are
+// too slow for make check) and against the full residues Python's integers computed for prime
+// exponents with M_p composite (tests/vectors/reference.txt). Each check runs every exponent or
+// record it covers, prints at most three that disagree, by bit length and low limb, and then
+// expects that all of them agree.
 //
 
 
@@ -16,12 +17,14 @@
 #include <cstdint>
 #include <exception>
 #include <functional>
+#include <iostream>
 #include <source_location>
 #include <string>
 #include <vector>
 
 // Internal libs
 #include "check.hpp"
+#include "known.hpp"
 #include "mp.hpp"
 #include "reference.hpp"
 #include "vector_reader.hpp"
@@ -47,72 +50,60 @@ static void expect_mp_error(const std::function<void()>& call, const std::string
 }
 
 
-static std::vector<const vectors::Record*> listed_primes() {
-	//
-	// The prime list's records from p = 3 on, the theorems' domain
+static const std::string EXPONENTS = "tests/known/mersenne-exponents.txt";
 
-	std::vector<const vectors::Record*> listed;
-	for (const vectors::Record* record: vectors::records("mersenne-exponents", "mersenne"))
-		if (vectors::number(record->fields[1]) >= 3)
-			listed.push_back(record);
-	check::require(not listed.empty(), "the prime list has an exponent from 3 on");
+// The largest exponent the reference tests run on in make check; above it they are too slow
+static const std::uint64_t REFERENCE_UP_TO = 10'000;
+
+
+static std::vector<known::Row> listed_primes() {
+	//
+	// The exponent table's rows from p = 3, the theorems' domain, up to the bound
+
+	std::vector<known::Row> listed;
+	try {
+		for (const known::Row& row: known::load(EXPONENTS).rows)
+			if (row.exponent >= 3 and row.exponent <= REFERENCE_UP_TO)
+				listed.push_back(row);
+	} catch (known_error const& error) {
+		check::require(false, std::string("the exponent table to load (") + error.what() + ")");
+	}
+	check::require(not listed.empty(), "the exponent table to list an exponent from 3 to the bound");
 	return listed;
 }
 
 
-static void the_prime_list_carries_its_source() {
+static void expect_listed_residues(const std::function<BigInt(long unsigned)>& test, const BigInt& prime_residue,
+                                   const std::string& what, std::source_location location = std::source_location::current()) {
 	//
-	// The prime list's command and its published source, OEIS-A000043, and its exponents ascending
-	// from 2
+	// Each listed exponent's residue is the residue of a prime, the first three that are not
+	// printed by their row
 
-	const std::string stem = "mersenne-exponents";
-	const vectors::Family& family = vectors::load(stem);
-	check::expect_equal(family.command,
-	                    "# command: python3 tests/vectors/generate.py " + stem + " > tests/vectors/" + stem + ".txt",
-	                    "the prime list to carry its command");
-	bool named = false;
-	for (const std::string& source: family.sources)
-		if (source.find("OEIS-A000043") != std::string::npos)
-			named = true;
-	check::expect(named, "a source line of the prime list to name OEIS-A000043");
-
-	std::vector<const vectors::Record*> records = vectors::records(stem, "mersenne");
-	check::expect_equal(vectors::number(records.front()->fields[1]), std::uint64_t(2), "the prime list to start at 2");
-	bool ascending = true;
-	for (std::size_t i = 1; i < records.size(); i++)
-		if (vectors::number(records[i]->fields[1]) <= vectors::number(records[i - 1]->fields[1]))
-			ascending = false;
-	check::expect(ascending, "the prime list to ascend");
+	std::vector<known::Row> listed = listed_primes();
+	std::size_t wrong = 0;
+	for (const known::Row& row: listed) {
+		BigInt residue = test(row.exponent);
+		if (not (residue == prime_residue) and ++wrong <= 3)
+			std::cout << "   " << EXPONENTS << ":" << row.line << ": got " << vectors::describe(residue) << ", expected "
+			          << vectors::describe(prime_residue) << std::endl;
+	}
+	check::expect(wrong == 0, "all " + std::to_string(listed.size()) + " " + what + " to be a prime's", location);
 }
 
 
 static void lucas_lehmer_ends_in_zero_for_every_listed_prime() {
 	//
-	// s_(p-2) mod M_p = 0 for every listed exponent from 3 on
+	// s_(p-2) mod M_p = 0 for every listed exponent from 3 to the bound
 
-	std::vector<const vectors::Record*> listed = listed_primes();
-	vectors::Mismatches mismatches("Lucas-Lehmer residues of listed primes");
-	for (const vectors::Record* record: listed) {
-		BigInt s = reference::lucas_lehmer(vectors::number(record->fields[1]));
-		if (not s.is_zero())
-			mismatches.add(*record, "got " + vectors::describe(s) + ", expected 0");
-	}
-	mismatches.expect_none(listed.size());
+	expect_listed_residues(reference::lucas_lehmer, BigInt(), "Lucas-Lehmer residues of listed primes");
 }
 
 
 static void prp_ends_in_one_for_every_listed_prime() {
 	//
-	// The type-1 residue is 1 for every listed exponent from 3 on
+	// The type-1 residue is 1 for every listed exponent from 3 to the bound
 
-	std::vector<const vectors::Record*> listed = listed_primes();
-	vectors::Mismatches mismatches("PRP residues of listed primes");
-	for (const vectors::Record* record: listed) {
-		BigInt x = reference::prp3(vectors::number(record->fields[1]));
-		if (not (x == BigInt(1)))
-			mismatches.add(*record, "got " + vectors::describe(x) + ", expected 1");
-	}
-	mismatches.expect_none(listed.size());
+	expect_listed_residues(reference::prp3, BigInt(1), "PRP residues of listed primes");
 }
 
 
@@ -159,7 +150,6 @@ static void the_reference_tests_refuse_exponents_outside_their_theorems() {
 
 static check::Suite
 check_by_name {
-	{"the prime list carries its source",                            the_prime_list_carries_its_source},
 	{"Lucas-Lehmer ends in zero for every listed prime",             lucas_lehmer_ends_in_zero_for_every_listed_prime},
 	{"Lucas-Lehmer residues match the vectors",                      lucas_lehmer_residues_match_the_vectors},
 	{"PRP ends in one for every listed prime",                       prp_ends_in_one_for_every_listed_prime},

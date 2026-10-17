@@ -11,7 +11,7 @@ One note per algorithm family. Each states its result with every hypothesis, pro
 - [Weighted transforms](weighted-transforms.md): squaring modulo $M_p$ by the irrational-base discrete weighted transform, a cyclic convolution of length $N$ with no zero-padding, its balanced digits and weights, proved in full; Percival's proven error bounds against the conjectured and heuristic ones used to size transforms in practice.
 - [Number-theoretic transforms](number-theoretic-transforms.md): exact convolution in a finite field, which fields hold the roots of unity and the $N$-th root of 2 that the weights need, the fields over the Mersenne primes $M_{31}$ and $M_{61}$ and their pairing by the Chinese remainder theorem, and Harvey's lazy reduction.
 
-The bibliography is [references.md](references.md): every work a note or a comment in `src/` cites, each entry checked against the work, with a record of what it was checked against and when.
+The bibliography is [references.md](references.md): every work a note, a comment in `src/` or a table in `tests/known/` cites, each entry checked against the work, with a record of what it was checked against and when.
 
 Everything here follows the clean-room rule of [AGENTS.md, § Invariants 4](../AGENTS.md#4-clean-room-human-gate).
 

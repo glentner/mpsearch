@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:known-answer-tables
 kind: feature
 appetite: small
 ---

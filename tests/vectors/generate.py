@@ -443,8 +443,8 @@ def decimal():
 # --- reference: ll, prp ------------------------------------------------------------------------
 
 # Prime p up to B with M_p composite: every one below 64, then roughly log-spaced up to 9973, the
-# largest prime below B, with 1237 and 1277, whose Lucas-Lehmer Res64 issues/known-answer-tables.md
-# records as published, with its sources
+# largest prime below B, with 1237 and 1277, whose published Lucas-Lehmer Res64 is in
+# tests/known/final-residues.txt, with its source
 B = 10000
 COMPOSITE = [11, 23, 29, 37, 41, 43, 47, 53, 59, 83, 113, 157, 211, 283, 383, 509, 691, 929, 1237, 1249,
              1277, 1669, 2273, 3049, 4111, 5527, 7433, 9973]
@@ -487,42 +487,6 @@ def reference():
 	return f
 
 
-# --- mersenne-exponents: the prime list ---------------------------------------------------------
-
-# OEIS A000043, "Mersenne exponents: primes p such that 2^p - 1 is prime", its terms up to B
-OEIS_A000043 = [2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281, 3217, 4253, 4423,
-                9689, 9941]
-
-
-def odd_primes(bound):
-	# the sieve of Eratosthenes
-	sieve = bytearray([1]) * (bound + 1)
-	sieve[0] = sieve[1] = 0
-	for i in range(2, bound + 1):
-		if i * i > bound:
-			break
-		if sieve[i]:
-			sieve[i * i::i] = bytes(len(range(i * i, bound + 1, i)))
-	return [p for p in range(3, bound + 1) if sieve[p]]
-
-
-def mersenne_exponents():
-	# The OEIS terms, written only if a Lucas-Lehmer sweep over every odd prime up to B finds
-	# exactly the odd ones
-	found = [p for p in odd_primes(B) if lucas_lehmer(p) == 0]
-	if found != [p for p in OEIS_A000043 if p % 2]:
-		sys.stderr.write("generate.py: the Lucas-Lehmer sweep finds %r; OEIS A000043 lists %r\n" % (found, OEIS_A000043))
-		sys.exit(1)
-	f = Family("mersenne-exponents", [
-		"OEIS-A000043 (https://oeis.org/A000043), Mersenne exponents: its terms up to %d, embedded in this command" % B,
-		"a Lucas-Lehmer sweep in Python over every odd prime up to %d, in this command, finds exactly the odd terms; "
-		"the command exits non-zero otherwise" % B,
-	])
-	for p in OEIS_A000043:
-		f.add("mersenne", str(p))
-	return f
-
-
 FAMILIES = {
 	"arith": arith,
 	"folding": folding,
@@ -531,7 +495,6 @@ FAMILIES = {
 	"hex": hexadecimal,
 	"decimal": decimal,
 	"reference": reference,
-	"mersenne-exponents": mersenne_exponents,
 }
 
 

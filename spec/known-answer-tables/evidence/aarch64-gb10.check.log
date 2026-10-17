@@ -1,0 +1,114 @@
+mkdir -p lib/check
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check.cpp -o lib/check/check.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_cli.cpp -o lib/check/check_cli.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_known.cpp -o lib/check/check_known.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_log.cpp -o lib/check/check_log.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_math.cpp -o lib/check/check_math.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_mp.cpp -o lib/check/check_mp.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_reference.cpp -o lib/check/check_reference.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/check_result.cpp -o lib/check/check_result.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/log_peer.cpp -o lib/check/log_peer.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Werror=unused-function -std=c++20 -fno-fast-math -ffp-contract=off -c tests/vector_reader.cpp -o lib/check/vector_reader.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/ansi.cpp -o lib/check/ansi.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/cli.cpp -o lib/check/cli.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/io.cpp -o lib/check/io.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/known.cpp -o lib/check/known.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/mp.cpp -o lib/check/mp.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/math.cpp -o lib/check/math.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/reference.cpp -o lib/check/reference.o
+g++ -I src -MMD -MP -O3 -Wall -Wextra -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -std=c++20 -fno-fast-math -ffp-contract=off -c src/result.cpp -o lib/check/result.o
+g++ -O3 -Wall -Wextra -std=c++20 -fno-fast-math -ffp-contract=off lib/check/check.o lib/check/check_cli.o lib/check/check_known.o lib/check/check_log.o lib/check/check_math.o lib/check/check_mp.o lib/check/check_reference.o lib/check/check_result.o lib/check/log_peer.o lib/check/vector_reader.o lib/check/ansi.o lib/check/cli.o lib/check/io.o lib/check/known.o lib/check/mp.o lib/check/math.o lib/check/reference.o lib/check/result.o -o bin/check
+check parse_args accepts -t ll 31
+check parse_args rejects an unknown option
+check parse_args rejects bad PVALs
+check parse_args states the PVAL bounds
+check parse_args accepts good PVALs
+check parse_args names the default file from PVAL
+check parse_args spells each option alike
+check parse_args selects all tests by default
+check parse_args reads --file before -t
+check parse_args takes values whole
+check parse_args rejects unlisted test names
+check parse_args rejects missing values
+check parse_args reads groups as separate flags
+check parse_args reads -j and --json
+check parse_args rejects stray flags in groups
+check -D and -d apply as the parser reads them
+check the loader reads a table it is given
+check the loader refuses a malformed table
+check the loader refuses a row without a source
+check the loader refuses two answers for one key
+check the loader honours supersession
+check the loader refuses a fingerprint with fewer than two engines
+check every known-answer table loads
+check every published source has a bibliography entry
+check exponents above 10000 cite a published list
+check final residues agree with the reference residues
+check final residues are of composite Mersenne numbers
+check cmath and the logger together
+check level filter ordering
+check the logger's state is one copy
+check the level holds across units
+check the detailed style holds across units
+check sieve below four exactly
+check sieve matches trial division
+check sieve marks squares at the bound
+check display lists the primes below n
+check the stubs decide nothing
+check smallest prime factor matches the sieve
+check smallest prime factor known answers
+check the exponent check answers composites
+check the re-check refuses a non-divisor
+check the exponent check re-checks its search
+check SHA-256 matches the FIPS 180-4 examples
+check SplitMix64 matches its published outputs
+check every vector file carries its command and source
+check comparisons match the vectors
+check sums match the vectors
+check differences match the vectors
+check shifts match the vectors
+check folding modulo M_p matches the vectors
+check Res64 matches the vectors
+check hexadecimal matches the vectors and round-trips
+check errors are reported, never values
+check schoolbook products match the vectors
+check Karatsuba products match the vectors
+check products match the vectors
+check schoolbook squares match the vectors
+check Karatsuba squares match the vectors
+check squares match the vectors
+check general reduction matches the vectors
+check modular powers match the vectors
+check decimal matches the vectors and round-trips
+check Lucas-Lehmer ends in zero for every listed prime
+check Lucas-Lehmer residues match the vectors
+check PRP ends in one for every listed prime
+check PRP residues match the vectors
+check the reference tests refuse exponents outside their theorems
+check each outcome has its line
+check each outcome has its record
+check an error has a line and no record
+check residues are sixteen uppercase digits
+check every record is valid JSON
+check the JSON reader rejects bad text
+check a hostile reason stays one record
+check a hostile reason stays one line
+check a control-byte reason reads back
+check well-formed UTF-8 passes through
+check malformed UTF-8 becomes U+FFFD
+check only verdicts are decisive
+check each outcome has its status
+check the status table keeps its values
+check no status is reserved for burn-in
+check the printer shows each outcome
+check an error prints no verdict
+check a contradiction prints no verdict
+check the printer's errors log in the shared style
+check a sound run prints every result in order
+check a verdict waits for the run to end
+check run_in_order stops at the first verdict
+check test_all runs the three tests in order
+check the logger's state is as the run began
+
+check: 91 passed, 0 failed
+cli: 644 passed, 0 failed

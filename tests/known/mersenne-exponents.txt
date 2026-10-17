@@ -1,0 +1,59 @@
+# mps known 1
+# command: python3 tests/known/generate.py mersenne-exponents > tests/known/mersenne-exponents.txt
+# mersenne <p>: M_p = 2^p - 1 is prime. Every exponent the GIMPS list gives, ascending.
+# Up to 10000 this command recomputes them; above it, it writes the list's and recomputes none.
+# from computed: M_2 = 3 prime by trial division, and a Lucas-Lehmer sweep in Python over every odd prime up to 10000, in this command, find exactly these exponents; the command exits 1 otherwise
+mersenne 2
+mersenne 3
+mersenne 5
+mersenne 7
+mersenne 13
+mersenne 17
+mersenne 19
+mersenne 31
+mersenne 61
+mersenne 89
+mersenne 107
+mersenne 127
+mersenne 521
+mersenne 607
+mersenne 1279
+mersenne 2203
+mersenne 2281
+mersenne 3217
+mersenne 4253
+mersenne 4423
+mersenne 9689
+mersenne 9941
+# from published GIMPSPrimes retrieved 2026-10-17: the exponents above 10000 the list gives
+mersenne 11213
+mersenne 19937
+mersenne 21701
+mersenne 23209
+mersenne 44497
+mersenne 86243
+mersenne 110503
+mersenne 132049
+mersenne 216091
+mersenne 756839
+mersenne 859433
+mersenne 1257787
+mersenne 1398269
+mersenne 2976221
+mersenne 3021377
+mersenne 6972593
+mersenne 13466917
+mersenne 20996011
+mersenne 24036583
+mersenne 25964951
+mersenne 30402457
+mersenne 32582657
+mersenne 37156667
+mersenne 42643801
+mersenne 43112609
+mersenne 57885161
+mersenne 74207281
+mersenne 77232917
+mersenne 82589933
+mersenne 136279841
+# end 52 rows

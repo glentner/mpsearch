@@ -120,3 +120,10 @@ The checkpoint format is the one `.mps` file format, shared with PRP and P-1.
     stderr. Put factors, and every string on those lines, through `line_text`, as reasons
     are.
 - Found by: factory adoption review, 2026-10-11.
+- The "What mps uses" sections of `doc/lucas-lehmer.md` (line 114), `doc/prp-and-gerbicz.md` (line
+  118) and `doc/reference-arithmetic.md` (line 75) say `make check` runs the reference tests "on the
+  published Mersenne prime exponents". Since `known-answer-tables`, the reference tests run on the
+  listed exponents from 3 to 10,000 (the 22 up to 9941, sourced `computed` in
+  `tests/known/mersenne-exponents.txt`), and `reference-arithmetic.md` line 77 names only
+  `tests/vectors/` as what they are checked against. This cycle rewrites those sections, so it
+  corrects them (found by `known-answer-tables` review cycle 1, out of Scope there).

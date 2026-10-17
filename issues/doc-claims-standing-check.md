@@ -69,6 +69,12 @@ outside a cycle at all.
 - `claims.py` bounds every function's arguments, so the checks of all seven notes, with the
   structure and citation rules, ran in about 15 s on the author's Mac.
 - Found by: `math-notes-and-references` P5 (the deferral ledger).
+- **The exponent list has moved** (deferred from `known-answer-tables`, 2026-10-17). The Mersenne
+  prime exponents now live in `tests/known/mersenne-exponents.txt`, read through `src/known.*`, and
+  `tests/vectors/mersenne-exponents.txt` is gone. The landed evaluators in `spec/*/verify/` keep
+  their own copies of the list, which that cycle left alone as records (its GOAL, Non-goals); when
+  this check moves the evaluator out of the record, it can read the exponents from the table
+  instead of embedding them.
 - The rule covers small numbers too. `reference-big-integer`'s review (cycle 1, F1) found worked values
   below 100 stated outside markers in `doc/prp-and-gerbicz.md` and `doc/reference-arithmetic.md`,
   because that cycle's docs gate enforced markers only on numbers of 100 or more. That review's

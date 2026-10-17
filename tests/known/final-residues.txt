@@ -1,0 +1,18 @@
+# mps known 1
+# command: python3 tests/known/generate.py final-residues > tests/known/final-residues.txt
+# ll <p> <Res64>: the low 64 bits of s_(p-2) mod M_p, s_0 = 4. prp1 <p> <Res64>: of 3^(M_p - 1) mod M_p, the type-1 residue. Every p is a prime with M_p composite.
+# agreed=<n>: how many 64-bit residues the report gave that agree. This command recomputes every row with p below 200000; the others rest on the reports' agreement.
+# from published GIMPSReportLL retrieved 2026-10-17: accepted Lucas-Lehmer results, two or more agreeing from different shifts or programs, none with an error code or listed as bad
+ll 1237 DF5E6622F83F5BE2 agreed=2
+ll 1277 5613A480590E78BA agreed=3
+ll 10303 3DD943A77EC9238B agreed=3
+ll 100069 1ECC98522D52594C agreed=5
+ll 1000193 8F5354551BC18373 agreed=5
+ll 10000139 76BB6A7CE0BCA62B agreed=6
+ll 100000007 F9042256B193FAA0 agreed=12
+# from published GIMPSReportPRP retrieved 2026-10-17: accepted PRP results of type 1, base 3, two or more agreeing from different shifts or programs, none with an error code or listed as bad
+prp1 28603 F899E5F1E2B40323 agreed=2
+prp1 1000193 CA0B0B10C609A027 agreed=4
+prp1 10000019 9DD181D73794E731 agreed=4
+prp1 100005533 ADF278E588B2CDCE agreed=2
+# end 11 rows

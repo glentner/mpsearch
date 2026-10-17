@@ -98,6 +98,16 @@ writes one JSON record per workload plus a node summary, in a versioned schema:
 - Profiles grow per device as backends land (Parts IV, VI and VII); each backend cycle adds its
   profile.
 - Fleet orchestration, telemetry and the outlier report are `issues/fleet-runs-and-reports.md`.
+- **Where an installed `mps` finds the tables** (deferred from `known-answer-tables`, 2026-10-17).
+  The expected residues live in `tests/known/` (`final-residues.txt`, `partial-residues.txt`), read
+  by `src/known.*`, which `bin/mps` links and nothing in it calls yet. The loader takes a path
+  (`known::load(path)`), and `known::TABLES` names the tables from the repository root, so it works
+  only from a checkout. Shaping decides how an installed `mps` finds or embeds them (with
+  `issues/packaging-and-install.md`): a path at build or install time, an option, or the tables
+  compiled in; the file name must stay `<stem>.txt`, which the loader checks. Burn-in appends the
+  rows it needs (the residues after k iterations at its exponents) through the tables' command, and
+  a fingerprint row (`# from runs:`) waits on Geoffrey's ruling on fingerprint independence
+  (`spec/known-answer-tables/GOAL.md`, Notes).
 - Exit statuses 50–59 are reserved for burn-in's outcomes (`verdicts-and-exit-statuses`,
   2026-10-12, which left them undefined); `--help` lists the range. Shaping decides whether its
   records extend the `-j/--json` result record (GIMPS field names, its own `record_version`).

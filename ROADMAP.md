@@ -116,6 +116,7 @@ Since then, on `main`:
 The groundwork every later cycle grades itself against:
 
 - the known answers with their sources;
+- a standing check that those answers only grow;
 - a standing check for the cluster test job;
 - a standing check for the notes' numbers and citations;
 - `--` ending the options for every flag, in every position;
@@ -136,6 +137,21 @@ Every row carries its source, and the tables are append-only (§ Invariants 3).
 *Horizon: near-term · Depends on: the reference big integer, for computed rows (cleared 2026-10-16)
 · Refs: —*
 **Seed:** [`issues/known-answer-tables.md`](issues/known-answer-tables.md)
+
+## A standing check that the known answers only grow
+
+The known-answer tables are append-only: a value is never edited, and a correction is a new row that
+names the row it replaces. `make check` refuses a malformed table, a row without a source and a key
+with two answers, but it reads no history, so an edited or deleted row that leaves the table
+consistent passes it. The cycle that built the tables checked its own diff against `main` in its
+gates, which become records once it merges; the standing form was
+deferred from `known-answer-tables`. A standing check, run before a change lands, fails any edit,
+deletion or reordering of an existing row, whichever cycle makes it, and passes appends and
+corrections.
+
+*Horizon: near-term · Depends on: the known answers · Refs: known-answer-tables P4 (design review
+F11), 2026-10-17*
+**Seed:** [`issues/known-answer-standing-check.md`](issues/known-answer-standing-check.md)
 
 ## A standing check for the cluster test job
 
@@ -376,8 +392,19 @@ width, measured against PRPLL on an Instinct GPU.
 
 # Part VIII — The trio, complete
 
-Trial factoring and P-1, on every engine they suit, the GCD and Jacobi symbol they need at the
-largest exponents, and the proofs that finish PRP.
+The known factors they grade against; trial factoring and P-1, on every engine they suit; the GCD
+and Jacobi symbol they need at the largest exponents; and the proofs that finish PRP.
+
+## The known factors: small, boundary and P-1 cases, each with its source
+
+The factors every factoring test grades against: small ones, factors at the 64-bit and 77-bit
+boundaries, and P-1 cases found only when both bounds are met. They go in the known-answer tables,
+each row with its source and re-checked exactly (2^p ≡ 1 mod q). Split from the known-answer cycle at
+its shaping.
+
+*Horizon: mid-term · Depends on: the known answers (their table format and loader) · Refs:
+known-answer-tables shaping, 2026-10-17*
+**Seed:** [`issues/known-factor-tables.md`](issues/known-factor-tables.md)
 
 ## Trial factoring to a chosen bit depth
 

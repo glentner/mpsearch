@@ -41,6 +41,10 @@ clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefil
 - `src/reference.cpp`, `src/reference.hpp`: the reference Lucas–Lehmer and base-3 PRP tests on
   `BigInt` (`reference::lucas_lehmer`, `reference::prp3`), which return residues and decide nothing;
   `make check` runs them, and nothing in `bin/mps` calls them, `-t` included.
+- `src/known.cpp`, `src/known.hpp`: the loader of the tables of known answers in `tests/known/`
+  (`known::parse`, `known::load`, `known::TABLES`), which reads a table whole or refuses it with
+  `known_error`, naming the table and the row of the first rule it breaks; `make check` reads the
+  tables through it, and nothing in `bin/mps` calls it yet.
 - `src/math.cpp`, `src/math.hpp`: the prime sieve; the exponent check (`check_exponent`), which
   reports a factor only through its re-check (`composite_by_exponent`); the three tests (stubs);
   and `run_in_order`, which runs them and stops at the first decisive result.
@@ -53,11 +57,14 @@ clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefil
   checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make check` runs
   both. `vector_reader.hpp` and `vector_reader.cpp` read the vector families in `vectors/`, which
   `vectors/generate.py` wrote once with Python's integers, each file carrying the command that
-  reproduces it; they hold SHA-256 and SplitMix64 too. `vectors/mersenne-exponents.txt` is the
-  Mersenne prime exponents with their published source. `log_peer.hpp` and `log_peer.cpp` are a
-  second unit the logger's checks log from, so a state that isn't shared shows; they hold the
-  checks' guards (`SavedLogger` restores the logger's state, `CaptureCerr` captures `std::cerr`)
-  and, run last, the check that the state is restored.
+  reproduces it; they hold SHA-256 and SplitMix64 too. `known/` holds the tables of known answers,
+  each row with its source, written by `known/generate.py`, whose header is the manual:
+  `mersenne-exponents.txt` (the Mersenne prime exponents), `final-residues.txt` (the final
+  residues of composite exponents) and `partial-residues.txt` (the residues after a stated number
+  of iterations, and the fingerprints). `log_peer.hpp` and `log_peer.cpp` are a second unit the
+  logger's checks log from, so a state that isn't shared shows; they hold the checks' guards
+  (`SavedLogger` restores the logger's state, `CaptureCerr` captures `std::cerr`) and, run last,
+  the check that the state is restored.
 - `ci/test-commit.sh`: the cluster test job. It builds and checks one commit on one target in a
   fresh run directory in scratch and leaves the logs and `result.json` there; its header is the
   manual. `ci/targets/`: one `key=value` file per target, naming its partition, resources, modules
@@ -156,6 +163,11 @@ A CONFIRMED finding in any of these files needs a human decision before the cycl
 - `tests/vectors/` (the generator and every vector file: expected values)
 - `src/reference.hpp`, `src/reference.cpp`
 - `tests/vectors/mersenne-exponents.txt` (the Mersenne prime exponents)
+- `tests/known/` (the tables of known answers and their command: expected values)
+- `src/known.hpp`, `src/known.cpp` (the tables' loader)
+- `tests/known/mersenne-exponents.txt` (the Mersenne prime exponents)
+- `tests/known/final-residues.txt` (the final residues of composite exponents)
+- `tests/known/partial-residues.txt` (the residues after a stated number of iterations, and the fingerprints)
 
 A cycle that adds an arithmetic engine, a test driver that prints a verdict, a checkpoint or result format of `mps`, or a table of known answers adds its paths here in the same commit.
 

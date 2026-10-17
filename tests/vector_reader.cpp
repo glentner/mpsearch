@@ -49,15 +49,13 @@ fields_by_op {
 	{"dec",      "OS"},
 	{"ll",       "DF"},
 	{"prp",      "DF"},
-	{"mersenne", "D"},
 };
 
 
 namespace vectors {
 
 
-	const std::vector<std::string> STEMS = {"arith", "folding", "hex", "products", "modular", "decimal", "reference",
-	                                        "mersenne-exponents"};
+	const std::vector<std::string> STEMS = {"arith", "folding", "hex", "products", "modular", "decimal", "reference"};
 
 
 	std::string Record::where() const {
