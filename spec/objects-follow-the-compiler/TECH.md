@@ -6,12 +6,12 @@ appetite: small
 status: in_progress
 branch: fix/objects-follow-the-compiler
 base: main
-current_phase: P1
+current_phase: P2
 last_updated: '2026-10-17'
 phases:
 - id: P1
   name: The settings record, its documentation and the pycache rider
-  status: pending
+  status: done
   satisfies:
   - R1
   - R2
@@ -131,16 +131,16 @@ or `BOUNDS` builds everything it links with that run's settings, an unchanged ru
 incremental and as fast as at `b3a6c5a`, `AGENTS.md` says so in the same commit, and importing a
 generator leaves `git status` clean.
 
-- [ ] `Makefile`: `BUILT`, `SETTINGS` (the five variables, effective values), the reset at parse
+- [x] `Makefile`: `BUILT`, `SETTINGS` (the five variables, effective values), the reset at parse
       time above `-include $(DEPS)`, `lib/settings: | lib` writing the record silently, the record
       as an order-only prerequisite of the three object rules, `clean` as `/bin/rm -f $(BUILT)`;
       the comment says why the record is compared rather than timed (PLAN § 2; the prototype there
       passed the gates' self-test). No recipe, `MODULES`, `DEPS` or `check` change.
-- [ ] `AGENTS.md`: the three edits of PLAN § 2, verbatim (the profile's `verify` row, the
+- [x] `AGENTS.md`: the three edits of PLAN § 2, verbatim (the profile's `verify` row, the
       `make clean` lines, the paragraph's four new lines), and no other change, in the same commit
       as the `Makefile` (R8; P2's gate checks the commit).
-- [ ] `.gitignore`: `__pycache__/` appended (R9).
-- [ ] Locally, before the gate: `make CXX=clang++ check`, then `make CXX=g++-16 check` with no `-B`,
+- [x] `.gitignore`: `__pycache__/` appended (R9).
+- [x] Locally, before the gate: `make CXX=clang++ check`, then `make CXX=g++-16 check` with no `-B`,
       green; then `make CXX=g++-16 check` again prints no compile command.
 - **Verify:** `sh spec/objects-follow-the-compiler/verify/p1.sh`.
 - **Touches:** `Makefile`, `AGENTS.md`, `.gitignore`.

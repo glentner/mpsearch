@@ -15,7 +15,8 @@ make                      # bin/mps from src/*.cpp (objects in lib/)
 make check                # bin/check from tests/*.cpp and the modules, built with the standard
                           # libraries' bounds assertions (objects in lib/check/); run it, then
                           # the smoke test tests/cli.sh
-make clean                # remove the objects in lib/ and the binaries in bin/
+make clean                # remove what the build wrote: the objects in lib/ and the record of
+                          # the settings that built them (lib/settings), the binaries in bin/
 bin/mps --help
 bin/mps -p 100            # primes below 100
 bin/mps -t ll 31          # one test on one exponent
@@ -23,6 +24,10 @@ bin/mps -t ll 31          # one test on one exponent
 
 The build needs only a C++20 compiler and GNU make, and `make check` adds only a POSIX shell. Apple
 clang and GCC must both build it: macOS ships GNU make 3.81, so keep the Makefile within it.
+A build whose compiler or compile flags (`CXX`, `CXXFLAGS`, `CPPFLAGS`, `IEEE`, `BOUNDS`) differ
+from those recorded in `lib/settings` first removes everything the last build made, so a switch
+needs neither `make -B` nor `make clean`. A compiler upgraded in place under the same name still
+needs `make -B`.
 
 ## Map
 
@@ -85,7 +90,7 @@ This repo is built by the spec-driven factory: GOAL → PLAN/TECH → build → 
 | landing | `squash-local`: squash onto `origin/main` in the cycle worktree, one `[area] What changed` subject, then push direct to `main` |
 | ci | none |
 | setup | `make` |
-| verify | `make check`: the checks and the smoke test, both always run (`make -B check` after changing `CXX`) |
+| verify | `make check`: the checks and the smoke test, both always run |
 | cluster test | `ci/test-commit.sh <hash> <target>`, copied from the tested commit into scratch and submitted to Slurm by path with its two arguments; the options, environment, run directory and `result.json` are in its header |
 | throwaway environment | none: `mps` keeps no state outside its own working directory yet |
 | coupled core | the command-line surface (`src/main.hpp` usage and help, `src/cli.*`, `README.md` usage); the test entry points (`src/math.hpp` and the dispatch in `src/main.cpp`) |
