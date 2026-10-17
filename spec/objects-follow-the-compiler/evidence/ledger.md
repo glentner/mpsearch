@@ -53,3 +53,25 @@ committed no fix.
 - **The roadmap entry still quotes the old workaround.** `ROADMAP.md`'s entry for this cycle's seed,
   and the seed itself, quote "`make -B check` after changing `CXX`". They are the frozen deferral
   pair, and publishing the cycle retires both; this cycle leaves its seed `adopted:` as it is.
+
+## Times
+
+Each run's check step, from its `result.json`, against cycle 8's run on the same target
+(`spec/known-answer-tables/evidence/<target>.json`, which tested `951eacb`). All three runs tested
+`14d993a` with GCC 14 under GNU Make 4 and passed 91 checks and 644 smoke-test cases, as cycle 8's
+did, with the same compiler and make on each target.
+
+- `x86-64-avx512`: check step 36 s (cycle 8: 37 s), -1 s.
+- `x86-64-avx2`: check step 51 s (cycle 8: 51 s), +0 s.
+- `aarch64-gb10`: check step 121 s (cycle 8: 120 s), +1 s.
+
+The check step compiles `bin/check` with the standard library's assertions as well as running it,
+and this cycle changes no source and no check, so the differences are a single node's noise. Each
+check step compiled only the `lib/check/` objects and linked `bin/check`; none recompiled a
+`lib/*.o` or relinked `bin/mps` that the build step had built with the same settings (R3 under GNU
+Make 4, the record compared rather than timed).
+
+R4 itself is measured on the Mac, warm and with nothing to rebuild, against `b3a6c5a`; the full P2
+gate on these runs of `14d993a` (2026-10-17) gave clang++ 3.769 s at `b3a6c5a` and 3.774 s now,
++0.006 s, and g++-16 6.492 s and 6.542 s, +0.050 s, against the 0.1 s budget (make's own share
+0.015 s to 0.022 s and 0.014 s to 0.021 s).

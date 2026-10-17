@@ -3,10 +3,10 @@ slug: objects-follow-the-compiler
 title: A compiler or flag change rebuilds what it links
 kind: fix
 appetite: small
-status: in_progress
+status: in_review
 branch: fix/objects-follow-the-compiler
 base: main
-current_phase: P2
+current_phase: done
 last_updated: '2026-10-17'
 phases:
 - id: P1
@@ -29,7 +29,7 @@ phases:
   verify: sh spec/objects-follow-the-compiler/verify/p1.sh
 - id: P2
   name: Audit, deferral ledger, push and cluster runs
-  status: in_progress
+  status: done
   satisfies:
   - R1
   - R2
@@ -185,13 +185,13 @@ state.
         `make clean` removes, and add their own outputs to `BUILT` (PLAN § 6).
   - [x] Every `issues/*.md` matches exactly one `**Seed:**` line in `ROADMAP.md`; this cycle's seed
         stays `adopted:objects-follow-the-compiler` (publish retires it).
-- [ ] **Pre-push.** `sh spec/objects-follow-the-compiler/verify/prepush.sh` must be green: the
+- [x] **Pre-push.** `sh spec/objects-follow-the-compiler/verify/prepush.sh` must be green: the
       ledger, the no-uncommitted-code rule and the scan first, then the P1 gate on the final tree.
       `prepush.sh scan` runs the scan alone; see it catch a planted site name once and a planted
       detailed line naming a made-up node once, then remove both plants with `del`.
-- [ ] **Push.** `git push origin fix/objects-follow-the-compiler`, fast-forward only (the foreman
+- [x] **Push.** `git push origin fix/objects-follow-the-compiler`, fast-forward only (the foreman
       authorizes it for this phase). Never force.
-- [ ] **Run.** Submit the pushed head on `x86-64-avx512`, `x86-64-avx2` and `aarch64-gb10` through
+- [x] **Run.** Submit the pushed head on `x86-64-avx512`, `x86-64-avx2` and `aarch64-gb10` through
       the cluster MCP server, with the site recipe the foreman hands over (accounts, QoS and paths,
       never committed), as the previous cycles' last phases did and `ci/test-commit.sh`'s header
       says.
@@ -203,7 +203,7 @@ state.
     on the GB10 cluster). Output only under `<scratch>/mpsearch/`.
   - Resubmit a run that fails for a reason outside the tree, such as a preemption or a node fault.
     Record only runs that test the tree.
-- [ ] **Evidence** (dispatch B). Pass each piece through
+- [x] **Evidence** (dispatch B). Pass each piece through
       `sh spec/objects-follow-the-compiler/verify/redact.sh IN OUT`: for each target
       `evidence/<target>.json`, `evidence/<target>.out`, `evidence/<target>.build.log` and
       `evidence/<target>.check.log` (the run's `result.json`, scheduler output, `build.log` and
