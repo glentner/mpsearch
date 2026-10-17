@@ -100,8 +100,8 @@ selects the compiler or its flags in the build's compile and link commands.
 - **Q:** How is the timing budget handled? — **A:** 0.1 s over `b3a6c5a` for a no-op `make check`
   (R4). `reference-big-integer` allowed +3.0 s over `c9b82ff` and used +2.4 s, and
   `known-answer-tables` took a 0.5 s budget on top, so about 0.1 s of that headroom is left; a
-  dependency check that costs more than that is a design problem, not a budget question (proposed
-  by shaping, 2026-10-17; foreman to confirm).
+  dependency check that costs more than that is a design problem, not a budget question (confirmed
+  by the foreman, 2026-10-17).
 - **Q:** Does `AGENTS.md`'s `make -B` note change? — **A:** Yes, in the same commit as the
   `Makefile` (R8), and § Build and run follows any move of the objects. No replacement note is
   required for the in-place-upgrade case (confirmed by the foreman, 2026-10-17).
