@@ -29,7 +29,7 @@ phases:
   verify: sh spec/objects-follow-the-compiler/verify/p1.sh
 - id: P2
   name: Audit, deferral ledger, push and cluster runs
-  status: pending
+  status: in_progress
   satisfies:
   - R1
   - R2
@@ -171,19 +171,19 @@ scheduler costs no builder time:
 pre-push checks, the push and the runs; last the phase commit with the evidence, the ledger and the
 state.
 
-- [ ] **Audit.** Walk R1–R9 against the `Makefile`, `AGENTS.md` and `.gitignore`, one by one, and
+- [x] **Audit.** Walk R1–R9 against the `Makefile`, `AGENTS.md` and `.gitignore`, one by one, and
       confirm each has its gate step (PLAN § 6). Fix and commit anything found (above).
-- [ ] **Deferral ledger:** `spec/objects-follow-the-compiler/evidence/ledger.md` with
+- [x] **Deferral ledger:** `spec/objects-follow-the-compiler/evidence/ledger.md` with
       `## Deferrals`.
-  - [ ] Walk P1–P2 of this file, PLAN § 5 and the build's own commits for "do not fix here", "known
+  - [x] Walk P1–P2 of this file, PLAN § 5 and the build's own commits for "do not fix here", "known
         limitation", "left as a follow-up" and any deferral the build introduced. Each gets an
         `issues/<slug>.md` from the ISSUE template and a `ROADMAP.md` entry, or a Notes bullet in an
         existing seed, per `AGENTS.md` § Factory; list each under `## Deferrals` with its home.
-  - [ ] The known one: a Notes bullet in `issues/packaging-and-install.md` with the words "deferred
+  - [x] The known one: a Notes bullet in `issues/packaging-and-install.md` with the words "deferred
         from `objects-follow-the-compiler`" (the ledger check looks for them): an install target
         and any backend keep `lib/settings`, the reset before any target and `BUILT` as what
         `make clean` removes, and add their own outputs to `BUILT` (PLAN § 6).
-  - [ ] Every `issues/*.md` matches exactly one `**Seed:**` line in `ROADMAP.md`; this cycle's seed
+  - [x] Every `issues/*.md` matches exactly one `**Seed:**` line in `ROADMAP.md`; this cycle's seed
         stays `adopted:objects-follow-the-compiler` (publish retires it).
 - [ ] **Pre-push.** `sh spec/objects-follow-the-compiler/verify/prepush.sh` must be green: the
       ledger, the no-uncommitted-code rule and the scan first, then the P1 gate on the final tree.
