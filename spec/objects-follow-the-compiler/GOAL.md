@@ -93,10 +93,10 @@ selects the compiler or its flags in the build's compile and link commands.
   `CPPFLAGS`, `IEEE` and `BOUNDS` on the command line, since a stale mix of flags is the same
   defect and § Invariants 2 owns the numeric flags. `CXX` from the environment counts too, because
   the `Makefile` honours it. In-place compiler upgrades and link-only variables are out (Non-goals)
-  (proposed by shaping, 2026-10-17; foreman to confirm).
+  (confirmed by the foreman, 2026-10-17).
 - **Q:** Must switching back to the first compiler be free? — **A:** No. R1–R3 require correctness
   and an unchanged incremental build; the layout, and so whether both builds stay warm, is the
-  plan's (proposed by shaping, 2026-10-17; foreman to confirm).
+  plan's (confirmed by the foreman, 2026-10-17).
 - **Q:** How is the timing budget handled? — **A:** 0.1 s over `b3a6c5a` for a no-op `make check`
   (R4). `reference-big-integer` allowed +3.0 s over `c9b82ff` and used +2.4 s, and
   `known-answer-tables` took a 0.5 s budget on top, so about 0.1 s of that headroom is left; a
@@ -104,13 +104,13 @@ selects the compiler or its flags in the build's compile and link commands.
   by shaping, 2026-10-17; foreman to confirm).
 - **Q:** Does `AGENTS.md`'s `make -B` note change? — **A:** Yes, in the same commit as the
   `Makefile` (R8), and § Build and run follows any move of the objects. No replacement note is
-  required for the in-place-upgrade case (proposed by shaping, 2026-10-17; foreman to confirm).
+  required for the in-place-upgrade case (confirmed by the foreman, 2026-10-17).
 - **Q:** Is the `__pycache__` rider in this cycle, and for which generators? — **A:** Yes (R9), for
   both `tests/vectors/generate.py` and `tests/known/generate.py`; the second postdates the seed. The
-  rider changes no file under `tests/` (proposed by shaping, 2026-10-17; foreman to confirm).
+  rider changes no file under `tests/` (confirmed by the foreman, 2026-10-17).
 - **Q:** Does the cluster job matter? — **A:** Its builds start from a fresh clone, so the defect
   never reaches it. But it runs the `Makefile` with an injected rule and reads the output, so R7
-  holds it working unchanged (proposed by shaping, 2026-10-17; foreman to confirm).
+  holds it working unchanged (confirmed by the foreman, 2026-10-17).
 
 ## Related materials
 
