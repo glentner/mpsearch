@@ -43,7 +43,9 @@ Five kinds of answer are needed:
 
 ## Why it was deferred
 
-Never started. It sits with the reference big integer because both precede every engine cycle.
+Never started. It sat with the reference big integer because both precede every engine cycle. That
+type landed on `main` on 2026-10-16 (`spec/reference-big-integer/`), so the computed rows can be
+built now.
 
 ## Outcome / vision
 

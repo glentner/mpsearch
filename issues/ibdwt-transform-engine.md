@@ -32,7 +32,8 @@ Nothing of this exists yet, and no engine contract exists for the CPU, GPU and T
 
 ## Why it was deferred
 
-Never started. It is the core of Part II and needs `issues/reference-big-integer.md` to test against.
+Never started. It is the core of Part II and needed the reference big integer to test against, which
+landed on `main` on 2026-10-16 (`spec/reference-big-integer/`), so that constraint is cleared.
 
 ## Outcome / vision
 

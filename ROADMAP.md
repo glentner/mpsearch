@@ -79,7 +79,7 @@ The 2024 scaffold. It has:
 - exit statuses by class;
 - a sieve of Eratosthenes (`mps -p N`).
 
-The three tests are stubs, and there is no multiple-precision arithmetic yet.
+The three tests are stubs, and it has no multiple-precision arithmetic.
 
 Since then, on `main`:
 
@@ -101,7 +101,13 @@ Since then, on `main`:
   (each with its result, its proof, what `mps` uses, its sources and its provenance), and a
   bibliography whose every entry was checked against the work, with the rule in `AGENTS.md`
   § Conventions that a cycle implementing or changing an algorithm updates its note in the same
-  commit (`math-notes-and-references`, 2026-10-12).
+  commit (`math-notes-and-references`, 2026-10-12);
+- a binary-limb `BigInt` written for clarity: comparison, addition, subtraction, shifts,
+  schoolbook and Karatsuba products and squares, folding reduction modulo 2^p − 1, general
+  reduction, modular exponentiation, conversion to and from decimal and hex, and Res64; on it,
+  reference Lucas–Lehmer and base-3 PRP tests for small exponents, outside the command line; all
+  checked in `make check` against vectors Python computed once and committed with their command
+  (`reference-big-integer`, 2026-10-16).
 
 ---
 
@@ -109,23 +115,11 @@ Since then, on `main`:
 
 The groundwork every later cycle grades itself against:
 
-- a reference big integer;
 - the known answers with their sources;
 - a standing check for the cluster test job;
 - a standing check for the notes' numbers and citations;
 - `--` ending the options for every flag, in every position;
 - a compiler change that rebuilds every object.
-
-## A reference big integer to check every engine against
-
-`BigInt` holds decimal digits and can only print them. Every fast engine to come fails in ways that
-still produce plausible residues, so each must be tested against an arithmetic simple enough to be
-obviously right. A binary-limb integer becomes that oracle: schoolbook and Karatsuba products,
-folding reduction modulo 2^p − 1, and the transform digit form. It also runs Lucas–Lehmer and PRP for
-small exponents before any transform exists.
-
-*Horizon: near-term · Depends on: the test target (cleared 2026-10-11) · Refs: —*
-**Seed:** [`issues/reference-big-integer.md`](issues/reference-big-integer.md)
 
 ## The known answers: exponents, residues and factors, each with its source
 
@@ -139,7 +133,8 @@ The fixed points every verdict test and burn-in run compares against:
 
 Every row carries its source, and the tables are append-only (§ Invariants 3).
 
-*Horizon: near-term · Depends on: the reference big integer, for computed rows · Refs: —*
+*Horizon: near-term · Depends on: the reference big integer, for computed rows (cleared 2026-10-16)
+· Refs: —*
 **Seed:** [`issues/known-answer-tables.md`](issues/known-answer-tables.md)
 
 ## A standing check for the cluster test job
@@ -205,8 +200,8 @@ builds the first, portable implementation with a round-off monitor and a measure
 and maximum exponents. It also defines the balanced digit form the transform works in, and its
 round-trip with the reference big integer, deferred here from that cycle.
 
-*Horizon: near-term · Depends on: the reference big integer; the known answers · Refs:
-reference-big-integer P5, 2026-10-16*
+*Horizon: near-term · Depends on: the reference big integer (cleared 2026-10-16); the known answers
+· Refs: reference-big-integer P5, 2026-10-16*
 **Seed:** [`issues/ibdwt-transform-engine.md`](issues/ibdwt-transform-engine.md)
 
 ## Lucas–Lehmer with error checks, shifts and checkpoints
@@ -391,8 +386,8 @@ arithmetic overflows above 2^32 and it stops at a ten-million-entry sieve. Class
 (960 surviving classes) and exact multi-word modular arithmetic take it to the 2^70–2^80 depths that
 matter, with every hit re-checked.
 
-*Horizon: mid-term · Depends on: the result type (cleared 2026-10-12); the reference big integer ·
-Refs: —*
+*Horizon: mid-term · Depends on: the result type (cleared 2026-10-12); the reference big integer
+(cleared 2026-10-16) · Refs: —*
 **Seed:** [`issues/trial-factoring.md`](issues/trial-factoring.md)
 
 ## Trial factoring on GPUs

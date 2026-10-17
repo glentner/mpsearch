@@ -36,8 +36,9 @@ structure is what GPU kernels parallelise later (`issues/gpu-trial-factoring.md`
 ## Why it was deferred
 
 Pre-existing as a stub. It needed a result type that can carry a factor, which
-`verdicts-and-exit-statuses` landed on 2026-10-12 (`spec/verdicts-and-exit-statuses/`). It still
-needs `issues/reference-big-integer.md` (re-checking a hit, § Invariants 1).
+`verdicts-and-exit-statuses` landed on 2026-10-12 (`spec/verdicts-and-exit-statuses/`). It also
+needed the reference big integer (re-checking a hit, § Invariants 1), which landed on 2026-10-16
+(`spec/reference-big-integer/`), so that constraint is cleared too.
 
 ## Outcome / vision
 

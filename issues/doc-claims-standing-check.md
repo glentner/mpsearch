@@ -86,3 +86,6 @@ outside a cycle at all.
   §§ 2.4.1, 2.4.2 and 2.9 as read, while the notes cite §§ 1.3–1.7, 2.4.4 and 2.6.1 and Exercises
   1.19 and 1.20. The same review found that MCA's bibliography dates Knuth's third edition 1998,
   where `Knuth1997` gives 1997 from Knuth's page.
+- One known instance for the check's first run: `doc/prp-and-gerbicz.md`'s Gerbicz example
+  (earlier-cycle text) restates $M_7$ outside a marker, after its last check span ("it calls the
+  prime $M_7$ composite"). `reference-big-integer`'s review (cycle 4) noted it as outside scope.
