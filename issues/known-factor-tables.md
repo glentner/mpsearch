@@ -81,8 +81,9 @@ date) or the exact command that recomputes it by a method independent of every `
   The correction rule (`supersedes=` by value, never weaker than what it replaces) and the published
   and computed source forms carry over; the 200,000 recompute bound (`RECOMPUTED_BELOW`) is the final
   residues' alone.
-- **Depends on** `known-answer-tables` (the table mechanism and loader, its R1–R4). Part VIII's
-  trial-factoring and P-1 cycles need this one.
+- **Depends on** `known-answer-tables` (the table mechanism and loader, its R1–R4), which landed on
+  `main` on 2026-10-17, so that constraint is cleared. Part VIII's trial-factoring and P-1 cycles
+  need this one.
 - References: GIMPS reports, https://www.mersenne.org/report_factors/; GIMPS, "List of Known
   Mersenne Prime Numbers", https://www.mersenne.org/primes/.
 - Related: `issues/trial-factoring.md`, `issues/gpu-trial-factoring.md`,

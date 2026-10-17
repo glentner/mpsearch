@@ -51,8 +51,10 @@ and add reaches 0.52 T/s, twice a 31-bit Montgomery multiply at 0.26 T/s.
 The FP64 engine and its tests come first (Part II). This engine opens the Mac's GPU
 (`issues/metal-backend.md`) and the FP64-poor NVIDIA parts (`issues/cuda-backend.md`), so it is built
 and proven on the CPU first, where it is easy to debug. On the CPU it also becomes a second, exact
-engine that shares no arithmetic with the FP64 one, which is what the burn-in fingerprints need
-(`issues/known-answer-tables.md`, R4).
+engine that shares no arithmetic with the FP64 one, which is what the burn-in fingerprints need: the
+fingerprint row format in `tests/known/` (`spec/known-answer-tables/GOAL.md`, R10), landed
+2026-10-17 with no rows. Whether two such engines meet § Invariants 3's "independent method" is open
+for Geoffrey before the first fingerprint row lands (that GOAL's Notes).
 
 ## Outcome / vision
 

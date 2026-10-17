@@ -42,6 +42,8 @@ and no record a fleet operator could compare.
 
 Never started. It needs PRP with the Gerbicz check, Lucas–Lehmer, `mps bench` and the known-answer
 tables (Parts I–II). It comes straight after them because it is the first use the operators need.
+The tables landed on `main` on 2026-10-17 (`spec/known-answer-tables/`), so that constraint is
+cleared.
 
 ## Outcome / vision
 

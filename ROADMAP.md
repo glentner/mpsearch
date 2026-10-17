@@ -107,7 +107,13 @@ Since then, on `main`:
   reduction, modular exponentiation, conversion to and from decimal and hex, and Res64; on it,
   reference Lucas–Lehmer and base-3 PRP tests for small exponents, outside the command line; all
   checked in `make check` against vectors Python computed once and committed with their command
-  (`reference-big-integer`, 2026-10-16).
+  (`reference-big-integer`, 2026-10-16);
+- the known answers in `tests/known/`, append-only and each row with its source: the 52 Mersenne
+  prime exponents, published final Lucas–Lehmer and PRP type-1 residues of composite exponents,
+  and published and computed residues after a stated number of iterations; a command that
+  reproduces the tables offline; one loader, `src/known.*`, through which `make check` refuses a
+  row without a source and a key with two answers; and the row format for burn-in fingerprints,
+  which waits for two engines (`known-answer-tables`, 2026-10-17).
 
 ---
 
@@ -115,28 +121,11 @@ Since then, on `main`:
 
 The groundwork every later cycle grades itself against:
 
-- the known answers with their sources;
-- a standing check that those answers only grow;
+- a standing check that the known answers only grow;
 - a standing check for the cluster test job;
 - a standing check for the notes' numbers and citations;
 - `--` ending the options for every flag, in every position;
 - a compiler change that rebuilds every object.
-
-## The known answers: exponents, residues and factors, each with its source
-
-The fixed points every verdict test and burn-in run compares against:
-
-- the known Mersenne prime exponents;
-- published residues of composite exponents;
-- known factors;
-- burn-in fingerprints: residues after a fixed number of iterations at a fixed length, agreed by two
-  independent engines.
-
-Every row carries its source, and the tables are append-only (§ Invariants 3).
-
-*Horizon: near-term · Depends on: the reference big integer, for computed rows (cleared 2026-10-16)
-· Refs: —*
-**Seed:** [`issues/known-answer-tables.md`](issues/known-answer-tables.md)
 
 ## A standing check that the known answers only grow
 
@@ -149,8 +138,8 @@ deferred from `known-answer-tables`. A standing check, run before a change lands
 deletion or reordering of an existing row, whichever cycle makes it, and passes appends and
 corrections.
 
-*Horizon: near-term · Depends on: the known answers · Refs: known-answer-tables P4 (design review
-F11), 2026-10-17*
+*Horizon: near-term · Depends on: the known answers (cleared 2026-10-17) · Refs:
+known-answer-tables P4 (design review F11), 2026-10-17*
 **Seed:** [`issues/known-answer-standing-check.md`](issues/known-answer-standing-check.md)
 
 ## A standing check for the cluster test job
@@ -217,7 +206,7 @@ and maximum exponents. It also defines the balanced digit form the transform wor
 round-trip with the reference big integer, deferred here from that cycle.
 
 *Horizon: near-term · Depends on: the reference big integer (cleared 2026-10-16); the known answers
-· Refs: reference-big-integer P5, 2026-10-16*
+(cleared 2026-10-17) · Refs: reference-big-integer P5, 2026-10-16*
 **Seed:** [`issues/ibdwt-transform-engine.md`](issues/ibdwt-transform-engine.md)
 
 ## Lucas–Lehmer with error checks, shifts and checkpoints
@@ -268,7 +257,8 @@ when the run recovers. A walltime outside its node class's band flags the node s
 answer is right. Fleet studies put silent-corruption defects at about 1 CPU in 1,000. They found the
 most at the re-installation step before production, which is this test's moment.
 
-*Horizon: near-term · Depends on: PRP, Lucas–Lehmer, `mps bench`, the known answers · Refs: —*
+*Horizon: near-term · Depends on: PRP, Lucas–Lehmer, `mps bench`, the known answers (cleared
+2026-10-17) · Refs: —*
 **Seed:** [`issues/burn-in-mode.md`](issues/burn-in-mode.md)
 
 ## Fleet runs: telemetry, batch-scheduler recipes, and the outlier report
@@ -309,7 +299,8 @@ and runs it about 5× faster than FP64 on FP64-poor GPUs. Ordinary 32-bit NTT pr
 weights past 2^16 words, and 2^64 − 2^32 + 1 has no lengths with a factor of 3. It is built exact on
 the CPU against the same contract and answers, with hybrids (FP64+M31, FP32+M31) designed in.
 
-*Horizon: near-term · Depends on: the engine contract; the known answers · Refs: —*
+*Horizon: near-term · Depends on: the engine contract; the known answers (cleared 2026-10-17) ·
+Refs: —*
 **Seed:** [`issues/ntt-transform-engine.md`](issues/ntt-transform-engine.md)
 
 ## NVIDIA GPUs: CUDA engines, FP64 where it's fast and integer where it isn't
@@ -402,8 +393,8 @@ boundaries, and P-1 cases found only when both bounds are met. They go in the kn
 each row with its source and re-checked exactly (2^p ≡ 1 mod q). Split from the known-answer cycle at
 its shaping.
 
-*Horizon: mid-term · Depends on: the known answers (their table format and loader) · Refs:
-known-answer-tables shaping, 2026-10-17*
+*Horizon: mid-term · Depends on: the known answers, their table format and loader (cleared
+2026-10-17) · Refs: known-answer-tables shaping, 2026-10-17*
 **Seed:** [`issues/known-factor-tables.md`](issues/known-factor-tables.md)
 
 ## Trial factoring to a chosen bit depth

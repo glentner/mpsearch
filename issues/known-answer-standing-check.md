@@ -69,6 +69,15 @@ Shaping chooses where the check runs. Options seen so far:
   provisional), the exponent table's ascending order and append-only growth can't both hold, and a
   GOAL amendment decides; and an exponent row has no correction form, since it carries no value, so
   a correction there needs a new version of the format (its magic line, `# mps known 1`).
+- **The vector files' append-order trap** (found in `reference-big-integer` review cycle 3; carried
+  here from the retired `known-answer-tables` seed, 2026-10-17). § Invariants 3 binds
+  `tests/vectors/` too. `tests/vectors/hex.txt` and `decimal.txt` hold one record per operand of
+  `every_operand()` in `tests/vectors/generate.py`, in its order: the edges and M_p of the folding
+  exponents, then every operand of the `arith`, `folding`, `products` and `modular` families, then
+  M_p of the `COMPOSITE` exponents. A cycle that adds a **new** operand to any of those families, or
+  an exponent in its sorted place in `COMPOSITE`, puts its records before existing ones, in the
+  middle of both files. A new operand goes at the very end of `every_operand()`'s list; a reorder of
+  its families must leave every existing record where it is. Shaping decides whether this check covers `tests/vectors/`.
 - Related: `spec/known-answer-tables/` (GOAL R4, PLAN § 2's correction rule, `verify/tables.py`);
   `issues/doc-claims-standing-check.md` and `issues/ci-job-standing-checks.md`, the same gap for the
   notes and the cluster job.
