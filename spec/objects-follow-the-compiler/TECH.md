@@ -3,7 +3,7 @@ slug: objects-follow-the-compiler
 title: A compiler or flag change rebuilds what it links
 kind: fix
 appetite: small
-status: in_review
+status: blocked
 branch: fix/objects-follow-the-compiler
 base: main
 current_phase: done
@@ -47,10 +47,10 @@ phases:
   hill: uphill
   verify: sh spec/objects-follow-the-compiler/verify/p2.sh
 review:
-  last_reviewed_commit: ''
-  verdict: none
-  blocked_reason: ''
-  cycle: 0
+  last_reviewed_commit: 9e3bd51997867b8177849d4fcec5fdb75c2a4c80
+  verdict: changes-requested
+  blocked_reason: 'F1 (R3): non-building make runs delete the build'
+  cycle: 1
 ---
 
 # TECH.md — A compiler or flag change rebuilds what it links
