@@ -3,10 +3,10 @@ slug: objects-follow-the-compiler
 title: A compiler or flag change rebuilds what it links
 kind: fix
 appetite: small
-status: blocked
+status: in_progress
 branch: fix/objects-follow-the-compiler
 base: main
-current_phase: done
+current_phase: P2
 last_updated: '2026-10-17'
 phases:
 - id: P1
@@ -29,7 +29,7 @@ phases:
   verify: sh spec/objects-follow-the-compiler/verify/p1.sh
 - id: P2
   name: Audit, deferral ledger, push and cluster runs
-  status: done
+  status: in_progress
   satisfies:
   - R1
   - R2
@@ -45,7 +45,7 @@ phases:
   parallel: false
   hammerable: false
   hill: uphill
-  verify: sh spec/objects-follow-the-compiler/verify/p2.sh
+  verify: sh spec/objects-follow-the-compiler/verify/p2.sh && sh spec/objects-follow-the-compiler/remediation/f1-quiet-runs.sh
 review:
   last_reviewed_commit: 9e3bd51997867b8177849d4fcec5fdb75c2a4c80
   verdict: changes-requested
@@ -102,8 +102,9 @@ Sources:
   the phase name in the body, no trailers. Commit messages and committed files name no cluster,
   account, partition, path or other site detail.
 - **What is pinned** (PLAN § 2): the record's path `lib/settings`; the five recorded variables in
-  their effective values; the reset at parse time, before any target is examined; the record's
-  rule as an order-only prerequisite of every object; `BUILT`, used by the reset and by `clean`;
+  their effective values; the comparison at parse time, before any target is examined, with the
+  removal only in a recipe, so a run that builds nothing changes nothing (amended for review F1,
+  PLAN § 7); the record's rule as an order-only prerequisite of every object; `BUILT`, used by the reset and by `clean`;
   silence; the compile and link recipes, `MODULES`, `DEPS`, the `check` recipe unchanged; the three
   `AGENTS.md` edits, verbatim; `.gitignore`'s one line. Anything else is the builder's.
 - **The gates are fixed.** `spec/objects-follow-the-compiler/verify/` is reviewed as of the plan
@@ -181,8 +182,9 @@ state.
         existing seed, per `AGENTS.md` § Factory; list each under `## Deferrals` with its home.
   - [x] The known one: a Notes bullet in `issues/packaging-and-install.md` with the words "deferred
         from `objects-follow-the-compiler`" (the ledger check looks for them): an install target
-        and any backend keep `lib/settings`, the reset before any target and `BUILT` as what
-        `make clean` removes, and add their own outputs to `BUILT` (PLAN § 6).
+        and any backend keep `lib/settings`, the comparison before any target with the removal only
+        in the record's recipe, and `BUILT` as what `make clean` removes, and add their own outputs
+        to `BUILT` (PLAN § 6; amended for review F1).
   - [x] Every `issues/*.md` matches exactly one `**Seed:**` line in `ROADMAP.md`; this cycle's seed
         stays `adopted:objects-follow-the-compiler` (publish retires it).
 - [x] **Pre-push.** `sh spec/objects-follow-the-compiler/verify/prepush.sh` must be green: the
@@ -209,12 +211,37 @@ state.
       `evidence/<target>.check.log` (the run's `result.json`, scheduler output, `build.log` and
       `check.log`); and `evidence/jobs.tsv` (a header `label job_id state exit_code` and one
       tab-separated line per job from `sacct`).
-- **Verify:** `sh spec/objects-follow-the-compiler/verify/p2.sh`
+
+**Amendment, 2026-10-17: review F1 (R3).** The blind review of `9e3bd51` found that a make run that
+builds nothing (`make -n`, `make -q`, `make -npq .DEFAULT`, a mistyped goal, the CI probe in a
+developer tree, `make -f <repo>/Makefile` from another directory) deleted the build whenever the
+settings differed, so the next build with unchanged settings recompiled everything. PLAN § 3 had
+accepted it as a deviation, which never bends an R-ID; the row is gone (PLAN § 7). P2 is reopened
+(it satisfies R3 and is the latest phase), and its `verify:` adds the class checker, since the
+frozen gates passed the defect.
+
+- [x] **F1** (R3): the `Makefile` compares the settings at parse time and removes nothing there; on a
+      difference every object takes `$(CHANGED)` (phony `FORCE`) in its pattern rule and the
+      binaries and the record are phony, and the record's recipe removes `BUILT` before the first
+      compile. The class checker
+      `spec/objects-follow-the-compiler/remediation/f1-quiet-runs.sh` runs each non-building
+      invocation with other settings and asserts the build byte-, inode- and mtime-identical, the
+      other directory untouched, `-n` printing the rebuild and `-q` exiting 1, and the next plain
+      `make check` compiling nothing; red on `9e3bd51`'s `Makefile` (16 failures) and on a mutation
+      without `$(CHANGED)` and the phony binaries, green on the fix. PLAN § 1–7 amended; the
+      `AGENTS.md` paragraph stays true as pinned ("A build … first removes"), so R8's pin is
+      unchanged. The packaging seed's Notes bullet and the ledger's "Accepted behaviour" entry now
+      describe the amended mechanism.
+- [ ] **Again on the F1 head:** `prepush.sh` and the class checker green; the push; the three
+      cluster runs of the new head; the evidence redacted afresh (the runs of `14d993a` no longer
+      cover `HEAD`); `p2.sh audit`, then the full `verify:`; the R4 times in the ledger; the phase
+      commit.
+- **Verify:** `sh spec/objects-follow-the-compiler/verify/p2.sh && sh spec/objects-follow-the-compiler/remediation/f1-quiet-runs.sh`
   (`sh spec/objects-follow-the-compiler/verify/p2.sh audit` runs P2's own checks without the
-  cumulative gate, for a fast first look).
+  cumulative gate, for a fast first look; the class checker takes about a minute alone).
 - **Touches:** `spec/objects-follow-the-compiler/evidence/*`, `issues/packaging-and-install.md`,
   `ROADMAP.md` only if a new seed is needed; the `Makefile`, `AGENTS.md` and `.gitignore` only if the
-  audit finds a gap.
+  audit finds a gap (F1 changed the `Makefile`).
 
 ---
 

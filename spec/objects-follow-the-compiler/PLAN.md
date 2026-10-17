@@ -1,6 +1,7 @@
 # PLAN — A compiler or flag change rebuilds what it links
 
-> **Status:** Draft for review · **Last updated:** 2026-10-17
+> **Status:** Draft for review · **Last updated:** 2026-10-17 · **Amended:** 2026-10-17, review F1
+> (§ 2 the reset, § 3 the deviation removed, § 5, § 6 the class checker; see § 7)
 > **Authoritative technical design.** The *how*. Vision/contract is [`GOAL.md`](GOAL.md);
 > the phased executable roadmap is [`TECH.md`](TECH.md). No `research/`: a `kind: fix`,
 > `appetite: small` cycle on the lean path, with its few unknowns settled by measurement (§ 4).
@@ -10,9 +11,13 @@
 
 The `Makefile` records the compile settings that built `lib/` and `bin/` in one file,
 `lib/settings`. While make parses the `Makefile`, before it looks at any target, one shell call
-compares this run's settings with that record; when they differ, or there is no record, it removes
-everything the build writes, the same list `make clean` removes. The record is rewritten by an
-order-only rule before the first compile. Nothing compares timestamps: GNU make 3.81 on macOS keeps
+compares this run's settings with that record. When they differ, or there is no record, every
+object takes a phony prerequisite and the binaries are phony, so all of them are out of date
+whatever their timestamps; the record's rule, an order-only prerequisite of every object, runs
+before the first compile, removes everything the build writes (the same list `make clean` removes)
+and writes the new record. Only that recipe removes anything, so a run that builds nothing
+(`make -n`, `make -q`, a goal with no rule, the CI probe) changes nothing, and `-n` and `-q` still
+report the rebuild (amended for review F1, § 7). Nothing compares timestamps: GNU make 3.81 on macOS keeps
 whole seconds (measured, § 4), so the usual idiom, a stamp file that every object depends on, misses
 a switch made in the same second as the last build, which is exactly what a gate's scripted builds
 do. An unchanged run removes nothing and costs one `sh` and one `cat`. The rider adds
@@ -36,38 +41,39 @@ Everything else stays as `b3a6c5a` has it: `src/`, `tests/` (with `tests/cli.sh`
 ### The `Makefile`
 
 What is pinned: the record's path, `lib/settings`; the five variables it records, in the effective
-values the `Makefile` computes; the reset before any target is examined; the record's rule as an
-order-only prerequisite of every object; one list, `BUILT`, of everything the build writes, used by
-the reset and by `clean`; no output from any of it. The compile and link recipes, `MODULES`, `DEPS`,
+values the `Makefile` computes; the comparison while make reads the `Makefile`, before any target
+is examined; the removal only in a recipe, so a run that builds nothing changes nothing (review F1,
+§ 7); the record's rule as an order-only prerequisite of every object; one list, `BUILT`, of
+everything the build writes, used by the reset and by `clean`; no output from any of it. The compile and link recipes, `MODULES`, `DEPS`,
 the `check` recipe, `.DELETE_ON_ERROR` and `-include $(DEPS)` do not change (R7: a fresh clone
 prints the same commands as `b3a6c5a`, and the gates compare them). Names other than `lib/settings`
 and `BUILT`, and the comment's wording, are the builder's.
 
-The prototype, which passed the gate's self-test (§ 6), adds this after `DEPS`:
+The design as amended for review F1 (§ 7; the P1 prototype, which removed `BUILT` from a
+parse-time `RESET := $(shell …)`, passed the gate's self-test, § 6) adds this after `DEPS`, comments
+aside:
 
 ```make
-# Everything the build writes, and what make clean removes.
 BUILT    := lib/*.o lib/*.d lib/check/*.o lib/check/*.d $(EXE) $(CHECK) lib/settings
-
-# The compile settings: everything that picks the compiler or its flags. lib/settings records those
-# that built what is in lib/ and bin/. When this run's differ, or there is no record, everything the
-# last build made goes before make looks at any of it, so nothing another compiler or other flags
-# compiled is linked. Make's one-second timestamps can't tell a switch from a build in the same
-# second, so this compares the settings themselves; an unchanged run removes nothing.
 SETTINGS := $(CXX) | $(CPPFLAGS) | $(CXXFLAGS) | $(IEEE) | $(BOUNDS)
 QUOTED   := '$(subst ','\'',$(SETTINGS))'
-RESET    := $(shell test "`cat lib/settings 2>/dev/null`" = $(QUOTED) || /bin/rm -f $(BUILT))
+CHANGED  := $(shell test "`cat lib/settings 2>/dev/null`" = $(QUOTED) || echo FORCE)
+
+ifneq ($(CHANGED),)
+.PHONY: $(EXE) $(CHECK) lib/settings
+endif
 ```
 
 and, beside the directory rule:
 
 ```make
 lib/settings: | lib
-	@printf '%s\n' $(QUOTED) >$(@)
+	@/bin/rm -f $(BUILT) && printf '%s\n' $(QUOTED) >$(@)
 ```
 
-Each object rule gains `lib/settings` as an order-only prerequisite (`| lib lib/settings`,
-`| lib/check lib/settings`), and `clean` becomes `/bin/rm -f $(BUILT)`.
+Each object rule gains `$(CHANGED)` as a prerequisite and `lib/settings` as an order-only one
+(`src/%.cpp Makefile $(CHANGED) | lib lib/settings`, and `| lib/check lib/settings`), `FORCE:` is
+a phony rule with no recipe, and `clean` becomes `/bin/rm -f $(BUILT)`.
 
 Why each piece:
 
@@ -76,10 +82,25 @@ Why each piece:
   environment (R1's second route, which the `Makefile` honours through `$(origin CXX)`) or the
   `clang++` default, and `CXXFLAGS`, `CPPFLAGS`, `IEEE` and `BOUNDS` from the command line or the
   defaults. A return to the defaults is a change like any other (R2).
-- **At parse time, by removal.** `RESET` is a `:=` assignment, so the shell call runs while make
-  reads the `Makefile`, before it has stat'ed a single target. What it removes does not exist when
-  make decides what to build, so every object and both binaries are rebuilt with this run's
-  settings, whatever the clock says (R1, R2). It sits above `-include $(DEPS)`.
+- **Compared at parse time, removed by a recipe.** `CHANGED` is a `:=` assignment, so the
+  comparison runs while make reads the `Makefile`, before it has stat'ed a single target. On a
+  difference, `FORCE` (phony) is a prerequisite of every object and the binaries and the record are
+  phony, so make rebuilds all of them with this run's settings whatever the clock says (R1, R2): a
+  phony prerequisite is always newer. The binaries are made phony rather than given `FORCE`
+  because `bin/mps`'s link names its prerequisites (`$(^)`), which `FORCE` would join. `FORCE` goes
+  into the object *pattern* rules, not an explicit `$(OBJECTS): FORCE`, so an object with no source
+  still has no rule: an explicit rule would let `make -f <repo>/Makefile` in another directory
+  "make" the missing objects and run a link there. The record's recipe, which every object waits
+  for, removes `BUILT` before the first compile, so the objects and binaries this goal does not
+  build (`lib/check/` under `make`) don't survive under the new record either.
+- **Only a recipe removes anything (review F1).** A run that builds nothing runs no recipe: `make -n`
+  prints the removal, the compiles and the links without running them, `make -q` exits 1, and a goal
+  with no rule here (a typo, `.DEFAULT`, the CI probe's `mps-print-cxx` from stdin) runs nothing, so
+  each leaves every file as it was and the next build with the recorded settings does nothing.
+  `make -f <repo>/Makefile` from another directory finds no `src/` there, so no object rule applies
+  and no recipe runs. Nothing reads `MAKEFLAGS` or `MAKECMDGOALS`, so nothing depends on how a make
+  version spells its flags at parse time (GNU Make 4.4 puts long options there too). An interrupted
+  switch leaves the new record and only objects built under it, as before.
 - **Order-only record.** The record needs only to exist before the first compile writes an object
   under the new settings; as an order-only prerequisite it is never compared by time, so it can
   neither force a rebuild of an unchanged tree nor hide a stale object (R3).
@@ -92,7 +113,7 @@ Why each piece:
   `-Wl,-x` would be cut from the record and a change after the comma missed. `subst`'s third
   argument takes the rest of the line. The quoting escapes `'` for the shell.
 - **Silent and fresh-clone neutral.** In a fresh clone there is no record and nothing to remove,
-  and the reset writes nothing, so `ci/test-commit.sh`'s compiler probe
+  and the comparison writes nothing, so `ci/test-commit.sh`'s compiler probe
   (`make -s -f Makefile -f - mps-print-cxx CXX=g++`) prints exactly `g++` and leaves no `lib/`
   behind; the build then prints `b3a6c5a`'s commands line for line (R7). The record's recipe is
   silent.
@@ -107,7 +128,8 @@ How it behaves:
 | fresh clone, CI probe, `make`, `make check` | nothing removed, nothing written by the probe; `b3a6c5a`'s commands; the record appears with `lib/` |
 | nothing changed | no removal, no compile, no link (R3) |
 | a source or header changed | the objects that depend on it, as at `b3a6c5a` (R3) |
-| `CXX`, `CXXFLAGS`, `CPPFLAGS`, `IEEE` or `BOUNDS` changed, or back to the defaults | everything under `BUILT` removed; a full build with the new settings; a new record (R1, R2) |
+| `CXX`, `CXXFLAGS`, `CPPFLAGS`, `IEEE` or `BOUNDS` changed, or back to the defaults | the record's recipe removes everything under `BUILT` before the first compile and writes the new record; a full build with the new settings, whatever the timestamps (R1, R2) |
+| settings changed, but `make -n`, `make -q`, `make -npq .DEFAULT`, a goal with no rule, the CI probe, or `make -f` from another directory | nothing removed or written; `-n` prints the removal and the full rebuild, `-q` exits 1; the next build with the recorded settings does nothing (R3, review F1) |
 | a tree built before this cycle (objects, no record) | treated as changed: one full rebuild |
 | `make clean` | `BUILT` removed, record included; no file left under `lib/` or `bin/` (R5) |
 | a compiler upgraded in place under the same name | not seen (GOAL non-goal); `make -B`, as `AGENTS.md` says |
@@ -150,13 +172,13 @@ importing either generator from its own directory leaves `git status` clean (R9)
 
 | R-ID | Design element(s) that satisfy it |
 |------|-----------------------------------|
-| R1 | `SETTINGS` holds the effective `CXX` (argument, environment or default); `RESET` removes `BUILT` on a difference before make examines anything, so every linked object is compiled by the run's `CXX` |
+| R1 | `SETTINGS` holds the effective `CXX` (argument, environment or default); on a difference every object and binary is out of date by a phony prerequisite or as phony, and the record's recipe removes `BUILT` before the first compile, so every linked object is compiled by the run's `CXX` |
 | R2 | the same, for `CXXFLAGS`, `CPPFLAGS`, `IEEE`, `BOUNDS`; a return to the defaults differs from the record like any change |
-| R3 | an unchanged run matches the record and removes nothing; the record is order-only, so it never forces a rebuild; the object rules and `-MMD` dependencies are `b3a6c5a`'s |
+| R3 | an unchanged run matches the record, so `CHANGED` is empty and the rules are `b3a6c5a`'s plus the order-only record, which never forces a rebuild; `-MMD` dependencies are `b3a6c5a`'s; a run that builds nothing runs no recipe, so it removes nothing (review F1) |
 | R4 | the cost of an unchanged run is one `sh` and one `cat` at parse time; measured in § 6 |
 | R5 | the record lives in `lib/`; `BUILT` is everything the build writes and `clean` removes all of it; `clean_paths` and `.gitignore` unchanged |
 | R6 | GNU make 3.81 constructs and POSIX utilities only; every gate build uses `/usr/bin/make` 3.81 with both compilers, and the cluster runs use GNU Make 4 |
-| R7 | silent reset that writes nothing in a fresh clone; recipes unchanged; `ci/` untouched |
+| R7 | a silent comparison that writes nothing; the probe's goal runs no recipe of this file; recipes unchanged; `ci/` untouched |
 | R8 | the three `AGENTS.md` edits above, in the P1 commit that changes the `Makefile` |
 | R9 | `__pycache__/` in `.gitignore` |
 
@@ -182,9 +204,10 @@ trigger 3 (§ 4).
 
 ### Deviation justifications
 
-| Deviation | Why needed | Simpler alternative rejected because |
-|-----------|-----------|--------------------------------------|
-| A side effect at parse time: when the settings differ, the reset removes the build's outputs while make reads the `Makefile`, whatever the goal, including `make -n`, `make -q`, `make clean` and the CI probe | the removal must happen before make stats any target, or a switch in the same second as the last build keeps stale objects | a stamp-file prerequisite rewritten only on change (`FORCE` + compare, git's idiom) leaves every decision to timestamps, and make 3.81 here keeps whole seconds: the gate's self-test shows it linking stale objects (§ 6, M2). Guarding the reset under `-n`/`-q` (MAKEFLAGS is readable at parse time in 3.81) would make a dry run report stale objects as up to date, so it was left out |
+None. The table held one row, a parse-time removal that ran whatever the goal (`make -n`,
+`make -q`, an unknown goal, the CI probe), accepted at plan sign-off. It bent R3: after such a run
+the next build with unchanged settings recompiled everything. A deviation never bends an R-ID, so
+the review's F1 removed it, and the row with it (§ 7).
 
 ## 4. Rabbit holes (resolved)
 
@@ -206,7 +229,7 @@ planning prototype directory (`$(git rev-parse --absolute-git-dir)/plan-proto/`,
   Mach-O file with those two zeroed and every other byte counted, and compare every output with a
   fresh `make -B` reference built with the same settings.
 - **`MAKEFLAGS` at parse time in 3.81** → set (`n`, `sn`, `q`, `kB`), so a dry-run guard was
-  possible; rejected in § 3.
+  possible. The amended design (§ 7) needs no guard: it removes nothing at parse time.
 - **`$(call)` and commas** → `$(call)` splits at commas; the prototype quotes with `subst`.
 - **Trigger 3** (a gate-shaped deliverable) → not fired. The deliverable is the build's dependency
   tracking, not a check: the set of checks `make check` runs and their code do not change (GOAL
@@ -218,9 +241,12 @@ planning prototype directory (`$(git rev-parse --absolute-git-dir)/plan-proto/`,
 
 ## 5. Risks & open questions
 
-- **A dry run removes stale outputs.** With different settings, `make -n` or `make -q` removes the
-  outputs the next real build would rebuild anyway, and then reports the full rebuild correctly.
-  Accepted (§ 3).
+- **A dry run with other settings** prints the record's removal and the full rebuild and removes
+  nothing; `make -q` exits 1 (review F1, § 7). `make -t` touches the objects and leaves the record
+  as it was, so the next build with those settings rebuilds; `-t` lies about the build by design.
+- **A new output rule** (the packaging seed's install target or a backend) has to take `$(CHANGED)`
+  in its prerequisites, or be phony on a change when its recipe names its prerequisites, and add
+  its outputs to `BUILT`; the seed's Notes say so.
 - **The settings are compared as text.** `CXXFLAGS='-O2  -g'` and `CXXFLAGS='-O2 -g'` differ and
   rebuild. Harmless. A value with a newline cannot round-trip through `$(shell)`, and none is
   plausible on a command line.
@@ -368,5 +394,37 @@ through `redact.sh`. The scan reads `~/.config/mpsearch/site.env`.
 `spec/objects-follow-the-compiler/evidence/ledger.md` with `## Deferrals`. The one known deferral:
 `issues/packaging-and-install.md` gains a Notes bullet, "deferred from
 `objects-follow-the-compiler`": an install target and any backend keep the settings record, the
-reset before any target and `BUILT` as what `make clean` removes, and add their own outputs to
-`BUILT`. Anything the build defers goes the same way (`AGENTS.md` § Factory).
+comparison before any target with the removal only in the record's recipe, and `BUILT` as what
+`make clean` removes, and add their own outputs to `BUILT` (amended for review F1). Anything the build defers goes the same way (`AGENTS.md` § Factory).
+
+### Review F1: the class checker
+
+The frozen gates passed F1 (a make run that builds nothing deleted the build), so P2's `verify:` adds
+a class checker outside `verify/`: `spec/objects-follow-the-compiler/remediation/f1-quiet-runs.sh`.
+In a copy of the tree built once with clang++ and dated 2 s ahead, each case in its own copy of that
+build, with settings other than the build's: `make -n CXX=g++-16 check`, `make -q CXXFLAGS=-O0`,
+`make -npq CXX=g++-16 .DEFAULT`, `make CXX=g++-16 chek`, the CI probe verbatim, and
+`make -f <copy>/Makefile CXX=g++-16 [check]` from a directory holding `lib/` and `bin/` files of
+its own. After each, every file under `lib/` and `bin/` (and the other directory's) keeps its inode,
+size, nanosecond mtime and bytes, no compiler ran, and the next plain `make check` compiles and links
+nothing and passes. `-n` must print g++-16's compiles and links and `-q` exit 1; with the build's
+own settings `-n` prints no compile and `-q` exits 0. Process groups and the checker's own
+`mktemp` directory are cleaned up as the gates do. Seen red on `9e3bd51`'s `Makefile` (16 failures:
+every case changed the build, every follow-up recompiled, and the other directory lost its files)
+and on a mutation that keeps the recipe-only removal but drops `$(CHANGED)` and the phony binaries
+(`-n` hid the rebuild, `-q` exited 0); green on the amended `Makefile`.
+
+## 7. Amendments
+
+- **2026-10-17, review F1 (R3).** The reset no longer removes anything while make reads the
+  `Makefile`. The comparison still runs there; on a difference it makes every object (a phony
+  prerequisite in the pattern rules) and both binaries and the record (phony) out of date, and the
+  record's recipe removes `BUILT` before the first compile. § 1, § 2 (the pin, the code, the
+  reasons, the behaviour table, the R-map), § 3 (the deviation row removed), § 4, § 5 and § 6 (the
+  ledger bullet, the class checker) follow. The `AGENTS.md` paragraph ("A build whose compiler or
+  compile flags … differ … first removes everything the last build made") stays true as pinned: a
+  run that builds nothing is not a build, so the pin and R8 are unchanged. The candidate the
+  foreman named (anchor `BUILT` to the `Makefile`'s directory, skip the parse-time removal under
+  `n`/`q`/`p` in `MAKEFLAGS` or an unknown goal, and a phony prerequisite in those modes) was not
+  needed: with the removal in a recipe, no mode test and no anchoring is involved, and `make -p`
+  alone, which builds, behaves as a build.

@@ -50,12 +50,17 @@ matters.
 - **Keep the settings record** (deferred from `objects-follow-the-compiler`, 2026-10-17). The
   `Makefile` records the compile settings that built `lib/` and `bin/` in `lib/settings` (`CXX`,
   `CPPFLAGS`, `CXXFLAGS`, `IEEE`, `BOUNDS`), and while make reads the file, before it examines any
-  target, it compares this run's settings with the record and removes `BUILT` on a difference.
-  `BUILT` is the one list of everything the build writes, and it is what `make clean` removes. An
-  install target and any backend keep all three: `lib/settings`, the reset before any target, and
-  `BUILT` as what `make clean` removes; they add their own outputs (a backend's objects or kernels)
-  to `BUILT`, and any variable that picks a backend's compiler or flags to the recorded settings, so
-  a switch can't link another configuration's objects. An install target reads the built binary and
+  target, it compares this run's settings with the record. On a difference every object takes the
+  phony `$(CHANGED)` in its pattern rule and the binaries and the record are phony, and the
+  record's recipe, which every object waits for, removes `BUILT` before the first compile; nothing
+  is removed while make reads the file, so a run that builds nothing (`make -n`, `make -q`, a goal
+  with no rule) changes nothing. `BUILT` is the one list of everything the build writes, and it is
+  what `make clean` removes. An install target and any backend keep all three: `lib/settings`, the
+  comparison before any target with the removal only in the record's recipe, and `BUILT` as what
+  `make clean` removes; they add their own outputs (a backend's objects or kernels) to `BUILT`,
+  give each new output rule `$(CHANGED)` (or make the output phony on a change, when its recipe
+  names its prerequisites), and add any variable that picks a backend's compiler or flags to the
+  recorded settings, so a switch can't link another configuration's objects. An install target reads the built binary and
   writes nothing under the source tree outside `lib/` and `bin/`. If `--version`'s build identity
   probes the compiler's version, that version can join the record, which would also catch a
   compiler upgraded in place under the same name (a non-goal there, where `make -B` stays the

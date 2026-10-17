@@ -25,13 +25,21 @@ BUILT    := lib/*.o lib/*.d lib/check/*.o lib/check/*.d $(EXE) $(CHECK) lib/sett
 
 # The compile settings are everything that picks the compiler or its flags, and lib/settings records
 # those that built what is in lib/ and bin/. When this run's differ from the record, or there is no
-# record, everything the last build made is removed while make reads this file, before it looks at
-# any target, so nothing another compiler or other flags compiled is linked. The settings are
-# compared, not timed: make keeps whole-second timestamps, so a stamp file can't tell a switch from
-# a build in the same second. An unchanged run removes nothing.
+# record, CHANGED names a phony prerequisite of every object and the binaries are phony, so all of
+# them are out of date whatever their timestamps; and the record's recipe, which runs before the
+# first compile, removes everything the last build made, so nothing another compiler or other flags
+# compiled is linked. The settings are compared, not timed: make keeps whole-second timestamps, so a
+# stamp file can't tell a switch from a build in the same second. Only that recipe removes anything:
+# a run that builds nothing (make -n, make -q, a goal with no rule here) leaves every file as it
+# was, and -n and -q still report the rebuild. An unchanged run changes nothing.
 SETTINGS := $(CXX) | $(CPPFLAGS) | $(CXXFLAGS) | $(IEEE) | $(BOUNDS)
 QUOTED   := '$(subst ','\'',$(SETTINGS))'
-RESET    := $(shell test "`cat lib/settings 2>/dev/null`" = $(QUOTED) || /bin/rm -f $(BUILT))
+CHANGED  := $(shell test "`cat lib/settings 2>/dev/null`" = $(QUOTED) || echo FORCE)
+
+# The link of bin/mps names its prerequisites, so the binaries can't take CHANGED as one.
+ifneq ($(CHANGED),)
+.PHONY: $(EXE) $(CHECK) lib/settings
+endif
 
 $(EXE): lib/main.o $(OBJECTS) | bin
 	$(CXX) $(CXXFLAGS) $(IEEE) $(^) -o $(@)
@@ -42,20 +50,20 @@ $(CHECK): $(CHECKS) $(CHECKED) tests | bin
 
 # The checks' own objects come first: make 3.81 takes the first pattern that applies, and lib/%.o
 # would match lib/check/*.o too if it had a source to build them from.
-lib/check/%.o: src/%.cpp Makefile | lib/check lib/settings
+lib/check/%.o: src/%.cpp Makefile $(CHANGED) | lib/check lib/settings
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(BOUNDS) $(IEEE) -c $(<) -o $(@)
 
-lib/check/%.o: tests/%.cpp Makefile | lib/check lib/settings
+lib/check/%.o: tests/%.cpp Makefile $(CHANGED) | lib/check lib/settings
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(BOUNDS) -Werror=unused-function $(IEEE) -c $(<) -o $(@)
 
-lib/%.o: src/%.cpp Makefile | lib lib/settings
+lib/%.o: src/%.cpp Makefile $(CHANGED) | lib lib/settings
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(IEEE) -c $(<) -o $(@)
 
 lib bin lib/check:
 	mkdir -p $(@)
 
 lib/settings: | lib
-	@printf '%s\n' $(QUOTED) >$(@)
+	@/bin/rm -f $(BUILT) && printf '%s\n' $(QUOTED) >$(@)
 
 check: $(EXE) $(CHECK)
 	@status=0; $(CHECK) || status=1; sh tests/cli.sh $(EXE) || status=1; exit $$status
@@ -63,7 +71,9 @@ check: $(EXE) $(CHECK)
 clean:
 	/bin/rm -f $(BUILT)
 
-.PHONY: check clean
+FORCE:
+
+.PHONY: check clean FORCE
 .DELETE_ON_ERROR:
 
 -include $(DEPS)

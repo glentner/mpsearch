@@ -14,21 +14,17 @@ committed no fix.
 - **The install target and backends keep the settings record** (GOAL, Non-goals; PLAN § 6).
   `issues/packaging-and-install.md` reshapes the `Makefile` later. Home:
   `issues/packaging-and-install.md`, Notes ("deferred from `objects-follow-the-compiler`"): an
-  install target and any backend keep `lib/settings`, the reset before any target and `BUILT` as
-  what `make clean` removes, and add their own outputs to `BUILT`; the same bullet notes that a
+  install target and any backend keep `lib/settings`, the comparison before any target with the
+  removal only in the record's recipe, and `BUILT` as what `make clean` removes, and add their own outputs to `BUILT`; the same bullet notes that a
   compiler version, if the build identity ever probes one, can join the record.
 
 ### Accepted behaviour
 
-- **The reset runs whatever the goal** (PLAN § 3, the deviation; § 5, "A dry run removes stale
-  outputs"). When this run's settings differ from `lib/settings`, the reset removes `BUILT` while
-  make reads the `Makefile`, so `make -n`, `make -q`, `make clean` and `ci/test-commit.sh`'s compiler
-  probe remove stale outputs too. Why it stays: the removal has to happen before make stats any
-  target, or a switch in the same second as the last build keeps stale objects (make 3.81 here keeps
-  whole-second timestamps, PLAN § 4). Guarding it under `-n` or `-q` would make a dry run report
-  stale objects as up to date. What it removes is only what the next real build with those settings
-  rebuilds anyway, `make clean` removes it regardless, and in a fresh clone (where the CI probe
-  runs) there is nothing to remove. No home: this is the design, recorded here and in PLAN § 3.
+- None. The P2 ledger first recorded "the reset runs whatever the goal" here (PLAN § 3's deviation:
+  with other settings, `make -n`, `make -q`, an unknown goal and the CI probe removed the build).
+  The blind review's F1 found it bends R3, and a deviation never bends an R-ID: the remediation
+  moved the removal into the record's recipe, so a run that builds nothing changes nothing, and
+  PLAN § 3 no longer lists it (PLAN § 7, TECH P2 amendment, 2026-10-17).
 
 ### Considered, no action
 
