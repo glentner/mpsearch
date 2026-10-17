@@ -30,6 +30,7 @@ are listed under *Settled questions* at the end.
 
 - correctness before speed;
 - the operators' burn-in on CPUs as soon as there is something correct to burn in with;
+- then the standing checks that keep earlier cycles' gates running;
 - NVIDIA GPUs next, Blackwell first, because a large Blackwell deployment is the next thing to burn
   in;
 - then CPU speed, the Mac's GPU, AMD GPUs, and the rest of the trio;
@@ -119,63 +120,7 @@ Since then, on `main`:
 
 # Part I — Foundation
 
-The groundwork every later cycle grades itself against:
-
-- a standing check that the known answers only grow;
-- a standing check for the cluster test job;
-- a standing check for the notes' numbers and citations;
-- `--` ending the options for every flag, in every position;
-- a compiler change that rebuilds every object.
-
-## A standing check that the known answers only grow
-
-The known-answer tables are append-only: a value is never edited, and a correction is a new row that
-names the row it replaces. `make check` refuses a malformed table, a row without a source and a key
-with two answers, but it reads no history, so an edited or deleted row that leaves the table
-consistent passes it. The cycle that built the tables checked its own diff against `main` in its
-gates, which become records once it merges; the standing form was
-deferred from `known-answer-tables`. A standing check, run before a change lands, fails any edit,
-deletion or reordering of an existing row, whichever cycle makes it, and passes appends and
-corrections.
-
-*Horizon: near-term · Depends on: the known answers (cleared 2026-10-17) · Refs:
-known-answer-tables P4 (design review F11), 2026-10-17*
-**Seed:** [`issues/known-answer-standing-check.md`](issues/known-answer-standing-check.md)
-
-## A standing check for the cluster test job
-
-`make check` never runs the cluster test job or reads its target files, and the cycle that added
-them proved them with phase gates that become records once it merges. A small check in `make check`,
-with a local fixture repository and a stand-in module command and compiler, runs the job's happy
-path and its main failure paths and validates every target file, so a regression shows up on the
-Mac before any cluster time is spent.
-
-*Horizon: near-term · Depends on: test any commit on a cluster (cleared 2026-10-12) · Refs:
-cluster-test-jobs P4, 2026-10-12*
-**Seed:** [`issues/ci-job-standing-checks.md`](issues/ci-job-standing-checks.md)
-
-## A standing check for the notes' numbers and citations
-
-Every number in `doc/` is tied to a computation or a located citation, and every citation to a
-bibliography entry, but the checks live in the gates of the cycle that wrote the notes, which become
-records once it merges. The first algorithm cycle to update a note could break a span and pass
-everything the repository runs. A standing check, with the evaluator moved out of the cycle record,
-keeps the notes as checked as the day they landed.
-
-*Horizon: near-term · Depends on: the mathematics, written down (cleared 2026-10-12) · Refs:
-math-notes-and-references P5, 2026-10-12*
-**Seed:** [`issues/doc-claims-standing-check.md`](issues/doc-claims-standing-check.md)
-
-## `--` ends the options, for every flag in every position
-
-`mps` treats every word after `--` as a positional word, but the checks were added one instance at a time:
-they cover a flag right after `--`, not after another positional or a second `--`, and not a flag given
-both before and after it. One check generated from the parser's flag list pins the property instead, so a
-new option is covered when it is added.
-
-*Horizon: near-term · Depends on: — · Refs: logger-state-per-translation-unit review cycle 3,
-2026-10-12*
-**Seed:** [`issues/end-of-options-checks.md`](issues/end-of-options-checks.md)
+One fix to the build before the engine work begins: a compiler change that rebuilds every object.
 
 ## A compiler change rebuilds every object
 
@@ -279,6 +224,65 @@ signed releases. A fleet comparison is meaningless across mixed builds.
 
 *Horizon: near-term · Depends on: `mps burnin` · Refs: —*
 **Seed:** [`issues/packaging-and-install.md`](issues/packaging-and-install.md)
+
+---
+
+# After the burn-in — standing checks
+
+Four checks that keep running what earlier cycles proved once, in gates that became records when
+they merged: that the known answers only grow; that the cluster test job and its target files work;
+that the notes' numbers and citations hold; and that `--` ends the options for every flag, in every
+position. They sit between Part III and Part IV, after the CPU burn-in and before the GPU work.
+
+## A standing check that the known answers only grow
+
+The known-answer tables are append-only: a value is never edited, and a correction is a new row that
+names the row it replaces. `make check` refuses a malformed table, a row without a source and a key
+with two answers, but it reads no history, so an edited or deleted row that leaves the table
+consistent passes it. The cycle that built the tables checked its own diff against `main` in its
+gates, which become records once it merges; the standing form was
+deferred from `known-answer-tables`. A standing check, run before a change lands, fails any edit,
+deletion or reordering of an existing row, whichever cycle makes it, and passes appends and
+corrections.
+
+*Horizon: near-term · Depends on: the known answers (cleared 2026-10-17) · Refs:
+known-answer-tables P4 (design review F11), 2026-10-17*
+**Seed:** [`issues/known-answer-standing-check.md`](issues/known-answer-standing-check.md)
+
+## A standing check for the cluster test job
+
+`make check` never runs the cluster test job or reads its target files, and the cycle that added
+them proved them with phase gates that become records once it merges. A small check in `make check`,
+with a local fixture repository and a stand-in module command and compiler, runs the job's happy
+path and its main failure paths and validates every target file, so a regression shows up on the
+Mac before any cluster time is spent.
+
+*Horizon: near-term · Depends on: test any commit on a cluster (cleared 2026-10-12) · Refs:
+cluster-test-jobs P4, 2026-10-12*
+**Seed:** [`issues/ci-job-standing-checks.md`](issues/ci-job-standing-checks.md)
+
+## A standing check for the notes' numbers and citations
+
+Every number in `doc/` is tied to a computation or a located citation, and every citation to a
+bibliography entry, but the checks live in the gates of the cycle that wrote the notes, which become
+records once it merges. The first algorithm cycle to update a note could break a span and pass
+everything the repository runs. A standing check, with the evaluator moved out of the cycle record,
+keeps the notes as checked as the day they landed.
+
+*Horizon: near-term · Depends on: the mathematics, written down (cleared 2026-10-12) · Refs:
+math-notes-and-references P5, 2026-10-12*
+**Seed:** [`issues/doc-claims-standing-check.md`](issues/doc-claims-standing-check.md)
+
+## `--` ends the options, for every flag in every position
+
+`mps` treats every word after `--` as a positional word, but the checks were added one instance at a time:
+they cover a flag right after `--`, not after another positional or a second `--`, and not a flag given
+both before and after it. One check generated from the parser's flag list pins the property instead, so a
+new option is covered when it is added.
+
+*Horizon: near-term · Depends on: — · Refs: logger-state-per-translation-unit review cycle 3,
+2026-10-12*
+**Seed:** [`issues/end-of-options-checks.md`](issues/end-of-options-checks.md)
 
 ---
 
