@@ -80,3 +80,9 @@ portable engine's residues (§ Invariants 2), and the round-off monitor stays on
   records. A retune breaks R8's byte-for-byte reproduction, which `make check` can't see, and
   regenerating rewrites expected values against § Invariants 3. Decouple the vector sizes from the
   live constant before retuning (deferred from `reference-big-integer`, review cycle 1, O1).
+- **Lengths above 2^20 words** (deferred from `ibdwt-transform-engine`, its GOAL sign-off,
+  2026-10-22). The portable FP64 engine supports N = m·2^k ≤ 2^20 with odd m ≤ 15, with a measured
+  length table up to about 19 million (its GOAL, R2 and R3). Lengths above 2^20, odd m above 15, and
+  the 7.5M words (15·2^19) the largest known exponent, 136,279,841, needs are this seed's: R3 here
+  compares the optimised engine with the portable one, so the portable engine needs those lengths,
+  their differential tests and measured table rows first.
