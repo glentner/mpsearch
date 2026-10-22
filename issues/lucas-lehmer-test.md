@@ -127,3 +127,13 @@ The checkpoint format is the one `.mps` file format, shared with PRP and P-1.
   `tests/known/mersenne-exponents.txt`), and `reference-arithmetic.md` line 77 names only
   `tests/vectors/` as what they are checked against. This cycle rewrites those sections, so it
   corrects them (found by `known-answer-tables` review cycle 1, out of Scope there).
+- **Fault policy on the driver's side** (deferred from `ibdwt-transform-engine`, by Geoffrey's
+  ruling of 2026-10-22 on § Invariants 2). The engine measures each squaring's round-off, refuses
+  past its threshold (0.4375 by default) and keeps its input. The retry clause of § Invariants 2
+  binds this driver from this cycle on, the first with checkpoints and verdicts: replaying from the
+  saved input to tell a hardware fault from a reproducible excess, retrying at a larger length from
+  the last good checkpoint, and logging the band between the length table's sizing limit (0.35) and
+  the threshold.
+- **The engine's standing differential check** (Geoffrey's ruling, 2026-10-22). This cycle's shaping
+  decides the form of `issues/engine-differential-standing-check.md` before any verdict depends on
+  the engine, since the engine's full differential suite runs outside `make check` and `verify`.
