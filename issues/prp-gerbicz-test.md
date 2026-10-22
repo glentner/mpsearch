@@ -94,3 +94,13 @@ own check. The Gerbicz check makes PRP the default arithmetic of every burn-in p
   scheme", arXiv:2209.15623, 2022 (the check generalised to any exponent); K. Pietrzak, "Simple
   verifiable delay functions", ITCS 2019, doi:10.4230/LIPIcs.ITCS.2019.60.
 - Found by: factory adoption review, 2026-10-11.
+- **The general multiply arrives with the engine** (from `ibdwt-transform-engine`, its GOAL
+  sign-off, 2026-10-22). The FP64 engine multiplies two residues modulo M_p under the same round-off
+  monitoring as its squaring (its GOAL, R14), so the Gerbicz product inherits it and this cycle adds
+  no engine operation for it.
+- **Fault policy on the driver's side** (deferred from `ibdwt-transform-engine`, by Geoffrey's
+  ruling of 2026-10-22 on § Invariants 2). The engine measures each squaring's and product's
+  round-off, refuses past its threshold (0.4375 by default) and keeps its input. What follows a
+  refusal is the driver's: replaying from the saved input to tell a hardware fault from a
+  reproducible excess, retrying at a larger length from the last good checkpoint, and logging the
+  band between the length table's sizing limit (0.35) and the threshold.

@@ -80,3 +80,9 @@ probability. Stage 1 is a left-to-right exponentiation, so it can carry a Gerbic
   (Montgomery 1987, Montgomery–Silverman 1990, Montgomery–Kruppa 2008) were read only in their
   abstracts; a stage 2 built from one reads it in full.
 - Found by: factory adoption review, 2026-10-11.
+- **Multiplying by a small constant** (deferred from `ibdwt-transform-engine`, its GOAL sign-off,
+  2026-10-22). The FP64 engine squares and multiplies two residues modulo M_p (its GOAL, R4 and
+  R14), but has no multiply by a small constant. Stage 1's powering needs one, so this cycle adds it
+  to the engine, with its differential test against `BigInt` at every supported length and under
+  the same round-off monitoring (§ Invariants 2). The general multiply this seed depends on arrives
+  with the engine.
