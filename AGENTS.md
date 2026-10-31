@@ -200,10 +200,10 @@ A cycle that adds an arithmetic engine, a test driver that prints a verdict, a c
 
 - No code from Prime95/mprime, Mlucas, gpuowl/PRPLL, CUDALucas, mfaktc/mfakto, GMP/GMP-ECM, or any other Mersenne or big-number program enters this repo. That covers copying, translating, and paraphrasing from their source. The algorithms come from the mathematics and the published papers, cited where they are used. Reading those programs' documentation, release notes and published timings is fine.
 - An agent working here never opens those programs' source: no repository file views, commits, pull-request diffs, or source archives. Pull-request pages mix prose with code, so read them only when their prose is needed, and never their file tabs.
-- Snippets from Rosetta Code and similar sites stay out. Rosetta Code's content is under the GNU FDL, which is incompatible with the GPL.
-- Third-party code enters only with the author's approval and a GPLv3-compatible licence, recorded where it lives. Prime95's licence adds an award-assignment term, so its code can't enter on licence grounds either.
-- Author our own code wherever possible. `mps` is GPL-3.0-only. Linking a proprietary vendor runtime (NVIDIA CUDA, AMD ROCm, Apple Metal, Google libtpu) is allowed only under the additional permission (GPLv3 section 7) that `LICENSE-EXCEPTION` grants beside the GPLv3 text in `LICENSE`, and no other proprietary code is linked.
-- Contributions come under the same expression as every header, `GPL-3.0-only WITH GPL-3.0-linking-exception`, because outside GPL code can't carry the additional permission.
+- Snippets from Rosetta Code and similar sites stay out. Rosetta Code's content is under the GNU FDL, a copyleft licence that can't be relicensed under Apache-2.0.
+- Third-party code enters only with the author's approval and a permissive licence compatible with Apache-2.0 (Apache-2.0, MIT, BSD), recorded where it lives with its notices kept. Copyleft code (GPL, LGPL, FDL) can't enter. Prime95's licence adds an award-assignment term and isn't open source, so its code can't enter on licence grounds either.
+- Author our own code wherever possible. `mps` is Apache-2.0 (`LICENSE`). A build may link a proprietary vendor runtime (NVIDIA CUDA, AMD ROCm, Apple Metal, Google libtpu) under that runtime's own licence, and no other proprietary code enters the tree.
+- Contributions come under the expression in every header, `Apache-2.0`, as the licence's section 5 provides.
 
 ### 5. Dependency-free core
 

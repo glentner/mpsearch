@@ -77,7 +77,7 @@ it.
 
 - `kind: spike`: the deliverable is evidence and a decision. The code may be throwaway.
 - Shaping confirms how to reach TPU v7, and the budget.
-- Licensing: linking proprietary libtpu raises the same GPLv3 question as the CUDA runtime
+- Licensing: `mps` is Apache-2.0, so linking proprietary libtpu needs no extra permission
   (`issues/cuda-backend.md`).
 - References: Google Cloud, "TPU7x (Ironwood)" documentation; OpenXLA, PJRT C API
   (`pjrt_c_api.h`); T. Lu et al., "Large-scale discrete Fourier transform on TPUs", *IEEE Access* 9,

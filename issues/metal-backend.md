@@ -75,7 +75,7 @@ build stays free of any Metal dependency.
 ## Notes
 
 - Vendoring metal-cpp (Apache-2.0) is allowed only with the author's approval and its licence and
-  notices kept (§ Invariants 4). Apache-2.0 code may be included in GPLv3 works. metal-cpp has no
+  notices kept (§ Invariants 4). metal-cpp shares `mps`'s licence, Apache-2.0. metal-cpp has no
   tagged releases, so newer APIs are gated at run time. Objective-C++ is the fallback.
 - MPS and MPSGraph FFTs are FP32/FP16/BF16 only, and cannot square exactly.
 - Energy: IOReport gives per-rail energy without root on macOS 26 (entitlement-gated on 27);

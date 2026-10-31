@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2024 Geoffrey Lentner
-# SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
+# SPDX-License-Identifier: Apache-2.0
 
 ifeq ($(origin CXX),default)
 CXX      := clang++

@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2026 Geoffrey Lentner
-# SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
+# SPDX-License-Identifier: Apache-2.0
 #
 # GCC on aarch64 NVIDIA GB10 (Arm Cortex-X925 and Cortex-A725)
 #

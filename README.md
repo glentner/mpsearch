@@ -12,11 +12,8 @@ License
 
 Copyright (C) 2024-2026 Geoffrey Lentner
 
-MPS is free software: you can redistribute it and/or modify it under the terms
-of the GNU General Public License, version 3 only, as published by the Free
-Software Foundation (LICENSE). It is distributed WITHOUT ANY WARRANTY.
+MPS is licensed under the Apache License, Version 2.0 (LICENSE). It is
+distributed WITHOUT ANY WARRANTY; see the licence for the specific terms.
 
-As an additional permission under section 7 of the GPL (LICENSE-EXCEPTION), you
-may convey MPS linked with the NVIDIA CUDA Toolkit and driver CUDA libraries, the
-AMD ROCm libraries, Apple's Metal, Foundation and QuartzCore frameworks, and
-Google's libtpu. The CPU build links none of them.
+GPU builds may link vendor runtimes (NVIDIA CUDA, AMD ROCm, Apple Metal, Google
+libtpu) under their own licences. The CPU build links none of them.

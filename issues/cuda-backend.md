@@ -74,9 +74,8 @@ device. The kernel sources are shared with HIP through a thin header (`issues/hi
 - Shaping decides whether cuFFT may serve as a correctness oracle in tests. The fused kernels are
   `mps`'s own either way. cuFFTDx's licence bars open-source licensing of the combined work, so it is
   out.
-- **Licensing.** GPLv3's system-library exception may not cover the proprietary CUDA runtime. The
-  author chose to grant an additional permission under GPLv3 section 7 for it (2026-10-11), and
-  `LICENSE-EXCEPTION` grants it. Kernels and host code are `mps`'s own.
+- **Licensing.** `mps` is Apache-2.0 (since 2026-10-31), so linking the proprietary CUDA runtime
+  needs no extra permission. Kernels and host code are `mps`'s own.
 - Reference: wfgarnett3, "PRPLL NTT now supports both CUDA and OpenCL", NVIDIA Developer Forums,
   2026, https://forums.developer.nvidia.com/t/prpll-ntt-now-supports-both-cuda-and-opencl/367918.
 - **A cluster target.** The cluster test job (`ci/test-commit.sh`) shipped with CPU targets only;

@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-FileCopyrightText: 2026 Geoffrey Lentner
-# SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
+# SPDX-License-Identifier: Apache-2.0
 #
 # Command-line smoke test
 #
