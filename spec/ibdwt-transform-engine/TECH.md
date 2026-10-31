@@ -6,12 +6,12 @@ appetite: big
 status: in_progress
 branch: feature/ibdwt-transform-engine
 base: main
-current_phase: P1
+current_phase: P2
 last_updated: '2026-10-31'
 phases:
 - id: P1
   name: The transform, the length table and its measurement
-  status: pending
+  status: done
   satisfies:
   - R2
   - R3
@@ -196,28 +196,28 @@ the length table is set by the builder's own measurement, committed beside it wi
 and `make check` holds the one to the other; `Engine` refuses what the table doesn't hold; the
 engine tier exists; AGENTS.md and the note name everything this commit creates.
 
-- [ ] `src/fft.hpp`, `src/fft.cpp` (PLAN § 2.2.3): `fft::Complex`, `LARGEST_ODD_FACTOR`,
+- [x] `src/fft.hpp`, `src/fft.cpp` (PLAN § 2.2.3): `fft::Complex`, `LARGEST_ODD_FACTOR`,
       `is_supported`, `root`, `Plan` (forward, unnormalized inverse), `fft_error`; Cooley–Tukey
       1965 and Percival 2003 cited.
-- [ ] `src/ibdwt.hpp`, `src/ibdwt.cpp` (§ 2.2.1–2.2.6): `engine_error`, `roundoff_error`,
+- [x] `src/ibdwt.hpp`, `src/ibdwt.cpp` (§ 2.2.1–2.2.6): `engine_error`, `roundoff_error`,
       `THRESHOLD`, `MAGNITUDE_LIMIT`, `MAX_WIDTH`, `positions`, `weights`, `inverse_weights`,
       `RMS_MARGIN`, `Transform`, `Engine` (refusing through `require_held` and a threshold outside
       (0, 0.5); `rms_limit` from `rms_envelope`), `Residue`, `require_residue`, `roundoff` (NaN on a
       non-finite output), `Statistics`/`sample`; internal, in no header: `convolve`,
       `convolve_square`, `carry`, `rms`; the pinned first lines of § 2.8 exactly.
-- [ ] `src/lengths.hpp`, `src/lengths.cpp`: `LARGEST_LENGTH`, `SIZING_DISTANCE`,
+- [x] `src/lengths.hpp`, `src/lengths.cpp`: `LARGEST_LENGTH`, `SIZING_DISTANCE`,
       `SIZING_MAGNITUDE`, the protocol constants (`PROBE_SQUARINGS`, `PROBE_OUTPUTS`, `GRID_STEPS`,
-      `START_BELOW`, `BACKOFF`), `is_supported`, `supported_lengths` (from the table, not a scan of
-      2^20 integers), `largest_exponent`, `holds`, `require_held`, `length_for`, `rms_envelope`; the
+      `START_BELOW`, `BACKOFF`), `is_supported`, `supported_lengths` (enumerated as m·2^k, not a
+      scan of 2^20 integers; amended, see below), `largest_exponent`, `holds`, `require_held`, `length_for`, `rms_envelope`; the
       table as the two maps `largest_exponent_by_length` and `rms_envelope_by_length`.
-- [ ] `src/measure.cpp` (§ 2.4): the protocol through `sample`, from the constants, with each
+- [x] `src/measure.cpp` (§ 2.4): the protocol through `sample`, from the constants, with each
       probe's squarings and outputs in its line; `--table FILE` (both maps, the probe `BACKOFF`
       below the last held); `--probe LENGTH EXPONENT`; SplitMix64 cited (Steele, Lea and Flood
       2014).
-- [ ] `Makefile`: `MODULES` += `fft ibdwt lengths`; `MEASURE := bin/measure` and its rule;
+- [x] `Makefile`: `MODULES` += `fft ibdwt lengths`; `MEASURE := bin/measure` and its rule;
       `lib/measure.d` in `DEPS`; `$(MEASURE)` in `BUILT`; `check-engine` (§ 2.5, verbatim shape);
       `lengths`; both `.PHONY`. Nothing else in the Makefile changes.
-- [ ] **Measure.** `make lengths` on this Mac with clang (about 42 minutes serial; or up to three
+- [x] **Measure.** `make lengths` on this Mac with clang (about 42 minutes serial; or up to three
       `bin/measure <lengths…>` processes, about 16 minutes, concatenated in length order with the
       header and trailer `make lengths` writes — byte-identical). Commit `src/lengths.txt` and paste
       the printed rows of both maps into `src/lengths.cpp`. Check the maxima ascend (every length
@@ -225,17 +225,17 @@ engine tier exists; AGENTS.md and the note name everything this commit creates.
       Remeasure whenever a later change touches the convolution, the weights, the transform,
       `roundoff`, `rms` or the protocol: the gate's byte comparison and its own measurement will say
       so.
-- [ ] `tests/check.hpp`, `tests/check.cpp`: `check::Tier`, `Suite(Tier, …)`, `bin/check engine`,
+- [x] `tests/check.hpp`, `tests/check.cpp`: `check::Tier`, `Suite(Tier, …)`, `bin/check engine`,
       usage exit 2.
-- [ ] `tests/engine_support.hpp`, `tests/engine_support.cpp`: the shared helpers (pseudorandom
+- [x] `tests/engine_support.hpp`, `tests/engine_support.cpp`: the shared helpers (pseudorandom
       residues, `BigInt` expectations, the digit-vector value by placing bits, assigned exponents,
       next length, `Tally` with its line printed passing or failing (PLAN § 2.8), the
       table-against-measurement check).
-- [ ] `tests/check_ibdwt.cpp`: the six P1 labels of § 2.6. `tests/check_engine.cpp`: the P1
+- [x] `tests/check_ibdwt.cpp`: the six P1 labels of § 2.6. `tests/check_engine.cpp`: the P1
       engine-tier label.
-- [ ] `AGENTS.md`: the four high-blast-radius lines, the § Map bullets, the two § Build and run
+- [x] `AGENTS.md`: the four high-blast-radius lines, the § Map bullets, the two § Build and run
       lines (§ 2.7) — in this phase's commit (R13).
-- [ ] `doc/weighted-transforms.md`: "What mps uses" for the transform, the carry, the monitor and
+- [x] `doc/weighted-transforms.md`: "What mps uses" for the transform, the carry, the monitor and
       the lengths (§ 2.7; no measured or table value; 7/16 for the threshold; the exempt list);
       Sources and Provenance; `doc/references.md`: `CooleyTukey1965`, `SteeleLeaFlood2014`, each
       checked against its DOI's metadata, the Verified line saying what was read.
@@ -243,6 +243,20 @@ engine tier exists; AGENTS.md and the note name everything this commit creates.
 - **Touches:** `src/fft.*`, `src/ibdwt.*`, `src/lengths.*`, `src/lengths.txt`, `src/measure.cpp`,
   `Makefile`, `tests/check.*`, `tests/check_ibdwt.cpp`, `tests/check_engine.cpp`,
   `tests/engine_support.*`, `AGENTS.md`, `doc/weighted-transforms.md`, `doc/references.md`.
+- **Amendments at the build (2026-10-31):**
+  - `is_supported` and `supported_lengths` are arithmetic (odd factor at most 15, at most
+    `LARGEST_LENGTH`), not read from the table: the measurement has to name the lengths before a
+    table exists. Neither scans 2^20 integers; `lengths.py` and the table check hold the table's
+    rows to exactly those lengths.
+  - The protocol's start: the Crandall–Mayer–Papadopoulos estimate is taken at N = 16 for lengths
+    below 16, where its logarithms (log₂ log₂ N, log₂ ln ln N) are undefined or negative. It only
+    picks where a length's probes start; the restart rule covers a start that is too high.
+  - `bin/measure` with no length writes the whole file `make lengths` keeps (header, every length,
+    trailer); with lengths it prints their probe lines alone. `make lengths` is serial; the
+    three-process split was not used.
+  - `Transform` and `Engine` also expose `exponent()` and `length()` (the gates' interposer calls
+    them); the checks declare the internal pieces in `tests/engine_support.hpp`, a test header,
+    never a header under `src/`.
 
 ## Phase P2 — Residues: the digit form, the squaring and its subtraction, the product, the monitor
 **Satisfies:** R1, R4, R6, R7, R9, R13, R14 · **Depends on:** P1

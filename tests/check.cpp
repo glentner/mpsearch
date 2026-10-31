@@ -3,10 +3,12 @@
 //
 // Check runner
 //
-// Runs every registered check in order and reports through plain iostreams, never the
-// logger, which is itself under check. Before each body it prints `check <label>`; each
-// failure prints ` FAIL <label>` at once and again in the summary, whose last line is
-// `check: <passed> passed, <failed> failed`. The exit status is 1 on any failure.
+// Runs every registered check of one tier in order and reports through plain iostreams,
+// never the logger, which is itself under check: `bin/check` the default tier, `bin/check
+// engine` the engine tier, and any other argument prints the usage and exits 2. Before each body
+// it prints `check <label>`; each failure prints ` FAIL <label>` at once and again in the
+// summary, whose last line is `check: <passed> passed, <failed> failed`. The exit status is 1 on
+// any failure. A label registered twice fails, whichever tiers its tables are in.
 //
 
 
@@ -44,9 +46,13 @@ namespace check {
 	}
 
 
-	Suite::Suite(std::initializer_list<Case> cases, std::source_location location) {
+	Suite::Suite(std::initializer_list<Case> cases, std::source_location location)
+		: Suite(Tier::DEFAULT, cases, location) {}
+
+
+	Suite::Suite(Tier tier, std::initializer_list<Case> cases, std::source_location location) {
 		for (const Case& entry: cases)
-			registry().push_back({entry.label, entry.function, where(location)});
+			registry().push_back({entry.label, entry.function, where(location), tier});
 	}
 
 
@@ -139,20 +145,31 @@ static std::string run_case(const check::Case& entry) {
 }
 
 
-int main() {
+int main(int argc, char** argv) {
+
+	check::Tier tier = check::Tier::DEFAULT;
+	if (argc == 2 and std::string(argv[1]) == "engine") {
+		tier = check::Tier::ENGINE;
+	} else if (argc != 1) {
+		std::cerr << "usage: bin/check [engine]" << std::endl;
+		return 2;
+	}
 
 	std::atexit(exit_guard);
 
-	const std::vector<check::Case>& cases = check::registry();
+	std::map<std::string, int> count_by_label;
+	for (const check::Case& entry: check::registry())
+		count_by_label[entry.label]++;
+
+	std::vector<check::Case> cases;
+	for (const check::Case& entry: check::registry())
+		if (entry.tier == tier)
+			cases.push_back(entry);
 	if (cases.empty()) {
 		std::cout << " FAIL (no checks registered)" << std::endl;
 		std::cout << "check: 0 passed, 1 failed" << std::endl;
 		return 1;
 	}
-
-	std::map<std::string, int> count_by_label;
-	for (const check::Case& entry: cases)
-		count_by_label[entry.label]++;
 
 	int passed = 0;
 	std::vector<std::string> failed;

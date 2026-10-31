@@ -14,14 +14,15 @@ BOUNDS   := -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MOD
 
 EXE      := bin/mps
 CHECK    := bin/check
-MODULES  := ansi cli io known mp math reference result
+MEASURE  := bin/measure
+MODULES  := ansi cli io known mp math reference result fft ibdwt lengths
 OBJECTS  := $(addprefix lib/,$(addsuffix .o,$(MODULES)))
 CHECKED  := $(addprefix lib/check/,$(addsuffix .o,$(MODULES)))
 CHECKS   := $(patsubst tests/%.cpp,lib/check/%.o,$(sort $(wildcard tests/*.cpp)))
-DEPS     := $(OBJECTS:.o=.d) lib/main.d $(CHECKED:.o=.d) $(CHECKS:.o=.d)
+DEPS     := $(OBJECTS:.o=.d) lib/main.d lib/measure.d $(CHECKED:.o=.d) $(CHECKS:.o=.d)
 
 # Everything the build writes: what make clean removes, and what a change of settings removes.
-BUILT    := lib/*.o lib/*.d lib/check/*.o lib/check/*.d $(EXE) $(CHECK) lib/settings
+BUILT    := lib/*.o lib/*.d lib/check/*.o lib/check/*.d $(EXE) $(CHECK) $(MEASURE) lib/settings
 
 # The compile settings are everything that picks the compiler or its flags, and lib/settings records
 # those that built what is in lib/ and bin/. When this run's differ from the record, or there is no
@@ -40,6 +41,10 @@ CHANGED  := $(shell test "`cat lib/settings 2>/dev/null`" = $(QUOTED) || echo FO
 
 # The link names its objects only, leaving CHANGED out.
 $(EXE): lib/main.o $(OBJECTS) $(CHANGED) | bin
+	$(CXX) $(CXXFLAGS) $(IEEE) $(filter %.o,$(^)) -o $(@)
+
+# The length measurement (src/measure.cpp), never linked into bin/mps
+$(MEASURE): lib/measure.o $(OBJECTS) $(CHANGED) | bin
 	$(CXX) $(CXXFLAGS) $(IEEE) $(filter %.o,$(^)) -o $(@)
 
 # The tests directory is a prerequisite so that adding or removing a check file relinks.
@@ -66,12 +71,21 @@ lib/settings: $(CHANGED) | lib
 check: $(EXE) $(CHECK)
 	@status=0; $(CHECK) || status=1; sh tests/cli.sh $(EXE) || status=1; exit $$status
 
+# make check's two steps, and then the engine tier of the checks, each always run
+check-engine: $(EXE) $(CHECK)
+	@status=0; $(CHECK) || status=1; sh tests/cli.sh $(EXE) || status=1; $(CHECK) engine || status=1; exit $$status
+
+# Measure every supported length again (src/lengths.hpp's protocol) into src/lengths.txt, and print
+# the table's two maps for src/lengths.cpp
+lengths: $(MEASURE)
+	$(MEASURE) >src/lengths.txt.new && mv src/lengths.txt.new src/lengths.txt && $(MEASURE) --table src/lengths.txt
+
 clean:
 	/bin/rm -f $(BUILT)
 
 FORCE:
 
-.PHONY: check clean FORCE
+.PHONY: check check-engine clean lengths FORCE
 .DELETE_ON_ERROR:
 
 -include $(DEPS)

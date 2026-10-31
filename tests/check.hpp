@@ -14,6 +14,15 @@
 // Check objects compile with `-Werror=unused-function`, so a check missing from its
 // table fails the build.
 //
+// A table belongs to a tier. `bin/check` runs the default tier, which `make check` runs; a
+// table registered for the engine tier, whose checks take minutes rather than seconds, runs only
+// under `bin/check engine`, which `make check-engine` runs after the default tier:
+//
+//   static check::Suite
+//   engine_check_by_name {check::Tier::ENGINE, {
+//       {"squarings equal BigInt's at every supported length", squarings_at_every_length},
+//   }};
+//
 
 #pragma once
 
@@ -33,10 +42,18 @@ namespace check {
 	using Function = void (*)();
 
 
+	// Which run of bin/check a case belongs to: the default, or `bin/check engine`
+	enum class Tier {
+		DEFAULT,
+		ENGINE,
+	};
+
+
 	struct Case {
 		std::string label;
 		Function function;
-		std::string where = "";  // the table's file:line, set on registration
+		std::string where = "";        // the table's file:line, set on registration
+		Tier tier = Tier::DEFAULT;     // the table's tier, set on registration
 	};
 
 
@@ -53,6 +70,8 @@ namespace check {
 	class Suite {
 	public:
 		Suite(std::initializer_list<Case> cases,
+		      std::source_location location = std::source_location::current());
+		Suite(Tier tier, std::initializer_list<Case> cases,
 		      std::source_location location = std::source_location::current());
 
 	};
