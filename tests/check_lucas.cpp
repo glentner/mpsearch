@@ -7,19 +7,26 @@
 // (tests/ll.sh runs that): the known answers of tests/known/ at two given shifts, the fresh shift
 // of a default run, the refusals, the views of a run, and every error check and recovery proved by
 // the hooks, which corrupt a residue, refuse a squaring or report a round-off distance at a chosen
-// iteration and attempt. Every injected value is computed here on BigInt, and every expected
-// answer is read from tests/known/, but M83's, which has no row there and is the run without the
-// injection. The hook checks run at small exponents (83, 127, 1237, 1279), where a run takes
-// milliseconds.
+// iteration and attempt, and every value of the progress line. Every injected value is computed
+// here on BigInt, and every expected answer is read from tests/known/, but M83's, which has no row
+// there and is the run without the injection. The hook checks run at small exponents (5, 83, 127,
+// 1237, 1279), where a run takes milliseconds, and M86243 for one squaring. The progress line's
+// times come from the system clock: its check makes them long with sleeps in a hook and bounds
+// them.
 //
 
 
 // Standard libs
 #include <algorithm>
+#include <chrono>
+#include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <optional>
+#include <regex>
 #include <set>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -117,6 +124,16 @@ static std::size_t count_of(const std::string& text, const std::string& part) {
 	for (std::size_t at = text.find(part); at != std::string::npos; at = text.find(part, at + part.size()))
 		count++;
 	return count;
+}
+
+
+static std::string distance_text(double distance) {
+	//
+	// A distance as the log prints it, to four places
+
+	char text[32];
+	std::snprintf(text, sizeof text, "%.4f", distance);
+	return text;
 }
 
 
@@ -295,6 +312,18 @@ static void the_test_chooses_a_fresh_shift_each_run() {
 		check::expect(shifts.size() > 1, label + ": four runs report more than one shift");
 		check::expect(prime, label + ": every run reports M1279 prime");
 	}
+
+	// The whole range and nothing past it: 200 default runs of M5 report each shift from 0 to 4,
+	// and no other. A shift of the five missing from all of them has probability 5 (4/5)^200,
+	// about 2 in 10^19.
+	static const std::uint64_t q = 5;
+	std::set<std::uint64_t> small;
+	for (int run = 0; run < 200; run++) {
+		const Result result = lucas::test(q, defaults);
+		check::require(result.run().has_value(), "M5 reports its run");
+		small.insert(result.run()->shift);
+	}
+	check::expect(small == std::set<std::uint64_t> {0, 1, 2, 3, 4}, "200 runs of M5 report every shift in [0, 5) and no other");
 }
 
 
@@ -662,6 +691,31 @@ static void the_test_recovers_from_a_failed_check_up_to_its_limit() {
 		check::expect(not failed.res64(), label + " failing every attempt: no Res64");
 		check::expect_equal(failed.run()->jacobi_failures, lucas::CHECK_FAILURES + 1, label + " failing every attempt: the failures counted");
 	}
+
+	// The limit counts the run's failures, not one good state's: in M1279, a value with symbol +1
+	// held once each at CHECK_FAILURES + 1 checked iterations, each failure recovered from and a
+	// good state passed between them, ends the run in an error at the last of them
+	static const std::uint64_t p = 1279;
+	const std::uint64_t interval = interval_of(p);
+	const BigInt s = failing_jacobi(p);
+	lucas::Options spread = at_shift(3);
+	spread.corrupt = [interval, s](const lucas::Step& step, const BigInt&) -> std::optional<BigInt> {
+		if (step.attempt == 0 and step.iteration % (2 * interval) == 0 and step.iteration / (2 * interval) >= 2 and
+		    step.iteration / (2 * interval) <= lucas::CHECK_FAILURES + 2)
+			return held(s, step.shift, p);
+		return std::nullopt;
+	};
+	const Result ended = lucas::test(p, spread);
+	const std::string at = std::to_string(2 * interval * (lucas::CHECK_FAILURES + 2));
+	check::require(ended.run().has_value(), "M1279 failing once at each of CHECK_FAILURES + 1 checks: the run is reported");
+	check::expect(ended.outcome() == OUTCOME_ERROR, "M1279 failing once at each of CHECK_FAILURES + 1 checks: an error");
+	check::expect_equal(status_of({ended}), 20, "M1279 failing once at each of CHECK_FAILURES + 1 checks: status 20");
+	check::expect_equal(ended.run()->jacobi_failures, lucas::CHECK_FAILURES + 1,
+	                    "M1279 failing once at each of CHECK_FAILURES + 1 checks: every failure counted");
+	check::expect(has(ended.reason(), "failed at iteration " + at + ": " + std::to_string(lucas::CHECK_FAILURES + 1) +
+	                                  " failed checks in the run, past the limit of " + std::to_string(lucas::CHECK_FAILURES)),
+	              "M1279 failing once at each of CHECK_FAILURES + 1 checks: the reason names iteration " + at + " and the count: " +
+	              ended.reason());
 }
 
 
@@ -859,6 +913,36 @@ static void the_test_counts_and_logs_large_round_off_distances() {
 	                        " more squarings past the sizing distance, counted and not logged"),
 	              "the rest folded into one line");
 
+	// DISTANCES_LOGGED squarings past the sizing distance, each a distance of its own, and one at
+	// the sizing distance itself, which it does not exceed: the eight counted and logged, each line
+	// naming its own squaring's distance, nothing folded, and the one at the limit neither counted
+	// nor logged
+	lucas::Options exact = at_shift(0);
+	auto large = [](std::uint64_t i) { return 0.36 + double(lucas::DISTANCES_LOGGED - i / 100) / 100; };
+	exact.distance = [large](const lucas::Step& step, double distance) {
+		if (step.iteration % 100 == 0 and step.iteration / 100 >= 1 and step.iteration / 100 <= lucas::DISTANCES_LOGGED)
+			return large(step.iteration);
+		return step.iteration == 900 ? ibdwt::SIZING_DISTANCE : distance;
+	};
+	std::string exact_text;
+	Result exact_result = Result::no_verdict(WORK_LL, p, "not run");
+	{
+		log_peer::CaptureCerr log;
+		exact_result = lucas::test(p, exact);
+		exact_text = log.text();
+	}
+	check::require(exact_result.run().has_value(), "the run with DISTANCES_LOGGED large distances is reported");
+	check::expect_equal(exact_result.run()->large_distances, std::uint64_t(lucas::DISTANCES_LOGGED),
+	                    "DISTANCES_LOGGED large distances counted, and not the one at the sizing distance");
+	check::expect_equal(exact_result.run()->largest_distance, large(100), "the largest of them, the run's largest");
+	check::expect_equal(count_of(exact_text, "has round-off distance"), std::size_t(lucas::DISTANCES_LOGGED),
+	                    "DISTANCES_LOGGED lines logged, none for the one at the sizing distance");
+	for (std::uint64_t i = 100; i <= 100 * lucas::DISTANCES_LOGGED; i += 100)
+		check::expect(has(exact_text, "ll M1279: iteration " + std::to_string(i) + " at length " + length +
+		                              " has round-off distance " + distance_text(large(i)) + ", past 0.35"),
+		              "the line of iteration " + std::to_string(i) + " names its own distance, " + distance_text(large(i)));
+	check::expect(not has(exact_text, "more squarings past the sizing distance"), "nothing folded when no more than DISTANCES_LOGGED");
+
 	double largest = 0;
 	lucas::Options passed = at_shift(0);
 	passed.distance = [&largest](const lucas::Step&, double distance) {
@@ -886,10 +970,68 @@ static double rate_of(const std::string& line) {
 }
 
 
+// One progress line, read back from the log
+struct Progress {
+	std::uint64_t iteration;
+	std::uint64_t total;
+	double ms;              // the time per iteration it prints, in milliseconds
+	double to_go;           // the time to go it prints, in seconds
+	std::string largest;    // the largest distance it prints, as printed
+};
+
+
+static std::vector<Progress> progress_of(const std::string& text, std::uint64_t p) {
+	//
+	// Every line of the log in the form the progress line takes, in order
+	//
+	// "ll M<p>: iteration <i> of <total>, <x.xxx> ms per iteration, about <h>h<mm>m<ss>s to go,
+	// largest distance <d.dddd> since the last line"; a line of the log that starts so and is not
+	// in this form is left out, so a count of lines sees it.
+
+	const std::regex form("ll M" + std::to_string(p) + R"(: iteration (\d+) of (\d+), (\d+\.\d{3}) ms per iteration, )"
+	                      R"(about (\d+)h([0-5]\d)m([0-5]\d)s to go, largest distance (\d\.\d{4}) since the last line$)");
+	std::vector<Progress> lines;
+	for (std::size_t at = 0; at < text.size();) {
+		const std::size_t end = std::min(text.find('\n', at), text.size());
+		const std::string line = text.substr(at, end - at);
+		at = end + 1;
+		std::smatch m;
+		if (std::regex_search(line, m, form))
+			lines.push_back({std::stoull(m[1]), std::stoull(m[2]), std::stod(m[3]),
+			                 3600.0 * std::stod(m[4]) + 60.0 * std::stod(m[5]) + std::stod(m[6]), m[7]});
+	}
+	return lines;
+}
+
+
+static bool to_go_agrees(const Progress& line) {
+	//
+	// Whether a line's time to go is its time per iteration times the iterations left after it, to
+	// the nearest second
+	//
+	// The time per iteration is printed to the microsecond, so each iteration left adds up to half
+	// a microsecond to the difference.
+
+	const double left = double(line.total - line.iteration);
+	return std::abs(line.to_go - line.ms / 1e3 * left) <= 0.5 + left * 0.5e-6 + 1e-9;
+}
+
+
 static void the_test_logs_its_progress() {
 	//
-	// With a progress interval of 0, M127 logs one line per iteration: the iteration, the time per
-	// iteration, the time to go and the largest distance since the last line
+	// Each value a progress line prints is what it means: the iteration and the run's last, the
+	// time per iteration since the last line, the time to go from the iterations left, and the
+	// largest distance since the last line
+	//
+	// With a progress interval of 0, M127 logs one line per iteration, each giving the distance its
+	// squaring reported. With an interval of 25 ms and the distance hook sleeping at chosen
+	// iterations, M127 logs a line at each of them, each spanning the squarings since the line
+	// before: its time per iteration, times that span, is at least the sleep and at most the sleep
+	// plus the interval plus 100 ms; its largest distance is the largest of the span. The run's
+	// largest distance is the run's, not the last line's. A line of M86243 after a sleep of 60 ms
+	// gives over an hour to go in hours, minutes and seconds. On every line, the time to go is the
+	// time per iteration times the iterations left. The clock is the system's, so the times are
+	// bounded, not fixed.
 	//
 	// And a run that goes back to a good state keeps timing its squarings: the line after the
 	// recovery gives a time per iteration within a factor of ten of the run's median.
@@ -901,6 +1043,7 @@ static void the_test_logs_its_progress() {
 
 	lucas::Options options = at_shift(0);
 	options.progress_seconds = 0;
+	options.distance = [](const lucas::Step& step, double) { return double(step.iteration % 10) / 100; };
 	std::string text;
 	{
 		log_peer::CaptureCerr log;
@@ -916,6 +1059,95 @@ static void the_test_logs_its_progress() {
 		        has(line, " since the last line");
 	}
 	check::expect(every, "every line names the iteration, the time per iteration, the time to go and the distance");
+	const std::vector<Progress> each = progress_of(text, p);
+	check::require(each.size() == p - 2, "every progress line in its form (" + std::to_string(each.size()) + " lines)");
+	bool in_order = true, own = true, agrees = true;
+	for (std::uint64_t i = 1; i <= p - 2; i++) {
+		const Progress& line = each[i - 1];
+		in_order = in_order and line.iteration == i and line.total == p - 2;
+		own = own and line.largest == distance_text(double(i % 10) / 100);
+		agrees = agrees and to_go_agrees(line);
+	}
+	check::expect(in_order, "the lines give iterations 1 to 125 in order, each of 125");
+	check::expect(own, "each line gives the distance of its own squaring, the only one since the line before");
+	check::expect(agrees, "each line's time to go is its time per iteration times the iterations left");
+
+	// Lines that span several squarings, at the iterations where the distance hook sleeps
+	struct Sleep {
+		std::uint64_t iteration;
+		int ms;
+	};
+	static const std::vector<Sleep> sleeps = {{40, 150}, {41, 40}, {100, 40}};
+	static const double interval = 0.025;
+	auto injected = [](std::uint64_t i) { return i == 30 ? 0.3 : i == 41 ? 0.2 : i == 70 ? 0.1 : 0.01; };
+	lucas::Options spanning = at_shift(0);
+	spanning.progress_seconds = interval;
+	spanning.distance = [injected](const lucas::Step& step, double) {
+		for (const Sleep& sleep: sleeps)
+			if (step.iteration == sleep.iteration)
+				std::this_thread::sleep_for(std::chrono::milliseconds(sleep.ms));
+		return injected(step.iteration);
+	};
+	std::string spanned;
+	Result spanning_result = Result::no_verdict(WORK_LL, p, "not run");
+	{
+		log_peer::CaptureCerr log;
+		spanning_result = lucas::test(p, spanning);
+		spanned = log.text();
+	}
+	check::require(spanning_result.run().has_value(), "M127 with sleeps: the run is reported");
+	check::expect_equal(spanning_result.run()->largest_distance, 0.3, "M127 with sleeps: the run's largest distance, 0.3 at iteration 30");
+	const std::vector<Progress> lines = progress_of(spanned, p);
+	check::expect_equal(lines.size(), count_of(spanned, "ll M127: iteration "), "M127 with sleeps: every progress line in its form");
+	std::uint64_t before = 0;
+	for (const Progress& line: lines) {
+		const std::string label = "M127 with sleeps, the line at iteration " + std::to_string(line.iteration);
+		const std::uint64_t span = line.iteration - before;
+		double largest = 0;
+		for (std::uint64_t i = before + 1; i <= line.iteration; i++)
+			largest = std::max(largest, injected(i));
+		check::expect_equal(line.largest, distance_text(largest),
+		                    label + ": the largest distance of iterations " + std::to_string(before + 1) + " to " + std::to_string(line.iteration));
+		check::expect(line.total == p - 2 and to_go_agrees(line), label + ": of 125, the time to go its time per iteration times the iterations left");
+		int slept = 0;
+		for (const Sleep& sleep: sleeps)
+			slept += sleep.iteration == line.iteration ? sleep.ms : 0;
+		const double seconds = line.ms * double(span) / 1e3;
+		check::expect(seconds >= slept / 1e3 - double(span) * 0.5e-6 and seconds <= slept / 1e3 + interval + 0.1,
+		              label + ": the time per iteration times its " + std::to_string(span) + " squarings (" +
+		              std::to_string(seconds) + " s) covers the sleep of " + std::to_string(slept) + " ms and little more");
+		before = line.iteration;
+	}
+	for (const Sleep& sleep: sleeps)
+		check::expect(std::any_of(lines.begin(), lines.end(), [&sleep](const Progress& line) { return line.iteration == sleep.iteration; }),
+		              "M127 with sleeps: a line at iteration " + std::to_string(sleep.iteration));
+
+	// Over an hour to go: one squaring of M86243 that takes at least 60 ms, then an engine error that
+	// ends the run
+	static const std::uint64_t q = 86243;
+	lucas::Options long_run = at_shift(0);
+	long_run.progress_seconds = interval;
+	long_run.distance = [](const lucas::Step& step, double distance) {
+		if (step.iteration == 1)
+			std::this_thread::sleep_for(std::chrono::milliseconds(60));
+		return distance;
+	};
+	long_run.refuse = [](const lucas::Step& step) {
+		if (step.iteration == 2)
+			throw engine_error("an injected end of the run");
+	};
+	std::string long_text;
+	{
+		log_peer::CaptureCerr log;
+		check::expect(lucas::test(q, long_run).outcome() == OUTCOME_ERROR, "M86243 ended at iteration 2: an error");
+		long_text = log.text();
+	}
+	const std::vector<Progress> first = progress_of(long_text, q);
+	check::require(first.size() == 1 and first[0].iteration == 1 and first[0].total == q - 2,
+	               "M86243: one line, at iteration 1 of 86241, in its form");
+	check::expect(first[0].ms >= 60 and first[0].to_go >= 3600 and to_go_agrees(first[0]),
+	              "M86243: at least 60 ms per iteration, over an hour to go, and the time to go its time per iteration times the "
+	              "iterations left (" + std::to_string(first[0].ms) + " ms, " + std::to_string(first[0].to_go) + " s)");
 
 	lucas::Options recovering = holding(p, 0, 2 * interval_of(p), BigInt(1));
 	recovering.progress_seconds = 0;

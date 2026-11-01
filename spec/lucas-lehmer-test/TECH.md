@@ -6,7 +6,7 @@ appetite: big
 status: in_progress
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: P2
+current_phase: P4
 last_updated: '2026-11-01'
 phases:
 - id: P1
@@ -23,7 +23,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/remediation/p3.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py && python3 -I spec/lucas-lehmer-test/remediation/F5-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F6-mutants.py check
 - id: P2
   name: 'The test: the shift, the checks, the recovery and the result'
-  status: in_progress
+  status: done
   satisfies:
   - R1
   - R2
@@ -343,6 +343,57 @@ prove it on the known answers at two shifts and prove every check and recovery b
         lines in `issues/lucas-lehmer-test.md`).
   - **Gate:** the retuned `verify:` green in full; R16 `make check` +3.464 s over `bcb6fdf`
         (4.978 s against 8.442 s, least of 5 interleaved, load 4.4; budget +5 s).
+- **Review cycle 2 remediation** (amendment, 2026-11-01; REVIEW.md F5, the foreman's routing and
+  rulings of 2026-11-01). Fixed as its class, with checks only: `src/lucas.cpp` is unchanged.
+  - [x] **F5** (R13): "the test logs its progress" pins each value of the line to what R13 says it
+        means. At an interval of 0, M127's 125 lines are each in the line's form (PLAN § 2.5, the
+        time per iteration to three places), give iterations 1 to 125 of 125 in order, each the
+        distance of its own squaring (the distance hook reports i mod 10 / 100), and each a time to
+        go within half a second of its time per iteration times the iterations left. At an
+        interval of 25 ms, with the distance hook sleeping 150, 40 and 40 ms at iterations 40, 41
+        and 100, there is a line at each; every line's largest distance is the largest of the
+        squarings since the line before, its time per iteration times those squarings is at least
+        the sleep at its iteration and at most that plus the interval plus 100 ms, and its time to
+        go agrees as above; the run's largest distance stays the run's. M86243, whose first
+        squaring the hook makes last 60 ms (an engine error injected at iteration 2 ends the run),
+        gives over an hour to go in hours, minutes and seconds that agree with its time per
+        iteration. No hook sets the clock, so the times are bounded by the sleeps, not fixed (the
+        foreman's ruling); the reset and the iterations left are pinned exactly. The class's other
+        values, pinned under their own labels: 200 default runs of M5 report every shift in [0, 5)
+        and no other ("the test chooses a fresh shift each run"); DISTANCES_LOGGED distinct large
+        distances and one of exactly the sizing distance are counted, logged each with its own
+        distance and not folded, and the one at the limit neither counted nor logged ("the test
+        counts and logs large round-off distances"); CHECK_FAILURES + 1 failures at different
+        checked iterations, a good state passed between each, end the run in an error naming the
+        count ("the test recovers from a failed check, up to its limit"). No assertion is weakened;
+        the labels and their count, 116, are as before. `make check` takes about 0.35 s more.
+  - **Checker** `remediation/F5-mutants.py` (record `F5-mutants.txt`, tied by sha256 to
+        `src/lucas.*`, `tests/check_lucas.cpp`, `tests/cli.sh` and `tests/ll.sh`). The sweep covers
+        every statement of `src/lucas.cpp` that feeds a reported value: the progress line's
+        variables and resets, its time per iteration and time to go, the run report's fields and
+        counters, the logged and folded distances, and the transient, failure and retry counts. 55
+        mutants: 51 killed under clang++ and 52 under g++-16, 4 equivalent, each with its reason
+        (three not observable without a hook on the clock; one, the transient count moved before
+        the replay's squaring, not observable through the hooks, which refuse before the squaring).
+        `check` checks the record, then, live, review cycle 2's three survivors red under clang++.
+        On `7bd1039`'s tree, in a local clone, the same sweep under clang++ left 21 survivors
+        that are not equivalent, each now killed: review cycle 2's three, the line's largest
+        distance unset, taken from the run or from the last squaring, the time per iteration
+        undivided, divided by one squaring more or scaled to microseconds, the time to go from the
+        iterations done, its minutes, seconds or hours unwrapped, the drawn shift reaching p or
+        never 0, the run's largest distance taken from the line, a distance of exactly the sizing
+        distance counted, the logged line naming the run's largest, a fold printed at exactly
+        DISTANCES_LOGGED, the failure count reset at each good state and the reason naming the
+        limit for the count. Seen red there: the record not that tree's, and the three live
+        mutants green.
+  - **F3's record** regenerated with its own sweep, since `tests/check_lucas.cpp` changed:
+        63 mutants, 59 killed under each compiler, the same 4 equivalent, none surviving.
+  - **One gate run for P1 and P2.** Their `verify:` is the same command, and F5's checker passes
+        only with P2's checks in the tree, so it ran once on the tree that holds both phases' work;
+        P1's and P2's files are then committed apart. Green in full: the wrapped P3 gate (both
+        compilers, the vectors reproduced and recomputed, the probe, 16 mutants, the landing gate's
+        run mode) and F1–F6; R16 `make check` +3.784 s over `bcb6fdf` (4.930 s against 8.714 s,
+        least of 5 interleaved, load 9.9; budget +5 s), the long tier 45 s.
 - **Verify:** `sh spec/lucas-lehmer-test/remediation/p3.sh`, then the six checkers F1–F6 (the
   frontmatter's `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p2.sh`).
 - **Touches:** `src/lucas.*`, `src/math.*`, `src/result.*`, `tests/check_lucas.cpp`,

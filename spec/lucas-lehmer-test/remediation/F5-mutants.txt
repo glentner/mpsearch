@@ -1,0 +1,66 @@
+# F5's mutant sweep over the statements of src/lucas.cpp that feed a reported value (review cycle 2), written by
+#   python3 -I spec/lucas-lehmer-test/remediation/F5-mutants.py sweep SCRATCH
+# Each mutant under make check with clang++ and g++-16; killed = make check exited other than 0.
+# Columns: id, the value it feeds, clang++ result, g++-16 result, and for an equivalent mutant why.
+sha256 src/lucas.cpp 1f5b0fe26525aa4060240efef34d26a75586d810a0da30ee45e9e2a8f1cb6bc3
+sha256 src/lucas.hpp 27c3e66305a1028357faae5d946462f514b506a9a2f1cf5a4d202eebf5e2a2c9
+sha256 tests/check_lucas.cpp 0e783a2fb5677e438d825cac6df3c1932c1609b8ae7ec3f30b8da19661d44e18
+sha256 tests/cli.sh cfb9e49313b2e7bd75009fab0d6bf024289f3cf6eeccccc75d048f1df2aa2f2d
+sha256 tests/ll.sh b47887b114e6c7dc61b052c524dec8bd78d6139f91ad6237c0c821f18c379e7c
+sha256 mutant-table 0fd39df282f874ab2ffcd748b1a6ace6623b79c85a610115a3e434f7bdc793b7
+line-largest-unreset	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+line-squarings-unreset	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+line-time-unreset	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+line-time-from-epoch	progress line	clang++: killed (check: 115 passed, 1 failed; cli: 616 passed, 28 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed; cli: 616 passed, 28 failed), 17 s
+line-squarings-uncounted	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
+line-largest-unset	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+line-largest-from-run	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+line-shows-last-distance	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+progress-iteration-before	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+progress-total-p	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+progress-past-interval	progress line	clang++: survived, 11 s	g++-16: survived, 17 s	equivalent: not observable without a hook on the clock: the two differ only when the seconds since the last line equal the interval exactly; at an interval of 0 an iteration spans many ticks of the steady clock, so the seconds are never 0, and at any other interval they are a measured double that no check can make equal to it
+each-undivided	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+each-one-more-squaring	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+each-in-microseconds	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+to-go-whole-run	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+to-go-from-done	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+to-go-one-more-iteration	progress line	clang++: survived, 11 s	g++-16: survived, 17 s	equivalent: not observable without a hook on the clock: it adds one iteration's time to the time to go, which the line prints in whole seconds, so the text changes only when that crosses a rounding boundary; the time per iteration is measured, so no check can place it there
+to-go-truncated	progress line	clang++: survived, 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s	equivalent: not observable without a hook on the clock: it lowers the printed time to go by one second only when the measured time's fraction is a half or more, which no check can choose; every line's time to go is checked to within half a second of its time per iteration times the iterations left, which this mutant keeps within one
+to-go-minutes-unwrapped	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+to-go-seconds-unwrapped	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+to-go-hours-as-minutes	progress line	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+shift-drawn-zero	run report	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+shift-drawn-past-p	run report	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+shift-drawn-never-0	run report	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+length-option-ignored	run report	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+lengths-first-unrecorded	run report	clang++: killed (check: 112 passed, 4 failed; cli: 636 passed, 8 failed), 11 s	g++-16: killed (check: 112 passed, 4 failed; cli: 636 passed, 8 failed), 17 s
+lengths-move-unrecorded	run report	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+largest-unset	run report	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+largest-from-line	run report	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+largest-before-hook	run report	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+jacobi-checks-uncounted	run report	clang++: killed (check: 112 passed, 4 failed), 11 s	g++-16: killed (check: 112 passed, 4 failed), 16 s
+jacobi-checks-count-degenerate	run report	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+jacobi-failures-uncounted	run report	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+degenerate-uncounted	run report	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+confirmation-uncounted	run report	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+large-uncounted	distances	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+large-at-sizing	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+logged-one-more	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+logged-all	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+logged-next-iteration	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+logged-exponent-as-length	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+logged-run-largest	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+folded-all	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+folded-at-equal	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+folded-off	distances	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+transient-uncounted	counts	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+transient-before-replay	counts	clang++: survived, 11 s	g++-16: survived, 17 s	equivalent: not observable through the hooks: the refuse hook throws before the replay's squaring, as the engine's refusal leaves the residue as it was, so an injected refusal of the replay skips the count in either order; only the engine's own refusal of a replay tells them apart, and the engine refuses only past its threshold at a length the table lets hold p, which no option reaches (lucas::test builds it with the default threshold)
+transient-counted-when-reproduced	counts	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+retries-uncounted	counts	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+retries-counted-before-limit	counts	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+retries-limit-early	counts	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+failures-uncounted	counts	clang++: killed (timed out), 150 s	g++-16: killed (timed out), 150 s
+failures-reset-at-good-state	counts	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+failures-limit-early	counts	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+failures-count-in-reason	counts	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+# 55 mutants: 51 killed under clang++, 52 killed under g++-16; 4 equivalent (progress-past-interval, to-go-one-more-iteration, to-go-truncated, transient-before-replay); 0 not equivalent survived (none)

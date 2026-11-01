@@ -4,71 +4,71 @@
 # Columns: id, decision, clang++ result, g++-16 result, and for an equivalent mutant why.
 sha256 src/lucas.cpp 1f5b0fe26525aa4060240efef34d26a75586d810a0da30ee45e9e2a8f1cb6bc3
 sha256 src/lucas.hpp 27c3e66305a1028357faae5d946462f514b506a9a2f1cf5a4d202eebf5e2a2c9
-sha256 tests/check_lucas.cpp 5f0a541d823c4e7e2c9d4f7871f132064698e667dda0811d363177f657556c4e
+sha256 tests/check_lucas.cpp 0e783a2fb5677e438d825cac6df3c1932c1609b8ae7ec3f30b8da19661d44e18
 sha256 tests/cli.sh cfb9e49313b2e7bd75009fab0d6bf024289f3cf6eeccccc75d048f1df2aa2f2d
 sha256 tests/ll.sh b47887b114e6c7dc61b052c524dec8bd78d6139f91ad6237c0c821f18c379e7c
 sha256 mutant-table 1f560a107aa10bce7710385a080c52797ec99603e6038026e9448fc1a89e2a9f
-refuse-below-3	refusals	clang++: survived, 11 s	g++-16: survived, 16 s	equivalent: 2 is even, so p < 3 or p even and p < 2 or p even hold for the same exponents
-refuse-1-runs	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
+refuse-below-3	refusals	clang++: survived, 11 s	g++-16: survived, 17 s	equivalent: 2 is even, so p < 3 or p even and p < 2 or p even hold for the same exponents
+refuse-1-runs	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
 refuse-even-off	refusals	clang++: killed (timed out), 150 s	g++-16: killed (timed out), 150 s
-refuse-past-at-pmax	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-refuse-past-from-pmax-2	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-refuse-past-odd-only	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
+refuse-past-at-pmax	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+refuse-past-from-pmax-2	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+refuse-past-odd-only	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
 refuse-composite-off	refusals	clang++: killed (timed out), 150 s	g++-16: killed (timed out), 150 s
-refuse-composite-not-past	refusals	clang++: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 16 s
-refuse-composite-of-1	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-refuse-composite-of-even	refusals	clang++: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 16 s
-refuse-first-reason-only	refusals	clang++: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 16 s
-refuse-order-reversed	refusals	clang++: killed (cli: 640 passed, 4 failed), 11 s	g++-16: killed (cli: 640 passed, 4 failed), 16 s
-refuse-after-a-squaring	refusals	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 16 s
-schedule-interval-plus-one	schedule	clang++: survived, 11 s	g++-16: survived, 16 s	equivalent: p is odd, so p - 2 is odd and never a multiple of GOOD_STATES (32): (n + 32) / 32 and (n + 31) / 32 are both floor(n / 32) + 1 for every n that is not a multiple of 32, so the interval, and every checked iteration, is the same
-schedule-interval-floor	schedule	clang++: killed (check: 110 passed, 6 failed), 11 s	g++-16: killed (check: 110 passed, 6 failed), 16 s
-schedule-last-unchecked	schedule	clang++: killed (check: 105 passed, 11 failed; ll: 19 passed, 29 failed), 11 s	g++-16: killed (ll: 19 passed, 29 failed), 14 s
-schedule-half	schedule	clang++: killed (ll: 26 passed, 22 failed), 5 s	g++-16: killed (ll: 38 passed, 10 failed), 11 s
-schedule-before-last	schedule	clang++: killed (check: 105 passed, 11 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 14 s
-degenerate-zero-never	degenerate set	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-degenerate-zero-always	degenerate set	clang++: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 14 s
-degenerate-no-1	degenerate set	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 16 s
-degenerate-no-2	degenerate set	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-degenerate-no-minus-1	degenerate set	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-degenerate-no-minus-2	degenerate set	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-degenerate-off	degenerate set	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 16 s
-degenerate-never-last	degenerate set	clang++: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 14 s
-jacobi-zero-passes	Jacobi acceptance	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-jacobi-one-passes	Jacobi acceptance	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 14 s
-jacobi-off	Jacobi acceptance	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 14 s
-jacobi-argument-s-minus-1	Jacobi acceptance	clang++: killed (check: 104 passed, 12 failed; cli: 574 passed, 70 failed; ll: 2 passed, 46 failed), 8 s	g++-16: killed (cli: 574 passed, 70 failed; ll: 2 passed, 46 failed), 11 s
-jacobi-argument-negated	Jacobi acceptance	clang++: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 14 s
-jacobi-uncounted	Jacobi acceptance	clang++: killed (check: 112 passed, 4 failed), 11 s	g++-16: killed (check: 112 passed, 4 failed), 16 s
-jacobi-failures-uncounted	Jacobi acceptance	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 16 s
-jacobi-zero-logged-as-plus-1	Jacobi acceptance	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-confirmation-off	confirmation	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 16 s
-confirmation-unread-passes	confirmation	clang++: survived, 11 s	g++-16: survived, 16 s	equivalent: s_(p-3) is always read when the last check runs: the loop reaches iteration p - 2 only from p - 3, where it reads s_(p-3) first, and every return to a good state goes to an iteration at most p - 3 (the last good state before the end), from which the loop passes p - 3 again; so before_last is engaged and the two conditions agree
-confirmation-plus-root-only	confirmation	clang++: killed (check: 107 passed, 9 failed; ll: 24 passed, 24 failed), 11 s	g++-16: killed (ll: 24 passed, 24 failed), 14 s
+refuse-composite-not-past	refusals	clang++: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 17 s
+refuse-composite-of-1	refusals	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+refuse-composite-of-even	refusals	clang++: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 17 s
+refuse-first-reason-only	refusals	clang++: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed; cli: 640 passed, 4 failed), 17 s
+refuse-order-reversed	refusals	clang++: killed (cli: 640 passed, 4 failed), 11 s	g++-16: killed (cli: 640 passed, 4 failed), 17 s
+refuse-after-a-squaring	refusals	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+schedule-interval-plus-one	schedule	clang++: survived, 11 s	g++-16: survived, 17 s	equivalent: p is odd, so p - 2 is odd and never a multiple of GOOD_STATES (32): (n + 32) / 32 and (n + 31) / 32 are both floor(n / 32) + 1 for every n that is not a multiple of 32, so the interval, and every checked iteration, is the same
+schedule-interval-floor	schedule	clang++: killed (check: 110 passed, 6 failed), 11 s	g++-16: killed (check: 110 passed, 6 failed), 17 s
+schedule-last-unchecked	schedule	clang++: killed (check: 105 passed, 11 failed; ll: 19 passed, 29 failed), 11 s	g++-16: killed (check: 105 passed, 11 failed; ll: 19 passed, 29 failed), 17 s
+schedule-half	schedule	clang++: killed (ll: 32 passed, 16 failed), 5 s	g++-16: killed (ll: 34 passed, 14 failed), 11 s
+schedule-before-last	schedule	clang++: killed (check: 105 passed, 11 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (check: 105 passed, 11 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 17 s
+degenerate-zero-never	degenerate set	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+degenerate-zero-always	degenerate set	clang++: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 17 s
+degenerate-no-1	degenerate set	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+degenerate-no-2	degenerate set	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+degenerate-no-minus-1	degenerate set	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+degenerate-no-minus-2	degenerate set	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+degenerate-off	degenerate set	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+degenerate-never-last	degenerate set	clang++: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 17 s
+jacobi-zero-passes	Jacobi acceptance	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+jacobi-one-passes	Jacobi acceptance	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+jacobi-off	Jacobi acceptance	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+jacobi-argument-s-minus-1	Jacobi acceptance	clang++: killed (check: 104 passed, 12 failed; cli: 574 passed, 70 failed; ll: 2 passed, 46 failed), 8 s	g++-16: killed (check: 104 passed, 12 failed; cli: 574 passed, 70 failed; ll: 2 passed, 46 failed), 13 s
+jacobi-argument-negated	Jacobi acceptance	clang++: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 16 s
+jacobi-uncounted	Jacobi acceptance	clang++: killed (check: 112 passed, 4 failed), 11 s	g++-16: killed (check: 112 passed, 4 failed), 17 s
+jacobi-failures-uncounted	Jacobi acceptance	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+jacobi-zero-logged-as-plus-1	Jacobi acceptance	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+confirmation-off	confirmation	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+confirmation-unread-passes	confirmation	clang++: survived, 11 s	g++-16: survived, 17 s	equivalent: s_(p-3) is always read when the last check runs: the loop reaches iteration p - 2 only from p - 3, where it reads s_(p-3) first, and every return to a good state goes to an iteration at most p - 3 (the last good state before the end), from which the loop passes p - 3 again; so before_last is engaged and the two conditions agree
+confirmation-plus-root-only	confirmation	clang++: killed (check: 107 passed, 9 failed; ll: 24 passed, 24 failed), 11 s	g++-16: killed (check: 107 passed, 9 failed; ll: 24 passed, 24 failed), 17 s
 confirmation-minus-root-only	confirmation	clang++: killed (check: 112 passed, 4 failed; cli: 565 passed, 79 failed; ll: 30 passed, 18 failed), 11 s	g++-16: killed (check: 112 passed, 4 failed; cli: 565 passed, 79 failed; ll: 30 passed, 18 failed), 16 s
-confirmation-root-exponent	confirmation	clang++: killed (check: 105 passed, 11 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 14 s
-confirmation-uncounted	confirmation	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 16 s
-failures-limit-early	failure limit	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 14 s
-failures-limit-late	failure limit	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 16 s
+confirmation-root-exponent	confirmation	clang++: killed (check: 105 passed, 11 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 11 s	g++-16: killed (check: 105 passed, 11 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 17 s
+confirmation-uncounted	confirmation	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+failures-limit-early	failure limit	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+failures-limit-late	failure limit	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
 failures-uncounted	failure limit	clang++: killed (timed out), 150 s	g++-16: killed (timed out), 150 s
-retries-limit-late	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-retries-limit-early	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-retries-uncounted	retry limit	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 16 s
-replay-unrefused	retry limit	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 16 s
-replay-uncounted	retry limit	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 16 s
-retry-same-length	retry limit	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 16 s
-retry-length-not-holding	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-retry-engine-kept	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-retry-carries-residue	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
+retries-limit-late	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+retries-limit-early	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+retries-uncounted	retry limit	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+replay-unrefused	retry limit	clang++: killed (check: 113 passed, 3 failed), 11 s	g++-16: killed (check: 113 passed, 3 failed), 17 s
+replay-uncounted	retry limit	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+retry-same-length	retry limit	clang++: killed (check: 114 passed, 2 failed), 11 s	g++-16: killed (check: 114 passed, 2 failed), 17 s
+retry-length-not-holding	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+retry-engine-kept	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+retry-carries-residue	retry limit	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
 restore-keeps-iteration	restore	clang++: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 8 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 14 s
-restore-keeps-shift	restore	clang++: killed (check: 110 passed, 6 failed), 11 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 14 s
-restore-keeps-residue	restore	clang++: killed (check: 109 passed, 7 failed), 11 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 14 s
-good-state-unadvanced	good state's advance	clang++: killed (cli: 589 passed, 55 failed; ll: 3 passed, 45 failed), 6 s	g++-16: killed (cli: 577 passed, 67 failed; ll: 2 passed, 46 failed), 11 s
-good-state-attempts-kept	good state's advance	clang++: killed (check: 109 passed, 7 failed), 11 s	g++-16: killed (check: 109 passed, 7 failed), 16 s
-good-state-after-failure	good state's advance	clang++: killed (check: 110 passed, 6 failed), 11 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 14 s
-verdict-from-held-residue	good state's advance	clang++: survived, 11 s	g++-16: survived, 16 s	equivalent: the loop ends only after the check at iteration p - 2 passes, which makes the good state that very residue and shift (good = {i, k, r} with r read from x), and nothing changes x or k after it, so both read the same value
-advance-shift-kept	good state's advance	clang++: killed (check: 106 passed, 10 failed; cli: 574 passed, 70 failed; ll: 2 passed, 46 failed), 9 s	g++-16: killed (cli: 578 passed, 66 failed; ll: 2 passed, 46 failed), 12 s
-advance-bit	good state's advance	clang++: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 8 s	g++-16: killed (cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 11 s
-advance-given-shift-unreduced	good state's advance	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 16 s
-advance-unshift	good state's advance	clang++: killed (check: 106 passed, 10 failed; cli: 570 passed, 74 failed; ll: 5 passed, 43 failed), 11 s	g++-16: killed (cli: 569 passed, 75 failed; ll: 3 passed, 45 failed), 14 s
+restore-keeps-shift	restore	clang++: killed (check: 110 passed, 6 failed), 11 s	g++-16: killed (check: 110 passed, 6 failed), 17 s
+restore-keeps-residue	restore	clang++: killed (check: 109 passed, 7 failed), 11 s	g++-16: killed (check: 109 passed, 7 failed), 17 s
+good-state-unadvanced	good state's advance	clang++: killed (cli: 592 passed, 52 failed; ll: 2 passed, 46 failed), 5 s	g++-16: killed (cli: 576 passed, 68 failed; ll: 3 passed, 45 failed), 11 s
+good-state-attempts-kept	good state's advance	clang++: killed (check: 109 passed, 7 failed), 11 s	g++-16: killed (check: 109 passed, 7 failed), 17 s
+good-state-after-failure	good state's advance	clang++: killed (check: 110 passed, 6 failed), 11 s	g++-16: killed (check: 110 passed, 6 failed), 17 s
+verdict-from-held-residue	good state's advance	clang++: survived, 11 s	g++-16: survived, 17 s	equivalent: the loop ends only after the check at iteration p - 2 passes, which makes the good state that very residue and shift (good = {i, k, r} with r read from x), and nothing changes x or k after it, so both read the same value
+advance-shift-kept	good state's advance	clang++: killed (check: 106 passed, 10 failed; cli: 574 passed, 70 failed; ll: 4 passed, 44 failed), 9 s	g++-16: killed (check: 106 passed, 10 failed; cli: 574 passed, 70 failed; ll: 2 passed, 46 failed), 15 s
+advance-bit	good state's advance	clang++: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 8 s	g++-16: killed (check: 104 passed, 12 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 13 s
+advance-given-shift-unreduced	good state's advance	clang++: killed (check: 115 passed, 1 failed), 11 s	g++-16: killed (check: 115 passed, 1 failed), 17 s
+advance-unshift	good state's advance	clang++: killed (check: 106 passed, 10 failed; cli: 571 passed, 73 failed; ll: 5 passed, 43 failed), 11 s	g++-16: killed (check: 106 passed, 10 failed; cli: 567 passed, 77 failed; ll: 5 passed, 43 failed), 17 s
 # 63 mutants: 59 killed under clang++, 59 killed under g++-16; 4 equivalent (refuse-below-3, schedule-interval-plus-one, confirmation-unread-passes, verdict-from-held-residue); 0 not equivalent survived (none)
