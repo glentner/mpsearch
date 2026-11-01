@@ -77,7 +77,7 @@ phases:
   parallel: false
   hammerable: false
   hill: uphill
-  verify: sh spec/ibdwt-transform-engine/verify/p4.sh
+  verify: sh spec/ibdwt-transform-engine/remediation/p4.sh
 review:
   last_reviewed_commit: ''
   verdict: none
@@ -401,6 +401,14 @@ evidence, the ledger and the state.
       one line per target, ``- `<target>`: check step <s> s``, from the run's `result.json`.
 - **Verify:** `sh spec/ibdwt-transform-engine/verify/p4.sh` (`… p4.sh audit` runs P4's own checks
   without the cumulative gate, for a fast first look).
+- **Amendment (foreman ruling, 2026-10-31): the gate remediation.** The frozen `verify/prepush.sh`
+  and `verify/p4.sh` run the cumulative gate at `PHASE=3`, so `files.py changes` refuses the
+  `issues/` edits the ledger check requires, and no correct tree passes both. P4 runs
+  `remediation/prepush.sh` in place of `verify/prepush.sh`, and its `verify:` is
+  `remediation/p4.sh`: the frozen scripts with two edits only (they source the frozen `verify/`,
+  and the file check grades what changed as of phase 4, derived from the frozen `gate.sh` at run
+  time). `sh spec/ibdwt-transform-engine/remediation/make.sh check` proves that, and both scripts
+  run it first. Every other check stays at phase 3. `verify/` is untouched.
 - **Touches:** `spec/ibdwt-transform-engine/evidence/*`, `issues/large-gcd-and-jacobi.md`,
   `issues/cpu-transform-throughput.md`, `issues/engine-differential-standing-check.md`,
   `ROADMAP.md` (only if a new seed is filed); `src/`, `tests/` and `doc/` only if the audit finds a
