@@ -79,10 +79,10 @@ phases:
   hill: uphill
   verify: sh spec/ibdwt-transform-engine/remediation/p4.sh
 review:
-  last_reviewed_commit: ''
-  verdict: none
+  last_reviewed_commit: b3e2ac5b4974adfa8b009915de0772a209f5875e
+  verdict: approved
   blocked_reason: ''
-  cycle: 0
+  cycle: 1
 ---
 
 # TECH.md — Squaring modulo 2^p − 1 with a weighted transform (FP64, portable)
