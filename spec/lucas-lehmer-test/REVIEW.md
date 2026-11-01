@@ -161,5 +161,8 @@ R1–R12 and R14–R18 ✅, each by the commands above and the reviewer's matrix
 
 ### Human-gate triggers
 
-- F5 and F6 cite listed paths (`src/lucas.cpp`, `src/mp.cpp`), but their routes add tests and vectors only. If remediation must change either source file, the foreman signs it off under the standing autonomy decision before the change lands and records it here.
+- **Correction (foreman, 2026-11-01, after remediation 2).** § Invariants' gate is triggered by a CONFIRMED finding *in* a listed file, whatever its fix touches. This record first read it as being about the fix's paths. Read correctly, three more findings trigger it besides cycle 1's F1, and each is signed off below by the foreman under the standing autonomy decision (2026-10-11-mpsearch-autonomous), 2026-11-01:
+  - **Cycle 1 F3** (`src/lucas.cpp`): fixed by a check and a mutant sweep only (`1e820ba`); `src/lucas.cpp` itself changed only for F1. Signed off.
+  - **Cycle 2 F5** (`src/lucas.cpp`): fixed in `tests/check_lucas.cpp` only (`7efc00b`); `src/lucas.cpp` is unchanged since `1e820ba`. Signed off.
+  - **Cycle 2 F6** (`src/mp.cpp`; the fix is in `tests/vectors/`, also listed): `8ea53d6` and `0c45bc3` append 32 records to `jacobi.txt` through `generate.py`, each symbol computed by its Python reciprocity loop and asserted to reach its limb path. No existing record or expected value changes: the only removed line is the old trailer. The C++ `jacobi` agrees on all 493 records. `src/mp.cpp` is unchanged by this round (no `src/` change since `b7c7db6`). Signed off.
 - Cycle 1's F1 trigger: signed off (above) and still on record for publish.
