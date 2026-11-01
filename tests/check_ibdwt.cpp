@@ -10,9 +10,11 @@
 // against BigInt, the lengths and the table against their measurement, and the refusals; then the
 // residues and the operations at sample lengths, each odd m at 2^0, 2^1, 2^2 and 2^10 words: the
 // round trip through the balanced digits, the squarings and products against BigInt, the
-// round-off monitor, the repeats, and structured inputs with the checksums they are caught by.
-// Every expected value is computed here or in tests/engine_support.cpp, never by the engine. The
-// engine tier, tests/check_engine.cpp, runs the same at every supported length.
+// round-off monitor, the repeats, and structured inputs with the checksums they are caught by; and
+// squaring chains, shifted and not, that reproduce a sample of the known partial residues.
+// Every expected value is computed here or in tests/engine_support.cpp, or read from tests/known/,
+// never by the engine. The engine tier, tests/check_engine.cpp, runs the same at every supported
+// length, and the chains against every known residue the engine's lengths reach.
 //
 
 
@@ -448,6 +450,16 @@ static void structured_inputs_are_refused_or_squared_right() {
 }
 
 
+static void shifted_chains_reproduce_the_partial_residues() {
+	//
+	// The partial residues of exponents up to 10,303 after at most 1,000 iterations, each chain at
+	// the length the table names, at the next length and shifted, graded by its row's Res64
+
+	engine_support::Digest digest;
+	engine_support::expect_chains("partial-residue chains", engine_support::partial_chains(10'303, 1'000), true, digest);
+}
+
+
 static check::Suite
 check_by_name {
 	{"the weighted transform's positions and weights are Crandall and Fagin's",          positions_and_weights_are_crandall_and_fagins},
@@ -461,4 +473,5 @@ check_by_name {
 	{"the round-off monitor reports and refuses past the threshold",                     the_round_off_monitor_reports_and_refuses_past_the_threshold},
 	{"the engine repeats itself bit for bit",                                            the_engine_repeats_itself_bit_for_bit},
 	{"structured inputs are refused or squared right",                                   structured_inputs_are_refused_or_squared_right},
+	{"shifted chains reproduce the partial residues",                                    shifted_chains_reproduce_the_partial_residues},
 };

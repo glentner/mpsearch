@@ -22,6 +22,7 @@
 #include "check.hpp"
 #include "engine_support.hpp"
 #include "ibdwt.hpp"
+#include "known.hpp"
 #include "lengths.hpp"
 #include "mp.hpp"
 #include "vector_reader.hpp"
@@ -651,6 +652,88 @@ namespace engine_support {
 		tally.expect_none();
 		std::cout << "   structured: " << refusals << " refused, " << accepted << " squared" << std::endl;
 		return {refusals, accepted};
+	}
+
+
+	static BigInt rotated(const BigInt& x, std::uint64_t k, std::uint64_t p) {
+		//
+		// x 2^k mod M_p, a rotation of x's p bits, since 2^p = 1 modulo M_p
+
+		return reduce_mersenne(shift_left(x, k), p);
+	}
+
+
+	BigInt chain(const ibdwt::Engine& engine, std::uint64_t start, std::uint64_t steps, bool lucas_lehmer, std::uint64_t shift) {
+		//
+		// A run at shift k holds r = 2^k s; r^2 - 2^(2k + 1) = 2^(2k) (s^2 - 2), so a Lucas-Lehmer
+		// step subtracts the one power 2^((2k + 1) mod p) and the shift becomes 2k mod p, as
+		// doc/lucas-lehmer.md derives; a plain square only doubles the shift
+
+		const std::uint64_t p = engine.exponent();
+		std::uint64_t k = shift % p;
+		ibdwt::Residue x = ibdwt::to_digits(engine, rotated(reduce_mersenne(BigInt(start), p), k, p));
+		for (std::uint64_t i = 0; i < steps; i++) {
+			if (lucas_lehmer)
+				ibdwt::square_subtract(engine, x, (2 * k + 1) % p);
+			else
+				ibdwt::square(engine, x);
+			k = 2 * k % p;
+		}
+		return rotated(ibdwt::from_digits(engine, x), (p - k) % p, p);
+	}
+
+
+	std::vector<Chain> partial_chains(std::uint64_t largest, std::uint64_t most) {
+		std::vector<Chain> out;
+		for (const known::Row& row: known::load(known::TABLES[2]).rows) {
+			if (row.superseded or row.exponent > largest or row.iterations > most)
+				continue;
+			const std::uint64_t p = row.exponent;
+			const std::string want = row.res64;
+			out.push_back({row.op + " " + std::to_string(p) + " " + std::to_string(row.start) + " " + std::to_string(row.iterations),
+			               p, row.start, row.iterations, row.op == "ll",
+			               [p, want](const BigInt& x) { return hex64(res64(x, p)) == want; }});
+		}
+		return out;
+	}
+
+
+	void expect_chains(const std::string& what, const std::vector<Chain>& chains, bool every_run, Digest& digest) {
+		Tally tally(what);
+		for (const Chain& c: chains) {
+			struct Run { std::uint64_t length; std::uint64_t shift; };
+			std::vector<Run> runs;
+			std::string missing;
+			try {
+				const std::uint64_t n = ibdwt::length_for(c.p);
+				runs.push_back({n, 0});
+				if (every_run) {
+					runs.push_back({next_length(n), 0});
+					runs.push_back({n, c.p / 3 + 1});
+				}
+			} catch (std::exception const& error) {
+				missing = error.what();
+			}
+			if (runs.empty())
+				tally.add(false, c.name + ": no length, " + missing);
+			for (const Run& run: runs) {
+				std::string detail = c.name + " at length " + std::to_string(run.length)
+				                     + (run.shift ? ", shifted by " + std::to_string(run.shift) : "");
+				bool agree = false;
+				try {
+					ibdwt::Engine engine(c.p, run.length);
+					BigInt got = chain(engine, c.start, c.steps, c.lucas_lehmer, run.shift);
+					digest.add(got);
+					agree = c.right(got);
+					if (not agree)
+						detail += ": Res64 " + hex64(res64(got, c.p));
+				} catch (std::exception const& error) {
+					detail += std::string(", raised ") + error.what();
+				}
+				tally.add(agree, detail);
+			}
+		}
+		tally.expect_none();
 	}
 
 }

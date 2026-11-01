@@ -5,9 +5,10 @@
 //
 // Pseudorandom digits and residues, the value of a digit vector on BigInt, the table's assignment
 // of exponents to lengths, the tally a check grades its cases with, the length table held against
-// its measurement, and the bodies of the checks both tiers run on the residues and the operations,
-// over the lengths each tier gives them. Every expected value is computed here on BigInt or read
-// from the files, never from the engine.
+// its measurement, the bodies of the checks both tiers run on the residues and the operations,
+// over the lengths each tier gives them, and the squaring chains both tiers run against the tables
+// of known answers. Every expected value is computed here on BigInt or read from the files, never
+// from the engine.
 //
 
 #pragma once
@@ -16,6 +17,7 @@
 // Standard libs
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <source_location>
 #include <string>
 #include <vector>
@@ -188,5 +190,34 @@ namespace engine_support {
 	struct Outcomes { std::size_t refused = 0; std::size_t squared = 0; };
 	Outcomes expect_structured(const std::vector<std::uint64_t>& lengths, const std::vector<int>& families,
 	                           const std::vector<double>& fractions);
+
+
+	// The residue a squaring chain on the engine ends at, from start, steps squarings modulo M_p,
+	// each less 2 (a Lucas-Lehmer step) when lucas_lehmer is set, run shifted by shift: the engine
+	// holds s 2^k for the chain's value s and subtracts 2^((2k + 1) mod p), the shift doubling
+	// each step, and the result is rotated back by the last shift on BigInt
+	BigInt chain(const ibdwt::Engine& engine, std::uint64_t start, std::uint64_t steps, bool lucas_lehmer, std::uint64_t shift);
+
+
+	// A chain a check runs, named for its row, and what the residue it ends at, unshifted, must be
+	struct Chain {
+		std::string name;
+		std::uint64_t p;
+		std::uint64_t start;
+		std::uint64_t steps;
+		bool lucas_lehmer;
+		std::function<bool(const BigInt&)> right;
+	};
+
+
+	// The rows of the table of partial residues with p at most largest and at most most
+	// iterations, each a chain graded by its Res64
+	std::vector<Chain> partial_chains(std::uint64_t largest, std::uint64_t most);
+
+
+	// Every chain at the length the table names for its exponent and, when every_run is set, at
+	// the next supported length and shifted by p / 3 + 1 at the table's length; every run runs,
+	// whatever the others give, and each residue it ends at goes into the digest
+	void expect_chains(const std::string& what, const std::vector<Chain>& chains, bool every_run, Digest& digest);
 
 }

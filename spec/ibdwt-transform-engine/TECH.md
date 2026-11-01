@@ -6,7 +6,7 @@ appetite: big
 status: in_progress
 branch: feature/ibdwt-transform-engine
 base: main
-current_phase: P3
+current_phase: P4
 last_updated: '2026-10-31'
 phases:
 - id: P1
@@ -43,7 +43,7 @@ phases:
   verify: sh spec/ibdwt-transform-engine/verify/p2.sh
 - id: P3
   name: Squaring chains against the known answers, and the two tiers' budgets
-  status: pending
+  status: done
   satisfies:
   - R5
   - R9
@@ -302,17 +302,31 @@ every supported length in the engine tier.
 100,069 and the zero residues of the Mersenne prime exponents up to 100,000, each row also at the
 next length and shifted; both tiers within R12's budgets; `tests/cli.sh` untouched.
 
-- [ ] `tests/engine_support.*`: the shifted chain (the stored s·2^k, the subtraction at
+- [x] `tests/engine_support.*`: the shifted chain (the stored s·2^k, the subtraction at
       (2k + 1) mod p, k doubled; rotated back on `BigInt`).
-- [ ] `tests/check_ibdwt.cpp`: `shifted chains reproduce the partial residues`.
+- [x] `tests/check_ibdwt.cpp`: `shifted chains reproduce the partial residues`.
       `tests/check_engine.cpp`: the three chain labels, digests printed; prp1's division by 9 on
       `BigInt`; expected values read from `tests/known/` through `src/known.*`.
-- [ ] Times on this Mac (the gate measures them): `make check` ≤ +5 s, `make check-engine` ≤ 900 s.
+- [x] Times on this Mac (the gate measures them): `make check` ≤ +5 s, `make check-engine` ≤ 900 s.
       If a chain trips R7, do not touch the threshold: raise the measurement's outputs per probe,
       remeasure, and record why in the commit body.
 - **Verify:** `sh spec/ibdwt-transform-engine/verify/p3.sh`.
 - **Touches:** `tests/check_ibdwt.cpp`, `tests/check_engine.cpp`, `tests/engine_support.*`; `src/`
   only if a chain finds a defect (then remeasure if the arithmetic changed).
+- **Amendments at the build (2026-10-31):**
+  - The chain and its runs live once in `tests/engine_support.*`: `chain` (one run, rotated back
+    on `BigInt`), `Chain` (a row's start, steps, kind and grading), `partial_chains` (the partial
+    rows under an exponent and an iteration limit) and `expect_chains` (every run of every chain,
+    one tally per check: the table's length, the next length, and shifted by p/3 + 1 at the
+    table's length; the zeros at the table's length only). The default tier calls it with
+    p ≤ 10,303 and k ≤ 1,000, the engine tier with p ≤ P_max and every k; the final rows and the
+    zeros are built in `tests/check_engine.cpp`, prp1's division by 9 there on `BigInt`.
+  - Superseded rows are skipped (none exist); fingerprint rows, of which none exist, would be
+    graded like any other row.
+  - `doc/weighted-transforms.md` gains a clause naming the chains among what `make check-engine`
+    runs (no number added), so the note's account of the engine tier stays whole; the file is on
+    PLAN § 2.1's list.
+  - No chain tripped the monitor: no remeasurement, the table as P1 measured it.
 
 ## Phase P4 — Audit, deferral ledger, push, and the cluster runs' evidence
 **Satisfies:** R1–R14 (the audit, and the runs) · **Depends on:** P3

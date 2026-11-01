@@ -7,8 +7,12 @@
 // engine` runs these, and `make check-engine` runs them after the default tier. The residues and
 // the operations are checked as the default tier checks them at its sample lengths, here at all of
 // them, and the squarings and products print a digest of their residues, which a clang build and
-// a GCC build must share. Every expected value is computed here or in tests/engine_support.cpp,
-// never by the engine.
+// a GCC build must share. Then the squaring chains: every partial residue of tests/known/ up to
+// the largest exponent the table holds, every final residue up to 100,069, each at the length the
+// table names, at the next length and shifted, and a zero Lucas-Lehmer residue for every Mersenne
+// prime exponent up to 100,000, each printing a digest of the residues its chains end at. Every
+// expected value is computed here or in tests/engine_support.cpp, or read from tests/known/, never
+// by the engine.
 //
 
 
@@ -24,7 +28,9 @@
 #include "check.hpp"
 #include "engine_support.hpp"
 #include "ibdwt.hpp"
+#include "known.hpp"
 #include "lengths.hpp"
+#include "mp.hpp"
 
 
 using engine_support::Tally;
@@ -120,6 +126,69 @@ static void structured_inputs_are_refused_or_squared_right_at_every_supported_le
 }
 
 
+static void squaring_chains_reproduce_the_known_partial_residues() {
+	engine_support::Digest digest;
+	engine_support::expect_chains("partial-residue chains",
+	                              engine_support::partial_chains(ibdwt::largest_exponent(ibdwt::LARGEST_LENGTH), UINT64_MAX), true, digest);
+	digest.print("partial chains");
+}
+
+
+static BigInt ninth(const BigInt& x, std::uint64_t p) {
+	//
+	// x / 9 modulo M_p: of x, x + M_p, ..., x + 8 M_p, the one 9 divides, divided by 9 (9 and
+	// M_p are coprime, as M_p = 1 modulo 3 for odd p)
+
+	const BigInt m = mersenne(p), nine(9);
+	BigInt y = reduce_mersenne(x, p);
+	for (int k = 0; k < 9; k++, y = add(y, m)) {
+		Division d = divide(y, nine);
+		if (d.remainder.is_zero())
+			return d.quotient;
+	}
+	throw mp_error("9 divides none of x + k M_p for k < 9");
+}
+
+
+static void squaring_chains_reproduce_the_known_final_residues() {
+	//
+	// A Lucas-Lehmer row is s_(p-2) from s_0 = 4, p - 2 steps; a type-1 PRP row is 3^(M_p - 1) =
+	// 3^(2^p) / 9 modulo M_p, the engine squaring 3 p times and the division by 9 on BigInt
+
+	std::vector<engine_support::Chain> chains;
+	for (const known::Row& row: known::load(known::TABLES[1]).rows) {
+		if (row.superseded or row.exponent > 100'069)
+			continue;
+		const std::uint64_t p = row.exponent;
+		const std::string want = row.res64;
+		check::require(row.op == "ll" or row.op == "prp1", "final row " + row.op + " " + std::to_string(p) + " to be ll or prp1");
+		if (row.op == "ll")
+			chains.push_back({"ll " + std::to_string(p), p, 4, p - 2, true,
+			                  [p, want](const BigInt& x) { return hex64(res64(x, p)) == want; }});
+		else
+			chains.push_back({"prp1 " + std::to_string(p), p, 3, p, false,
+			                  [p, want](const BigInt& x) { return hex64(res64(ninth(x, p), p)) == want; }});
+	}
+	engine_support::Digest digest;
+	engine_support::expect_chains("final-residue chains", chains, true, digest);
+	digest.print("final chains");
+}
+
+
+static void lucas_lehmer_chains_end_in_zero_for_the_mersenne_prime_exponents() {
+	std::vector<engine_support::Chain> chains;
+	for (const known::Row& row: known::load(known::TABLES[0]).rows) {
+		const std::uint64_t p = row.exponent;
+		if (row.superseded or p < 3 or p > 100'000)
+			continue;
+		chains.push_back({"mersenne " + std::to_string(p), p, 4, p - 2, true, [](const BigInt& x) { return x.is_zero(); }});
+	}
+	engine_support::Digest digest;
+	engine_support::expect_chains("Lucas-Lehmer zeros", chains, false, digest);
+	digest.print("zero chains");
+}
+
+
 static check::Suite
 engine_check_by_name {check::Tier::ENGINE, {
 	{"every supported length is accepted at both its assigned exponents",          every_supported_length_is_accepted_at_both_its_assigned_exponents},
@@ -129,4 +198,7 @@ engine_check_by_name {check::Tier::ENGINE, {
 	{"the round-off monitor reports and refuses at every supported length",        the_round_off_monitor_reports_and_refuses_at_every_supported_length},
 	{"the engine repeats itself at every supported length",                        the_engine_repeats_itself_at_every_supported_length},
 	{"structured inputs are refused or squared right at every supported length",   structured_inputs_are_refused_or_squared_right_at_every_supported_length},
+	{"squaring chains reproduce the known partial residues",                       squaring_chains_reproduce_the_known_partial_residues},
+	{"squaring chains reproduce the known final residues",                         squaring_chains_reproduce_the_known_final_residues},
+	{"Lucas-Lehmer chains end in zero for the Mersenne prime exponents",           lucas_lehmer_chains_end_in_zero_for_the_mersenne_prime_exponents},
 }};
