@@ -138,7 +138,7 @@ This repo is built by the spec-driven factory: GOAL → PLAN/TECH → build → 
 | landing | `squash-local`: squash onto `origin/main` in the cycle worktree, one `[area] What changed` subject, then push direct to `main` |
 | ci | none |
 | setup | `make` |
-| verify | `make check`: the checks and the smoke test, both always run |
+| verify | `make check`: the checks, the smoke test and the known-answer runs (`tests/ll.sh`), all always run |
 | cluster test | `ci/test-commit.sh <hash> <target>`, copied from the tested commit into scratch and submitted to Slurm by path with its two arguments; the options, environment, run directory and `result.json` are in its header |
 | landing gate | before a change to the engine's sources (`src/ibdwt.*`, `src/fft.*`), its length table and measurement (`src/lengths.*`, `src/lengths.txt`, `src/measure.cpp`) or the numeric build flags (`IEEE` in the `Makefile`) lands: `ci/engine-gate.sh` green on the commit that lands, which runs `make check-engine` under clang and under GCC in fresh copies of it and compares their residue digests; its header is the manual |
 | throwaway environment | none: `mps` keeps no state outside its own working directory yet |

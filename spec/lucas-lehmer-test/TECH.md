@@ -3,10 +3,10 @@ slug: lucas-lehmer-test
 title: The Lucas–Lehmer test on the engine, with a shift and its error checks
 kind: feature
 appetite: big
-status: blocked
+status: in_progress
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: done
+current_phase: P4
 last_updated: '2026-11-01'
 phases:
 - id: P1
@@ -45,7 +45,7 @@ phases:
   parallel: false
   hammerable: false
   hill: uphill
-  verify: sh spec/lucas-lehmer-test/verify/p2.sh
+  verify: sh spec/lucas-lehmer-test/remediation/p3.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py
 - id: P3
   name: The long tier, the landing gate and the remaining notes
   status: done
@@ -61,7 +61,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/verify/p3.sh
 - id: P4
   name: Audit, deferral ledger, push, the landing gate and the cluster runs' evidence
-  status: done
+  status: in_progress
   satisfies:
   - R1
   - R2
@@ -86,7 +86,7 @@ phases:
   parallel: false
   hammerable: false
   hill: uphill
-  verify: sh spec/lucas-lehmer-test/verify/p4.sh
+  verify: sh spec/lucas-lehmer-test/remediation/p4.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py
 review:
   verdict: changes-requested
   cycle: 1
@@ -256,7 +256,60 @@ prove it on the known answers at two shifts and prove every check and recovery b
       `make check` and `make check-engine` comments name `tests/ll.sh` in this commit, because the
       targets change here; P3 adds the `check-long` and landing-gate lines. The three "published
       Mersenne prime exponents" sentences stay for P3, `doc/lucas-lehmer.md`'s among them.
-- **Verify:** `sh spec/lucas-lehmer-test/verify/p2.sh`.
+- **Review cycle 1 remediation** (amendment, 2026-11-01; REVIEW.md F1–F4, the foreman's routing:
+  P2 and P4 reopened, P1 and P3 done). Each finding fixed as its class:
+  - [x] **F1** (R14; `src/lucas.cpp` is high-blast, the human gate signed off by the foreman in
+        REVIEW.md): a refusal names every reason that applies to its p, in the order not odd or
+        below 3, past P_max, odd and composite, joined by "; " (an even p past P_max now names
+        both). Exit 42 and no squaring before a refusal, as before. "the test refuses exponents it
+        cannot run" now pins the whole domain under its own label: every p to 64 but the odd primes,
+        P_max − 3 to P_max + 64, and large ones of each kind, each naming exactly the reasons that
+        apply, every combination present. `doc/lucas-lehmer.md` says the same. `tests/cli.sh`
+        holds no even p past P_max (its largest PVAL is 999999999, and its -s cases are 4, 33,
+        999999999 and 31), so it is unchanged and `check_lucas` covers the case.
+  - [x] **F2** (§ Conventions): the profile's `verify` row says what `make check` runs: the checks,
+        the smoke test and the known-answer runs (`tests/ll.sh`), all always run. The sweep of every
+        profile row and § Build and run line that describes a make target found no other stale one.
+  - [x] **F3** (R4): "the test checks the Jacobi symbol at intervals and on the final residue" pins
+        a symbol of 0 as a failed check: M83, whose least factor 167 the check derives, holding
+        s = 169 at a checked iteration and at the last recovers to the run without it, and on every
+        attempt ends in an error naming the symbol. The mutant sweep over every decision of
+        `src/lucas.cpp` (`remediation/F3-mutants.py`, record `remediation/F3-mutants.txt`) found
+        two more survivors under clang, each now pinned: an engine kept at the old length after a
+        length move (the move check now compares every distance after the move with a run at the
+        second length) and a given shift at p or past it reported unreduced (the known-answer check
+        runs M1279 at shift 1300). Four mutants are equivalent, each with its reason in the record.
+  - [x] **F4**: no seed cites a line of a file this cycle changed. `issues/verdict-path-guards.md`
+        names `line_text` in `src/result.cpp`; `issues/ci-job-standing-checks.md` names the
+        Makefile's `check` target, with a dated line saying it now runs `tests/ll.sh` too;
+        `issues/lucas-lehmer-test.md` names the paragraphs, not their lines, with a dated line
+        saying the three sentences are corrected. This rides in P2's commit.
+  - **The frozen gate, wrapped** (foreman ruling, 2026-11-01). `verify/ll_files.py` keeps the old
+        verify row among the AGENTS.md lines it requires, so no correct tree passes the frozen
+        gates after F2. `remediation/make.sh` generates `remediation/p3.sh`, `prepush.sh` and
+        `p4.sh` from the frozen scripts with two edits only (they source `verify/`; after
+        `gate.sh`, `remediation/override.sh` redefines `files_check` from the frozen `gate.sh`'s own
+        text with its AGENTS.md step reading `remediation/ll_files.py`, and grades the file list as
+        of phase 4), and `remediation/ll_files.py` from the frozen one with only the verify row
+        changed; `make.sh check` (run by the override on every gate) fails if any derived file
+        differs from its frozen source by more than those edits. The file list as of phase 4 is a
+        second edit beyond the ruling's one line, and a no-op in prepush.sh and p4.sh, which set
+        it already: the frozen P3 gate is red on this tree for P4 dispatch A's ledger bullets in
+        `issues/`, whatever F2 does. Seen red first on the fixed tree: `verify/p3.sh quick` fails
+        "files: what changed" on the `issues/` edits, and the frozen `ll_files.py agents 3` fails
+        "AGENTS.md lost the line: | verify | …"; the derived one passes, and `remediation/p3.sh
+        quick` is green.
+  - **Checkers** (each seen red on `92d08c7`'s tree, in a local clone): `F1-refusals.py` (builds
+        `bin/mps`, runs `-s -t ll` over 318 refusals; red: 141 even p past P_max without P_max, and
+        the note), `F2-make-targets.py` (red: the verify row lacks `tests/ll.sh` and says "both" of
+        three steps), `F3-mutants.py check` (the record is this tree's and has no survivor, and live
+        the symbol-0 mutant is red; red: no record of that tree, and the mutant green),
+        `F4-line-refs.py` (red: six references, `src/result.cpp:99`, `Makefile:34` and four doc
+        lines in `issues/lucas-lehmer-test.md`).
+  - **Gate:** the retuned `verify:` green in full; R16 `make check` +3.464 s over `bcb6fdf`
+        (4.978 s against 8.442 s, least of 5 interleaved, load 4.4; budget +5 s).
+- **Verify:** `sh spec/lucas-lehmer-test/remediation/p3.sh`, then the four checkers (the
+  frontmatter's `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p2.sh`).
 - **Touches:** `src/lucas.*`, `src/math.*`, `src/result.*`, `tests/check_lucas.cpp`,
   `tests/check_result.cpp`, `tests/check_math.cpp`, `tests/ll.sh`, `tests/cli.sh`, `Makefile`,
   `AGENTS.md`, `doc/lucas-lehmer.md`; `tests/engine_support.*` only to share a helper.
@@ -367,8 +420,16 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
       The evidence went through `verify/redact.sh` only. The ledger quotes dispatch A's pre-push
       lines (no second run) and takes the landing gate's time on this Mac from P3's full gate, since
       the pre-push line carries none and `issues/engine-differential-standing-check.md` points there.
-- **Verify:** `sh spec/lucas-lehmer-test/verify/p4.sh` (`… p4.sh audit` runs P4's own checks without
-  the cumulative gate, for a fast first look).
+- **Review cycle 1 remediation** (amendment, 2026-11-01): P4 reopened, since P2's remediation
+  changes code and the cluster evidence of `2530c06` no longer covers HEAD. Its F4 fix rode in P2's
+  commit. Dispatch A again: the audit of what the remediation touched, `remediation/prepush.sh` (the
+  frozen `verify/prepush.sh` under the wrapper of P2's amendment) on the committed tree, then a stop
+  before the push with P4 `in_progress`; the foreman pushes and submits the three runs, and dispatch B
+  redoes the evidence, the ledger's `## Times` and `## Landing gate` from the new pre-push lines, and
+  closes P4 under the retuned `verify:`.
+- **Verify:** `sh spec/lucas-lehmer-test/remediation/p4.sh`, then the four checkers (the frontmatter's
+  `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p4.sh`, whose `audit` mode the
+  wrapper keeps).
 - **Touches:** `spec/lucas-lehmer-test/evidence/*`, `issues/large-gcd-and-jacobi.md`,
   `issues/checkpoint-and-resume.md`, `issues/engine-differential-standing-check.md`, `ROADMAP.md`
   (only if a new seed is filed); `src/`, `tests/`, `doc/`, `ci/` only if the audit finds a gap.

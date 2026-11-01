@@ -121,13 +121,16 @@ The checkpoint format is the one `.mps` file format, shared with PRP and P-1.
     stderr. Put factors, and every string on those lines, through `line_text`, as reasons
     are.
 - Found by: factory adoption review, 2026-10-11.
-- The "What mps uses" sections of `doc/lucas-lehmer.md` (line 114), `doc/prp-and-gerbicz.md` (line
-  118) and `doc/reference-arithmetic.md` (line 75) say `make check` runs the reference tests "on the
-  published Mersenne prime exponents". Since `known-answer-tables`, the reference tests run on the
-  listed exponents from 3 to 10,000 (the 22 up to 9941, sourced `computed` in
-  `tests/known/mersenne-exponents.txt`), and `reference-arithmetic.md` line 77 names only
-  `tests/vectors/` as what they are checked against. This cycle rewrites those sections, so it
-  corrects them (found by `known-answer-tables` review cycle 1, out of Scope there).
+- The "What mps uses" sections of `doc/lucas-lehmer.md`, `doc/prp-and-gerbicz.md` and
+  `doc/reference-arithmetic.md`, each in its paragraph on the reference tests, say `make check` runs
+  the reference tests "on the published Mersenne prime exponents". Since `known-answer-tables`, the
+  reference tests run on the listed exponents from 3 to 10,000 (the 22 up to 9941, sourced
+  `computed` in `tests/known/mersenne-exponents.txt`), and the last sentence of
+  `reference-arithmetic.md`'s section names only `tests/vectors/` as what they are checked against.
+  This cycle rewrites those sections, so it corrects them (found by `known-answer-tables` review
+  cycle 1, out of Scope there).
+- 2026-11-01: `lucas-lehmer-test` corrected the three sentences; each now names the exponents of
+  `tests/known/mersenne-exponents.txt` up to the bound `tests/check_reference.cpp` sets.
 - **Fault policy on the driver's side** (deferred from `ibdwt-transform-engine`, by Geoffrey's
   ruling of 2026-10-22 on § Invariants 2). The engine measures each squaring's round-off, refuses
   past its threshold (0.4375 by default) and keeps its input. The retry clause of § Invariants 2

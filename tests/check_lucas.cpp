@@ -8,8 +8,9 @@
 // of a default run, the refusals, the views of a run, and every error check and recovery proved by
 // the hooks, which corrupt a residue, refuse a squaring or report a round-off distance at a chosen
 // iteration and attempt. Every injected value is computed here on BigInt, and every expected
-// answer is read from tests/known/. The hook checks run at small exponents (127, 1237, 1279),
-// where a run takes milliseconds.
+// answer is read from tests/known/, but M83's, which has no row there and is the run without the
+// injection. The hook checks run at small exponents (83, 127, 1237, 1279), where a run takes
+// milliseconds.
 //
 
 
@@ -19,6 +20,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 // Internal libs
@@ -188,6 +190,23 @@ static BigInt failing_jacobi_after_a_squaring(std::uint64_t p) {
 }
 
 
+static std::uint64_t least_factor_of_mersenne(std::uint64_t p) {
+	//
+	// The least prime factor of M_p for a prime p whose M_p is composite
+	//
+	// Every factor of M_p is 2kp + 1 (Euler), and q divides M_p when 2^p = 1 modulo q, so the
+	// first such q is the least divisor above 1, which is prime.
+
+	for (std::uint64_t q = 2 * p + 1;; q += 2 * p) {
+		std::uint64_t power = 1;
+		for (std::uint64_t i = 0; i < p; i++)
+			power = 2 * power % q;
+		if (power == 1)
+			return q;
+	}
+}
+
+
 static lucas::Options holding(std::uint64_t p, std::uint64_t shift, std::uint64_t iteration, const BigInt& s,
                               std::uint64_t attempts = 1) {
 	//
@@ -216,7 +235,7 @@ static void the_test_reports_the_known_answers_at_two_given_shifts() {
 	//
 	// A prime with Res64 0, or a composite with the row's Res64; the shift reported as given;
 	// status 0 or 40; every error check passed, the prime confirmation included; and the two runs
-	// of an exponent agree.
+	// of an exponent agree. A shift given at p or past it is reduced modulo p.
 
 	log_peer::CaptureCerr quiet;
 	Tally answers("known answers at shifts 0 and p/3 + 1");
@@ -239,6 +258,12 @@ static void the_test_reports_the_known_answers_at_two_given_shifts() {
 	}
 	answers.expect_none();
 	pairs.expect_none();
+
+	// A shift given at p or past it is taken modulo p, and reported so
+	const Result wrapped = lucas::test(1279, at_shift(1279 + 21));
+	check::require(wrapped.run().has_value(), "M1279 at shift 1300 reports its run");
+	check::expect(wrapped.outcome() == OUTCOME_PRIME, "M1279 at shift 1300: prime");
+	check::expect_equal(wrapped.run()->shift, std::uint64_t(21), "M1279 at shift 1300: the shift reported is 21");
 }
 
 
@@ -282,7 +307,8 @@ static void the_test_checks_the_jacobi_symbol_at_intervals_and_on_the_final_resi
 	// the last iteration. The catches, each injected once into M1237: at the last iteration; at a
 	// checked iteration mid-run; and at the iteration before a checked one, a value whose square
 	// less 2 has symbol +1, caught one squaring later. Each run recovers to the row's Res64 with
-	// one Jacobi failure, and the log names the iteration that failed.
+	// one Jacobi failure, and the log names the iteration that failed. A symbol of 0, the value
+	// sharing a factor with M_p, fails as +1 does.
 
 	log_peer::CaptureCerr quiet;
 	for (const std::uint64_t p: {3, 5, 7, 13, 31, 127, 521, 1237, 1279}) {
@@ -326,6 +352,44 @@ static void the_test_checks_the_jacobi_symbol_at_intervals_and_on_the_final_resi
 		check::expect(has(text, "the Jacobi check (symbol +1) failed at iteration " + std::to_string(c.checked) + ";"),
 		              c.label + ": the log names iteration " + std::to_string(c.checked));
 	}
+
+	// A symbol of 0 fails the check as +1 does. M83 is composite, and s = q + 2 for its least
+	// factor q gives s - 2 = q, which shares q with M83: held at a checked iteration mid-run and
+	// at the last, each run recovers to the Res64 of the run without it; held on every attempt,
+	// the run ends in an error naming the symbol.
+	static const std::uint64_t z = 83;
+	const std::uint64_t q = least_factor_of_mersenne(z);
+	const BigInt zero = BigInt(q + 2);
+	check::expect_equal(q, std::uint64_t(167), "the least factor of M83");
+	check::expect_equal(jacobi(BigInt(q), mersenne(z)), 0, "the value held in M83 has symbol 0");
+	check::expect(not lucas::degenerate(zero, z, false) and not lucas::degenerate(zero, z, true),
+	              "the value held in M83 is no degenerate state");
+	const Result clean = lucas::test(z, at_shift(40));
+	check::require(clean.run().has_value(), "M83 without an injection reports its run");
+	check::expect(clean.outcome() == OUTCOME_COMPOSITE, "M83 without an injection: composite");
+	check::expect_equal(clean.run()->jacobi_failures, std::uint64_t(0), "M83 without an injection: no Jacobi failure");
+	for (const std::uint64_t at: {5 * interval_of(z), z - 2}) {
+		log_peer::CaptureCerr log;
+		const std::string label = "M83 holding a symbol of 0 at iteration " + std::to_string(at);
+		const Result result = lucas::test(z, holding(z, 40, at, zero));
+		const std::string text = log.text();
+		check::require(result.run().has_value(), label + ": the run is reported");
+		check::expect(result.outcome() == OUTCOME_COMPOSITE, label + ": composite");
+		check::expect_equal(res64_text(result), res64_text(clean), label + ": the Res64 of the run without it");
+		check::expect_equal(result.run()->jacobi_failures, std::uint64_t(1), label + ": one Jacobi failure");
+		check::expect_equal(result.run()->degenerate_failures, std::uint64_t(0), label + ": no degenerate state");
+		check::expect_equal(result.run()->jacobi_checks, checks_of(z) + 1, label + ": the failed check counted with the rest");
+		check::expect(has(text, "the Jacobi check (symbol 0) failed at iteration " + std::to_string(at) + ";"),
+		              label + ": the log names the symbol and the iteration");
+	}
+	const Result held_always = lucas::test(z, holding(z, 40, 5 * interval_of(z), zero, lucas::CHECK_FAILURES + 1));
+	check::require(held_always.run().has_value(), "M83 holding a symbol of 0 on every attempt: the run is reported");
+	check::expect(held_always.outcome() == OUTCOME_ERROR, "M83 holding a symbol of 0 on every attempt: an error");
+	check::expect_equal(status_of({held_always}), 20, "M83 holding a symbol of 0 on every attempt: status 20");
+	check::expect(has(held_always.reason(), "the Jacobi check (symbol 0)"),
+	              "M83 holding a symbol of 0 on every attempt: the reason names the symbol");
+	check::expect_equal(held_always.run()->jacobi_failures, lucas::CHECK_FAILURES + 1,
+	                    "M83 holding a symbol of 0 on every attempt: every failure counted");
 }
 
 
@@ -400,46 +464,74 @@ static void the_test_confirms_a_zero_residue_before_it_reports_prime() {
 
 static void the_test_refuses_exponents_it_cannot_run() {
 	//
-	// 0, 1, 2 and 4 are refused as not odd or below 3, 9, 33 and 3831 as composite, P_max + 1 and
-	// 1,000,000,007 as past P_max
+	// Every exponent the test cannot run is refused, naming every reason that applies to it and
+	// no other: not odd or below 3, past P_max, odd and composite
 	//
-	// Each a no verdict, status 42, naming why, before any squaring: a refuse hook, which runs
-	// before every squaring, is never called. P_max is the largest exponent a supported length
-	// holds.
+	// The exponents cover each reason alone and every combination that can occur: every one up
+	// to 64 but the odd primes, P_max and its neighbours, the 64 above P_max, and large ones of
+	// each kind, an even one past P_max among them. Each is a no verdict, status 42, with no run,
+	// before any squaring: a refuse hook, which runs before every squaring, is never called.
+	// P_max is the largest exponent a supported length holds.
 
 	std::uint64_t largest = 0;
 	for (const std::uint64_t length: ibdwt::supported_lengths())
 		largest = std::max(largest, ibdwt::largest_exponent(length));
 	check::expect_equal(lucas::largest_exponent(), largest, "P_max is the largest exponent a length holds");
 
-	struct Refused {
-		std::uint64_t p;
-		std::string reason;
+	struct Reason {
+		std::string name;
+		std::string words;
+		bool (*applies)(std::uint64_t p, std::uint64_t largest);
 	};
-	const std::vector<Refused> refused = {
-		{0,                 "odd exponents"},
-		{1,                 "odd exponents"},
-		{2,                 "odd exponents"},
-		{4,                 "odd exponents"},
-		{9,                 "prime exponents"},
-		{33,                "prime exponents"},
-		{1277 * 3,          "prime exponents"},
-		{largest + 1,       std::to_string(largest)},
-		{1'000'000'007,     std::to_string(largest)},
+	const std::vector<Reason> reasons = {
+		{"not odd or below 3", "the Lucas-Lehmer test applies to odd exponents of 3 or more",
+		 [](std::uint64_t p, std::uint64_t) { return p < 3 or p % 2 == 0; }},
+		{"past P_max", "the largest the length table holds (P_max)",
+		 [](std::uint64_t p, std::uint64_t largest) { return p > largest; }},
+		{"composite", "the Lucas-Lehmer test runs on prime exponents",
+		 [](std::uint64_t p, std::uint64_t) { return p >= 3 and p % 2 == 1 and smallest_prime_factor(p) != p; }},
 	};
+
+	std::vector<std::uint64_t> exponents;
+	for (std::uint64_t p = 0; p <= 64; p++)
+		exponents.push_back(p);
+	for (std::uint64_t p = largest - 3; p <= largest + 64; p++)
+		exponents.push_back(p);
+	for (const std::uint64_t p: {std::uint64_t(1277 * 3), std::uint64_t(999'999'937), std::uint64_t(999'999'998),
+	                             std::uint64_t(999'999'999), std::uint64_t(1'000'000'007), std::uint64_t(1) << 40,
+	                             (std::uint64_t(1) << 40) + 1})
+		exponents.push_back(p);
+
 	log_peer::CaptureCerr quiet;
-	for (const Refused& r: refused) {
+	std::set<std::string> combinations;
+	for (const std::uint64_t p: exponents) {
+		std::string applying;
+		for (const Reason& reason: reasons)
+			if (reason.applies(p, largest))
+				applying += (applying.empty() ? "" : " and ") + reason.name;
+		if (applying.empty())
+			continue;   // an odd prime the table holds, which the test runs
+		combinations.insert(applying);
+
 		std::uint64_t squarings = 0;
 		lucas::Options options = at_shift(0);
 		options.refuse = [&squarings](const lucas::Step&) { squarings++; };
-		const Result result = lucas::test(r.p, options);
-		const std::string label = "M" + std::to_string(r.p);
+		const Result result = lucas::test(p, options);
+		const std::string label = "M" + std::to_string(p) + " (" + applying + ")";
 		check::expect(result.outcome() == OUTCOME_NO_VERDICT, label + ": no verdict");
 		check::expect_equal(status_of({result}), 42, label + ": status 42");
-		check::expect(has(result.reason(), r.reason), label + ": the reason names '" + r.reason + "'");
+		for (const Reason& reason: reasons)
+			check::expect(has(result.reason(), reason.words) == reason.applies(p, largest),
+			              label + ": the reason " + (reason.applies(p, largest) ? "names" : "does not name") + " '" +
+			              reason.name + "': " + result.reason());
+		if (reasons[1].applies(p, largest))
+			check::expect(has(result.reason(), "past " + std::to_string(largest) + ","), label + ": the reason names P_max's value");
 		check::expect(not result.run(), label + ": no run to report");
 		check::expect_equal(squarings, std::uint64_t(0), label + ": no squaring");
 	}
+	for (const char* combination: {"not odd or below 3", "past P_max", "composite", "not odd or below 3 and past P_max",
+	                               "past P_max and composite"})
+		check::expect(combinations.count(combination) == 1, std::string("the exponents refused include one ") + combination);
 }
 
 
@@ -632,7 +724,8 @@ static void the_test_moves_to_a_larger_length_when_a_refusal_reproduces() {
 	// that holds p ends it at once
 	//
 	// M1279 refused at iteration 400 at its first length ends prime at two lengths, the first
-	// squaring at the second length the one after the last good state; refused there at every
+	// squaring at the second length the one after the last good state, and each squaring after the
+	// move on an engine of the second length, by the distances it reports; refused there at every
 	// length, it is an error naming p, the length and the distance once it has moved
 	// LENGTH_RETRIES times; M31 started at the largest length that holds it and refused is an
 	// error saying no larger length holds it.
@@ -649,6 +742,12 @@ static void the_test_moves_to_a_larger_length_when_a_refusal_reproduces() {
 		if (step.iteration == 400 and step.length == first)
 			throw refusal(p, step);
 	};
+	std::vector<std::pair<std::uint64_t, double>> moved_distances;
+	once.distance = [first, &moved_distances](const lucas::Step& step, double distance) {
+		if (step.length != first)
+			moved_distances.push_back({step.iteration, distance});
+		return distance;
+	};
 	const Result moved = lucas::test(p, once);
 	check::require(moved.run().has_value(), "the moved run is reported");
 	check::expect(moved.outcome() == OUTCOME_PRIME, "the moved run: M1279 prime");
@@ -659,6 +758,23 @@ static void the_test_moves_to_a_larger_length_when_a_refusal_reproduces() {
 	const auto at_second = std::find_if(steps.begin(), steps.end(), [first](const lucas::Step& step) { return step.length != first; });
 	check::expect(at_second != steps.end() and at_second->iteration == good + 1 and at_second->shift == shift_at(21, good + 1, p),
 	              "the moved run: back to the last good state, iteration " + std::to_string(good) + ", at the second length");
+
+	// The squarings after the move run on an engine of the second length: each reports the
+	// distance a run at that length from the start reports for the same iteration, from the same
+	// residue at the same shift
+	lucas::Options second = at_shift(21);
+	second.length = next_holding(first, p);
+	std::vector<std::pair<std::uint64_t, double>> second_distances;
+	second.distance = [good, &second_distances](const lucas::Step& step, double distance) {
+		if (step.iteration > good)
+			second_distances.push_back({step.iteration, distance});
+		return distance;
+	};
+	lucas::test(p, second);
+	const bool some = std::any_of(moved_distances.begin(), moved_distances.end(), [](const auto& d) { return d.second > 0; });
+	check::expect(some and moved_distances == second_distances,
+	              "the moved run: after the move, every distance is that of a run at the second length (" +
+	              std::to_string(moved_distances.size()) + " and " + std::to_string(second_distances.size()) + " squarings)");
 
 	lucas::Options always = at_shift(21);
 	always.refuse = [](const lucas::Step& step) {

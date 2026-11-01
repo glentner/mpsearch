@@ -149,16 +149,22 @@ Result lucas::test(std::uint64_t p, const Options& options) {
 
 	logging::info("Running Lucas-Lehmer test");
 
-	if (p < 3 or p % 2 == 0)
-		return Result::no_verdict(WORK_LL, p, "the Lucas-Lehmer test applies to odd exponents of 3 or more");
+	// A refusal names every reason that applies to p, in this order: not odd or below 3, past
+	// P_max, odd and composite
 	const std::uint64_t largest = largest_exponent();
-	const bool composite = smallest_prime_factor(p) != p;
-	const std::string past = "the exponent is past " + std::to_string(largest) + ", the largest the length table holds (P_max)";
-	const std::string prime_only = "the Lucas-Lehmer test runs on prime exponents, and " + std::to_string(p) + " is composite";
+	std::vector<std::string> reasons;
+	if (p < 3 or p % 2 == 0)
+		reasons.push_back("the Lucas-Lehmer test applies to odd exponents of 3 or more");
 	if (p > largest)
-		return Result::no_verdict(WORK_LL, p, composite ? past + "; " + prime_only : past);
-	if (composite)
-		return Result::no_verdict(WORK_LL, p, prime_only);
+		reasons.push_back("the exponent is past " + std::to_string(largest) + ", the largest the length table holds (P_max)");
+	if (p >= 3 and p % 2 == 1 and smallest_prime_factor(p) != p)
+		reasons.push_back("the Lucas-Lehmer test runs on prime exponents, and " + std::to_string(p) + " is composite");
+	if (not reasons.empty()) {
+		std::string reason = reasons.front();
+		for (std::size_t n = 1; n < reasons.size(); n++)
+			reason += "; " + reasons[n];
+		return Result::no_verdict(WORK_LL, p, reason);
+	}
 
 	RunReport run;
 	run.shift = options.shift ? *options.shift % p : random_shift(p);

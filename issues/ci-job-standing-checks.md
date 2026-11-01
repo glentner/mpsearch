@@ -17,8 +17,10 @@ repository runs and is found only when a cluster run fails or, worse, reports th
 
 Evidence:
 
-- `Makefile:34-35`: `check` runs `bin/check` (the unit checks built from `tests/*.cpp`) and
+- The `Makefile`'s `check` target runs `bin/check` (the unit checks built from `tests/*.cpp`) and
   `sh tests/cli.sh bin/mps`, and nothing else.
+- 2026-11-01: it also runs `sh tests/ll.sh bin/mps`, the Lucas–Lehmer test's known answers
+  (`lucas-lehmer-test`); nothing it runs names `ci/`.
 - Nothing under `tests/` or in the `Makefile` names `ci/` (`grep -rn 'ci/' tests/ Makefile` finds
   nothing).
 - The job's behaviour was proved by `spec/cluster-test-jobs/verify/p1.sh` to `p4.sh`: the happy path

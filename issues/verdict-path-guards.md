@@ -25,7 +25,7 @@ while `make check` stays green.
   - unchecked third or fourth bytes.
   Check every lead and continuation boundary against an independent validator.
 - **G3.** `verdict_line` writes a factor as it is, and so does the contradiction line on stderr. Put
-  factors, and every string on those lines, through `line_text` (`src/result.cpp:99`), as reasons
+  factors, and every string on those lines, through `line_text` in `src/result.cpp`, as reasons
   are.
 
 ## Why it was deferred
