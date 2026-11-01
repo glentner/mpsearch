@@ -89,7 +89,7 @@ An **error check** is the Jacobi check (R4), the degenerate-state check (R7) or 
 confirmation (R8). The **long tier** is R16's separate make target. Every `mps` run below is with
 the exponent check on (no `-s`). **P_max** is the largest exponent the length table holds.
 
-- **R1** — WHEN `mps -t ll p` runs for a Mersenne prime exponent p in
+- **R1** — WHEN `mps -t ll p` runs for an odd Mersenne prime exponent p in
   `tests/known/mersenne-exponents.txt`, the test SHALL report M_p prime with a zero Res64 and exit 0,
   for every such p ≤ 10,000 in `make check` and every such p ≤ 100,000 in the long tier.
 - **R2** — WHEN `mps -t ll p` runs for an exponent with an `ll` row in
@@ -142,7 +142,8 @@ the exponent check on (no `-s`). **P_max** is the largest exponent the length ta
   the iteration, the time per iteration, the estimated time to finish, and the largest round-off
   distance since the last progress line.
 - **R14** — IF p is larger than P_max, THEN `mps -t ll p` SHALL report no verdict, with a reason that
-  names P_max, and exit 42, before any squaring.
+  names P_max, and exit 42, before any squaring. IF p is 2, THEN it SHALL report no verdict, with a
+  reason that the test applies to odd exponents, and exit 42.
 - **R15** — WHEN a test run by `run_in_order` returns an error, the run SHALL stop there: later tests
   neither run nor print a line, and the run exits 20. The checks of `run_in_order` SHALL pin the rule
   with stand-in tests.
@@ -263,6 +264,7 @@ the exponent check on (no `-s`). **P_max** is the largest exponent the length ta
 - **Q:** Is a Gerbicz-protected Lucas–Lehmer test worth it, against two shifted runs (seed Notes)?
   — **A:** Not in this cycle; it is new mathematics with no published analysis, and the Gerbicz check
   belongs to PRP's seed, whose Notes now carry the question (confirmed by the foreman, 2026-10-31).
+- **Q:** R1 covers every known exponent up to 10,000, which includes p = 2; does the test report M_2 prime? — **A:** No. The Lucas–Lehmer recurrence applies to odd p (for p = 2 there is no iteration, and s_0 = 4 ≡ 1 mod 3), and § Invariants 1 lets `mps` report prime only after a complete Lucas–Lehmer test ends in a zero residue. R1 covers odd exponents; `-t ll 2` reports no verdict and exits 42 (R14). The engine cycle's Lucas–Lehmer zeros started at 3 for the same reason (ruled by the foreman at GOAL sign-off, 2026-10-31).
 
 ## Related materials
 
