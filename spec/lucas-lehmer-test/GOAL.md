@@ -143,7 +143,9 @@ the exponent check on (no `-s`). **P_max** is the largest exponent the length ta
   distance since the last progress line.
 - **R14** — IF p is larger than P_max, THEN `mps -t ll p` SHALL report no verdict, with a reason that
   names P_max, and exit 42, before any squaring. IF p is 2, THEN it SHALL report no verdict, with a
-  reason that the test applies to odd exponents, and exit 42.
+  reason that the test applies to odd exponents, and exit 42. IF p is an odd composite (reachable only
+  with the exponent check off, `-s`), THEN it SHALL report no verdict, with a reason that the test runs
+  on prime exponents, and exit 42, before any squaring.
 - **R15** — WHEN a test run by `run_in_order` returns an error, the run SHALL stop there: later tests
   neither run nor print a line, and the run exits 20. The checks of `run_in_order` SHALL pin the rule
   with stand-in tests.
@@ -152,8 +154,10 @@ the exponent check on (no `-s`). **P_max** is the largest exponent the length ta
   take no more than 5 s longer than at `bcb6fdf` on the same machine with clang; the plan records the
   baseline it measured. A separate make target, outside `make check` and the profile's `verify`, SHALL
   run the long tier in no more than 15 minutes on the same machine with clang. Both clang and GCC
-  SHALL build and pass both. `tests/cli.sh` changes only where `-t ll` and `-t all` now reach
-  verdicts.
+  SHALL build and pass both. `tests/cli.sh` changes only in expectations whose outcome the
+  Lucas–Lehmer test decides (its verdicts, errors and no-verdict lines, under `-t ll` and `-t all`,
+  R14's cases included) and in the record version R12 bumps; every other expectation stays as it is
+  at `bcb6fdf`.
 - **R17** — The profile in `AGENTS.md` § Factory SHALL gain a row naming a landing gate: before a
   change to the engine's sources (`src/ibdwt.*`, `src/fft.*`), its length table and measurement
   (`src/lengths.*`, `src/lengths.txt`, `src/measure.cpp`) or the numeric build flags (`IEEE` in the
@@ -265,6 +269,9 @@ the exponent check on (no `-s`). **P_max** is the largest exponent the length ta
   — **A:** Not in this cycle; it is new mathematics with no published analysis, and the Gerbicz check
   belongs to PRP's seed, whose Notes now carry the question (confirmed by the foreman, 2026-10-31).
 - **Q:** R1 covers every known exponent up to 10,000, which includes p = 2; does the test report M_2 prime? — **A:** No. The Lucas–Lehmer recurrence applies to odd p (for p = 2 there is no iteration, and s_0 = 4 ≡ 1 mod 3), and § Invariants 1 lets `mps` report prime only after a complete Lucas–Lehmer test ends in a zero residue. R1 covers odd exponents; `-t ll 2` reports no verdict and exits 42 (R14). The engine cycle's Lucas–Lehmer zeros started at 3 for the same reason (ruled by the foreman at GOAL sign-off, 2026-10-31).
+- **Q:** With `-s`, an odd composite p such as 33 makes M_p share a factor with a smaller Mersenne prime, so the Jacobi symbol is genuinely 0 and every check fails; what does the test report? — **A:** No verdict, exit 42, before any squaring (R14): the test runs on prime exponents, as it does on odd ones for p = 2. Not an error after futile retries (ruled by the foreman at plan, 2026-11-01).
+- **Q:** R12 gives an error a JSON record, but `verdicts-and-exit-statuses` resolved "an error writes no JSON" (2026-10-12). Which holds? — **A:** R12 supersedes it: under `-j` every error, the exponent check's included, prints its record on stdout with `"status": "error"`, and the error line still goes to stderr, as the help text's "one JSON object per result" says (ruled by the foreman at plan, 2026-11-01).
+- **Q:** R16's `cli.sh` clause read "changes only where `-t ll` and `-t all` now reach verdicts", but R12's version bump, R14's lines and the `-s` composite case force other expectation changes. — **A:** R16 is reworded to the expectations the Lucas–Lehmer test's outcomes decide plus the record version; the plan's gate checks it mechanically against `bcb6fdf`'s script (ruled by the foreman at plan, 2026-11-01).
 
 ## Related materials
 
