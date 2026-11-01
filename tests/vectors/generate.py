@@ -542,8 +542,7 @@ JACOBI_LIMB_PATHS = [
 # Pairs (path, a, n) written for the rare paths, each asserted by tracing it. Mostly a odd and below
 # n, so the first pass swaps them and subtracts a from n limb by limb, the limbs as written here
 # (most significant first); for a strip, an even a, whose factors 2 the first pass strips; for the
-# gcd, a and n multiples of 2^64 + 1 and of 2^128 + 1. The first pair of the borrow across an equal
-# limb is review cycle 2's.
+# gcd, a and n multiples of 2^64 + 1 and of 2^128 + 1.
 JACOBI_T, JACOBI_U, JACOBI_H = 0x0123456789ABCDEF, 0xFEDCBA9876543210, 0x7000000000000001
 JACOBI_LIMB_PAIRS = [
 	("subtract: equal limbs below the top, nothing borrowed", limbs_from_top(0x10, JACOBI_T, 3), limbs_from_top(0x20, JACOBI_T, 5)),

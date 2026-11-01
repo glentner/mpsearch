@@ -5,16 +5,16 @@
 sha256 src/mp.cpp df8a33dcdf34a5f8ea538107c2aee088bbe993eb93e3648bc81266d70ef025b3
 sha256 src/mp.hpp baa902a56f61830a369d1f7f9fc3d1fa206bacd23be61420b8b4df1324f65471
 sha256 tests/vectors/jacobi.txt c7127bb8280ec031f3fcaa055bbf30849df0d69d45bb1bde472a38689c3a2460
-sha256 tests/vectors/generate.py 2880c6945377a0c65c0f0c3060dbe1d41157dd4332bb77cf47b3d641a90bc55e
+sha256 tests/vectors/generate.py e66df0bb00b26a00e62a39baaf11216736dcc819a11808a52115ec52a70a5e20
 sha256 tests/check_mp.cpp 55b8d4ad6f73326d0920c23726b2615700239dadd8db481810a8efa516bc8501
 sha256 mutant-table 605c089bb72350ceec8e615f6d852a992e1000fdb622ff0e5476d5e9bf94464d
 compare-count-sign	compare_limbs	clang++: killed (check: 84 passed, 32 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 4 s	g++-16: killed (check: 84 passed, 32 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 8 s
 compare-count-ignored	compare_limbs	clang++: killed (cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 3 s	g++-16: killed (cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 7 s
-compare-top-limb-only	compare_limbs	clang++: killed (check: 101 passed, 15 failed; ll: 18 passed, 30 failed), 7 s	g++-16: killed (check: 101 passed, 15 failed; ll: 16 passed, 32 failed), 11 s
+compare-top-limb-only	compare_limbs	clang++: killed (check: 101 passed, 15 failed; ll: 16 passed, 32 failed), 7 s	g++-16: killed (check: 101 passed, 15 failed; ll: 16 passed, 32 failed), 11 s
 compare-bottom-up	compare_limbs	clang++: killed (timed out), 90 s	g++-16: killed (timed out), 90 s
 compare-limb-sign	compare_limbs	clang++: killed (timed out), 90 s	g++-16: killed (timed out), 90 s
 compare-equal-as-above	compare_limbs	clang++: killed (check: 78 passed, 38 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 10 s	g++-16: killed (check: 78 passed, 38 failed; cli: 565 passed, 79 failed; ll: 6 passed, 42 failed), 14 s
-trim-one-limb	trim	clang++: killed (ll: 40 passed, 8 failed), 5 s	g++-16: killed (ll: 40 passed, 8 failed), 9 s
+trim-one-limb	trim	clang++: killed (ll: 32 passed, 16 failed), 5 s	g++-16: killed (ll: 36 passed, 12 failed), 9 s
 trim-off	trim	clang++: killed (timed out), 90 s	g++-16: killed (timed out), 90 s
 strip-whole-off	strip_twos	clang++: killed (timed out), 90 s	g++-16: killed (timed out), 90 s
 strip-whole-once	strip_twos	clang++: killed (timed out), 90 s	g++-16: killed (timed out), 90 s
@@ -30,29 +30,29 @@ strip-count-limbs	strip_twos	clang++: killed (check: 115 passed, 1 failed), 10 s
 strip-count-bits-only	strip_twos	clang++: survived, 10 s	g++-16: survived, 14 s	equivalent: jacobi reads only the count's parity, and 64 * whole is even, so 64 * whole + part and part have the same parity
 strip-count-extra-limb	strip_twos	clang++: survived, 10 s	g++-16: survived, 14 s	equivalent: jacobi reads only the count's parity, and the extra 64 is even
 subtract-borrow-below-only	subtract_in_place	clang++: killed (check: 115 passed, 1 failed), 10 s	g++-16: killed (check: 115 passed, 1 failed), 14 s
-subtract-borrow-at-equal	subtract_in_place	clang++: killed (check: 109 passed, 7 failed; ll: 38 passed, 10 failed), 10 s	g++-16: killed (check: 109 passed, 7 failed; ll: 38 passed, 10 failed), 14 s
+subtract-borrow-at-equal	subtract_in_place	clang++: killed (check: 109 passed, 7 failed; ll: 32 passed, 16 failed), 10 s	g++-16: killed (check: 109 passed, 7 failed; ll: 40 passed, 8 failed), 14 s
 subtract-borrow-carried-only	subtract_in_place	clang++: killed (check: 104 passed, 12 failed; ll: 16 passed, 32 failed), 7 s	g++-16: killed (check: 104 passed, 12 failed; ll: 16 passed, 32 failed), 11 s
 subtract-borrow-or	subtract_in_place	clang++: survived, 10 s	g++-16: survived, 14 s	equivalent: the two terms are never both 1: below = 1 means x[i] < y[i], so difference = x[i] - y[i] + 2^64 is not 0, and difference < borrow needs difference = 0 (borrow is 0 or 1); so the sum and the or are equal
 subtract-borrow-not-subtracted	subtract_in_place	clang++: killed (check: 104 passed, 12 failed; ll: 16 passed, 32 failed), 7 s	g++-16: killed (check: 104 passed, 12 failed; ll: 16 passed, 32 failed), 11 s
 subtract-stops-at-y	subtract_in_place	clang++: killed (check: 104 passed, 12 failed; ll: 16 passed, 32 failed), 7 s	g++-16: killed (check: 104 passed, 12 failed; ll: 16 passed, 32 failed), 11 s
 subtract-runs-every-limb	subtract_in_place	clang++: survived, 10 s	g++-16: survived, 14 s	equivalent: past y's limbs with nothing borrowed, each limb of x has 0 subtracted with no borrow, so it is written back unchanged and the borrow stays 0: the extra passes change nothing
 subtract-y-past-its-end	subtract_in_place	clang++: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 5 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 9 s
-subtract-below-at-equal	subtract_in_place	clang++: killed (check: 107 passed, 9 failed; ll: 38 passed, 10 failed), 10 s	g++-16: killed (check: 107 passed, 9 failed; ll: 32 passed, 16 failed), 14 s
-subtract-trim-off	subtract_in_place	clang++: killed (cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 4 s	g++-16: killed (timed out), 90 s
+subtract-below-at-equal	subtract_in_place	clang++: killed (check: 107 passed, 9 failed; ll: 30 passed, 18 failed), 10 s	g++-16: killed (check: 107 passed, 9 failed; ll: 34 passed, 14 failed), 14 s
+subtract-trim-off	subtract_in_place	clang++: killed (timed out), 90 s	g++-16: killed (timed out), 90 s
 subtract-borrow-starts-1	subtract_in_place	clang++: killed (timed out), 90 s	g++-16: killed (timed out), 90 s
 jacobi-zero-modulus-unrefused	jacobi	clang++: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 8 s	g++-16: killed (exit 2, 2 of 3 summaries: build failed or a step crashed), 12 s
 jacobi-even-modulus-unrefused	jacobi	clang++: killed (check: 115 passed, 1 failed), 10 s	g++-16: killed (check: 115 passed, 1 failed), 14 s
 jacobi-always-reduced	jacobi	clang++: survived, 10 s	g++-16: survived, 14 s	equivalent: reduce returns a itself when a < n, so reducing every a gives the same limbs
 jacobi-never-reduced	jacobi	clang++: survived, 10 s	g++-16: survived, 14 s	equivalent: every step of the loop keeps the symbol whatever x's size (stripping 2s by the symbol of 2, swapping by reciprocity, subtracting y), and while x >= y it subtracts y, so from x = a it reaches the same symbol as from a mod n, only later
 jacobi-reduced-at-equal	jacobi	clang++: survived, 10 s	g++-16: survived, 14 s	equivalent: only a = n changes: x starts at n rather than empty, the first pass subtracts x = y and ends with y = n, so the symbol is 0 unless n = 1, where both give 1
-jacobi-y-mod-4	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 566 passed, 78 failed; ll: 0 passed, 48 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 568 passed, 76 failed; ll: 0 passed, 48 failed), 11 s
-jacobi-two-sign-3-or-7	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 567 passed, 77 failed; ll: 2 passed, 46 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 570 passed, 74 failed; ll: 0 passed, 48 failed), 11 s
-jacobi-two-sign-even-count	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 11 s
-jacobi-two-sign-off	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 570 passed, 74 failed; ll: 2 passed, 46 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 568 passed, 76 failed; ll: 2 passed, 46 failed), 11 s
+jacobi-y-mod-4	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 566 passed, 78 failed; ll: 2 passed, 46 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 567 passed, 77 failed; ll: 0 passed, 48 failed), 11 s
+jacobi-two-sign-3-or-7	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 569 passed, 75 failed; ll: 2 passed, 46 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 569 passed, 75 failed; ll: 0 passed, 48 failed), 11 s
+jacobi-two-sign-even-count	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 565 passed, 79 failed; ll: 2 passed, 46 failed), 11 s
+jacobi-two-sign-off	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 570 passed, 74 failed; ll: 2 passed, 46 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 569 passed, 75 failed; ll: 2 passed, 46 failed), 11 s
 jacobi-swap-off	jacobi	clang++: killed (timed out), 90 s	g++-16: killed (timed out), 90 s
 jacobi-swap-at-equal	jacobi	clang++: survived, 10 s	g++-16: survived, 14 s	equivalent: x = y swaps two equal vectors, which changes nothing but the sign: and x = y > 1 makes the gcd y > 1, so the symbol is 0 whatever the sign, while x = y = 1 is 1 mod 4 and flips nothing
 jacobi-reciprocity-either	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 565 passed, 79 failed; ll: 0 passed, 48 failed), 11 s
-jacobi-reciprocity-off	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 566 passed, 78 failed; ll: 2 passed, 46 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 566 passed, 78 failed; ll: 0 passed, 48 failed), 11 s
+jacobi-reciprocity-off	jacobi	clang++: killed (check: 103 passed, 13 failed; cli: 571 passed, 73 failed; ll: 0 passed, 48 failed), 7 s	g++-16: killed (check: 103 passed, 13 failed; cli: 567 passed, 77 failed; ll: 0 passed, 48 failed), 11 s
 jacobi-gcd-unread	jacobi	clang++: killed (check: 114 passed, 2 failed), 10 s	g++-16: killed (check: 114 passed, 2 failed), 14 s
 jacobi-gcd-low-limb-only	jacobi	clang++: killed (check: 115 passed, 1 failed), 10 s	g++-16: killed (check: 115 passed, 1 failed), 14 s
 jacobi-gcd-one-limb-only	jacobi	clang++: killed (check: 114 passed, 2 failed), 10 s	g++-16: killed (check: 114 passed, 2 failed), 14 s
