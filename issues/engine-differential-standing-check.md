@@ -88,3 +88,19 @@ the Lucas–Lehmer cycle produces verdicts on the engine. Options seen so far:
   table or the numeric build flags lands. `lucas-lehmer-test` adds the row and passes the gate (its
   R17). What stays here: whether one gate covers later engines' suites
   (`issues/ntt-transform-engine.md`, `issues/cpu-transform-throughput.md`), and any scheduled run.
+- **The gate as built** (deferred from `lucas-lehmer-test`, its P4, 2026-11-01). `ci/engine-gate.sh
+  [REV]` writes `git archive REV` (default HEAD) into two fresh copies and runs `make check-engine` in
+  each, under clang (`MPS_CLANG`) and then under a real GCC (`MPS_GCC`, told by its predefined
+  macros, never by its name: on macOS `g++` is clang), one after the other; then it compares the two
+  logs, which `sh ci/engine-gate.sh compare LOG_A LOG_B` does alone. A log passes only as a green
+  `make check-engine`: the four summaries its `SUMMARIES` constant names (two `check:`, one `cli:`,
+  one `ll:`), each with 0 failed, no ` FAIL ` line, and one well-formed digest line for each of the
+  five labels in `LABELS` (squarings, products, partial chains, final chains, zero chains). Its exit
+  status is 0 when green, its last line `engine-gate: green on <full hash>: …`; 1 for a red make, a
+  log that is not a green `make check-engine` or a digest that differs, naming each such label with
+  both digests; 2 for bad arguments, a missing log or commit, or a compiler missing or not the one it
+  must be. The profile's `landing gate` row (`AGENTS.md` § Factory) requires it green on the commit
+  that lands before a change to `src/ibdwt.*`, `src/fft.*`, `src/lengths.*`, `src/lengths.txt`,
+  `src/measure.cpp` or `IEEE` in the `Makefile`. Its time is in this cycle's ledger
+  (`spec/lucas-lehmer-test/evidence/ledger.md`). What stays here is as above: later engines' suites,
+  a scheduled run, and the input that isolates the magnitude refusal.

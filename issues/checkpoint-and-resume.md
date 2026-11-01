@@ -70,3 +70,12 @@ and Part II's "every known Mersenne prime up to a few million".
 - Related: `spec/lucas-lehmer-test/` (good states, the recovery), `issues/prp-gerbicz-test.md`,
   `issues/pminus1-factoring.md`, `issues/known-primes-campaign.md`.
 - Found by: `lucas-lehmer-test` shaping, 2026-10-31.
+- **The state to persist, as built** (deferred from `lucas-lehmer-test`, its P4, 2026-11-01). The
+  test's good states are held in memory and nowhere else: the iteration, the shift and the residue as
+  held (shifted, modulo M_p), at the length the run is on (`lucas::test`, `src/lucas.cpp`), one taken
+  at each of the `GOOD_STATES` checked iterations that passes. A failed check or a refusal that
+  reproduces sends the run back to the last one, so a failure redoes up to 1/`GOOD_STATES` of the run,
+  and a kill loses all of it. The file persists the same state: iteration, shift, residue and length,
+  written only from a good state (R4 above). A resumed run's result must still report the error-check
+  counts of the whole run (`RunReport`, `src/result.hpp`; § Invariants 1), so shaping decides whether
+  the file carries them too.

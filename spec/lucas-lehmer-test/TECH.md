@@ -61,7 +61,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/verify/p3.sh
 - id: P4
   name: Audit, deferral ledger, push, the landing gate and the cluster runs' evidence
-  status: pending
+  status: in_progress
   satisfies:
   - R1
   - R2
@@ -351,6 +351,11 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
       sentence>`` and ``- make check-long: <s> s on clang++ (budget 900 s)``, from dispatch A's prepush
       line; then one line per target, ``- `<target>`: check step <s> s``, from its `result.json`), and
       `## Landing gate` (``- engine-gate: green on <hash>: …``, prepush's last line verbatim).
+- **Dispatch A** (amendment, 2026-11-01): the audit walked R1–R18 against PLAN § 2.9 and found no
+      gap, so no audit-fix commit; the walk of P1–P3 and their commits found no deferral beyond the
+      three Notes bullets, so no new seed and `ROADMAP.md` unchanged. The foreman, not dispatch A,
+      pushes the branch (its change to the Push item above): dispatch A stops after a green pre-push
+      with the tree clean and P4 `in_progress`.
 - **Verify:** `sh spec/lucas-lehmer-test/verify/p4.sh` (`… p4.sh audit` runs P4's own checks without
   the cumulative gate, for a fast first look).
 - **Touches:** `spec/lucas-lehmer-test/evidence/*`, `issues/large-gcd-and-jacobi.md`,

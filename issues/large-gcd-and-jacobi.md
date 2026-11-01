@@ -78,3 +78,11 @@ where both run.
   (`spec/lucas-lehmer-test/` Clarifications). Reporting gcd(s_i − 2, M_p) as a factor, re-checked
   exactly before it prints, would need this seed's GCD; whether it is worth a path no correct run
   reaches is this seed's question.
+- **The Jacobi check's schedule at the top of the range** (deferred from `lucas-lehmer-test`, its
+  P4, 2026-11-01). The Lucas–Lehmer test (`src/lucas.cpp`) checks J(s − 2 | M_p) at `GOOD_STATES`
+  points of every run and on the final residue, each with `jacobi` in `src/mp.cpp`: Shallit and
+  Sorenson's binary algorithm on `BigInt`, quadratic in p. At the exponents `make check` and the long
+  tier run, the checks are a small share of a run. Near P_max (`lucas::largest_exponent`) each symbol
+  is a long computation of its own, and a run makes `GOOD_STATES` of them, so the schedule there waits
+  on this seed's subquadratic symbol. `GOOD_STATES` is a constant in `src/lucas.hpp` whose value no
+  check pins; shaping may tune it against the symbol's cost (`spec/lucas-lehmer-test/PLAN.md` § 5).
