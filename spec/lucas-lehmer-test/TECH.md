@@ -538,6 +538,27 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
   with P4 `in_progress`; the foreman pushes and submits the three runs, and dispatch B redoes the
   evidence and the ledger's `## Times` and `## Landing gate`, and closes P4 under the retuned
   `verify:`.
+- **Dispatch A, review cycle 2** (amendment, 2026-11-01): the audit walked what this round touched
+  (R5's vectors, generator and their check's comment; R3's, R6's, R11's and R13's checks in
+  `tests/check_lucas.cpp`; the three checkers' scripts and records) against R1–R18 and § Invariants.
+  R16: the hooks are still set only in `tests/`, `tests/cli.sh` is unchanged, both compilers green,
+  `make check` within budget. § Invariants 3: the 461 earlier records are unchanged and the 32 new
+  ones appended, each from its command with the reciprocity loop; `tests/vectors/` is on the
+  high-blast list, so F6 is a CONFIRMED finding in a listed path, changed only as the foreman's
+  route directed. § Invariants 2: the new progress checks read the clock for the log only, never
+  for a result. § Invariants 4: no outside source opened. One gap, fixed in
+  `[feature] Build lucas-lehmer-test P4: review cycle 2 audit fix` before the pre-push: a
+  comment in `tests/vectors/generate.py` named the review that found a pair, a spec reference in
+  a product file; the sentence is gone, the vectors are unchanged, and F6's record was swept again
+  for the new digest (the same counts). No new deferral: the times the progress line prints come
+  from the system clock, which R13 does not ask to be settable, so bounding them is the check, not
+  a deferral; `ROADMAP.md` and the three Notes bullets are unchanged. `remediation/prepush.sh` on
+  the committed tree (`0c45bc3`) is green; its last two lines:
+  `prepush: times for ## Times: - make check: make check 4.974 s at bcb6fdf, 8.783 s now, +3.809 s (budget +5 s; least of 5 interleaved runs each; load 4.4); - make check-long: 46 s on clang++ (budget 900 s)`
+  and
+  `prepush: landing gate for ## Landing gate: - engine-gate: green on 0c45bc31db7156c26bb9b0686438d622cf4038e7: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal`.
+  The tested commit is `0c45bc3`; this note's commit changes only `TECH.md`. Stopped before the
+  push, with P4 `in_progress`.
 - **Verify:** `sh spec/lucas-lehmer-test/remediation/p4.sh`, then the six checkers F1–F6 (the
   frontmatter's `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p4.sh`, whose
   `audit` mode the wrapper keeps).
