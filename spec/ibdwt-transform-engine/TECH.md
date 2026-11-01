@@ -3,10 +3,10 @@ slug: ibdwt-transform-engine
 title: Squaring modulo 2^p − 1 with a weighted transform (FP64, portable)
 kind: feature
 appetite: big
-status: in_progress
+status: in_review
 branch: feature/ibdwt-transform-engine
 base: main
-current_phase: P4
+current_phase: done
 last_updated: '2026-10-31'
 phases:
 - id: P1
@@ -56,7 +56,7 @@ phases:
   verify: sh spec/ibdwt-transform-engine/verify/p3.sh
 - id: P4
   name: Audit, deferral ledger, push, and the cluster runs' evidence
-  status: in_progress
+  status: done
   satisfies:
   - R1
   - R2
@@ -383,7 +383,7 @@ evidence, the ledger and the state.
       bullets, the no-uncommitted-code rule and the scan first, then the P3 gate on the final tree.
       `prepush.sh scan` runs the scan alone; see it catch a planted site name once and a planted
       detailed line naming a made-up node once, then remove both plants.
-- [ ] **Push.** `git push origin feature/ibdwt-transform-engine`, fast-forward only (the foreman
+- [x] **Push.** `git push origin feature/ibdwt-transform-engine`, fast-forward only (the foreman
       authorizes it for this phase). Never force. The push ends dispatch A: report the pushed
       commit, its `ci/test-commit.sh` hash (`git hash-object`), and the prepush times line; the
       foreman submits the three runs
