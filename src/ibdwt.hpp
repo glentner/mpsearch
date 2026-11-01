@@ -16,6 +16,15 @@
 // holds its exponent by the length table, and only an Engine forms residues. Every round-off
 // distance is max |v - round(v)| over a convolution's unweighted outputs v.
 //
+// The operations: to_digits and from_digits convert between BigInt and the engine's digits;
+// square, square_subtract and multiply replace a residue by its square, its square less 2^b, or
+// its product with another, and return the round-off distance. Each operation checks its
+// convolution's outputs before it assigns anything, and refuses with roundoff_error, leaving the
+// residue and the operands as they were, when an output is not finite or reaches MAGNITUDE_LIMIT,
+// when the distance passes the engine's threshold, when the rounded outputs disagree with exact
+// checksums of the inputs, or when their root mean square passes the engine's rms_limit. The
+// engine chooses no shift and keeps nothing between calls.
+//
 
 #pragma once
 
@@ -29,6 +38,7 @@
 // Internal libs
 #include "exc.hpp"
 #include "fft.hpp"
+#include "mp.hpp"
 
 
 // A request the engine refuses: a length it does not support or whose table does not hold the
@@ -141,5 +151,27 @@ namespace ibdwt {
 
 	// The statistics of squaring x, whose digits must be balanced; never the outputs or a residue
 	Statistics sample(const Transform& transform, const Residue& x);
+
+
+	// x, a residue of at most p bits (M_p, which is 0, included), as balanced digits; more bits
+	// are an engine_error
+	Residue to_digits(const Engine& engine, const BigInt& x);
+
+
+	// The residue 0 <= r < M_p that digits represent, sum_j x_j 2^(c_j) modulo M_p, for any one
+	// digit a word below 2^62 in size, balanced or not; digits that represent M_p read back as 0
+	BigInt from_digits(const Engine& engine, const Residue& x);
+
+
+	// x <- x^2 mod M_p; returns the round-off distance
+	double square(const Engine& engine, Residue& x);
+
+
+	// x <- x^2 - 2^bit mod M_p, for bit < p; returns the round-off distance
+	double square_subtract(const Engine& engine, Residue& x, std::uint64_t bit);
+
+
+	// x <- x y mod M_p, y unchanged (y may be x); returns the round-off distance
+	double multiply(const Engine& engine, Residue& x, const Residue& y);
 
 }

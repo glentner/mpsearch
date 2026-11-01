@@ -6,7 +6,7 @@ appetite: big
 status: in_progress
 branch: feature/ibdwt-transform-engine
 base: main
-current_phase: P2
+current_phase: P3
 last_updated: '2026-10-31'
 phases:
 - id: P1
@@ -26,7 +26,7 @@ phases:
   verify: sh spec/ibdwt-transform-engine/verify/p1.sh
 - id: P2
   name: 'Residues: the digit form, the squaring and its subtraction, the product, the monitor'
-  status: pending
+  status: done
   satisfies:
   - R1
   - R4
@@ -265,21 +265,36 @@ bit, and multiplied, each returning its distance and refusing on the monitor's f
 everything left as it was; structured inputs refused or squared right; checked against `BigInt` on a sample in `make check` and at
 every supported length in the engine tier.
 
-- [ ] `src/ibdwt.*`: `to_digits`, `from_digits`, `square`, `square_subtract`, `multiply` (§ 2.2.8,
+- [x] `src/ibdwt.*`: `to_digits`, `from_digits`, `square`, `square_subtract`, `multiply` (§ 2.2.8,
       § 2.3); the monitor in its order — magnitude, distance, `checksums_agree` (internal, § 2.2.6
       (c)), `rms` past `rms_limit` — each a `roundoff_error` leaving residue and operands untouched;
       `engine_error` for more than p bits, a bit at p or above, digits that are not the engine's; the
       pinned first lines of § 2.8.
-- [ ] `tests/check_ibdwt.cpp`: the five P2 labels; the refusal check gains the P2 refusals.
+- [x] `tests/check_ibdwt.cpp`: the five P2 labels; the refusal check gains the P2 refusals.
       `tests/check_engine.cpp`: the six P2 labels, the squaring and product checks printing their
       residue digests. Every differential check grades the full `BigInt`; the monitor and structured
       checks compute the outputs' distance and rms themselves, never through `roundoff` or `rms`.
-- [ ] `doc/weighted-transforms.md`: the operations by name, the threshold 7/16, the four refusals,
+- [x] `doc/weighted-transforms.md`: the operations by name, the threshold 7/16, the four refusals,
       the checksums' identity, the envelope, and what the sizing covers (§ 2.7).
-- [ ] If anything the measurement depends on changed, remeasure (P1's item) in this commit.
+- [x] If anything the measurement depends on changed, remeasure (P1's item) in this commit.
+      Nothing it depends on changed (the convolutions, the weights, the transform, `roundoff`,
+      `rms` and the protocol are P1's, untouched), so the table was not remeasured.
 - **Verify:** `sh spec/ibdwt-transform-engine/verify/p2.sh`.
 - **Touches:** `src/ibdwt.*`, `tests/check_ibdwt.cpp`, `tests/check_engine.cpp`,
   `tests/engine_support.*`, `doc/weighted-transforms.md`.
+- **Amendments at the build (2026-10-31):**
+  - Outputs come out exact, with no distance to refuse below, wherever every weight is 1 and
+    every root exact: lengths 1 and 2, and length 4 when it divides p (exponent 72 at length 4
+    in the default tier). The monitor checks count all such cases rather than only N = 1, 2.
+  - The checks' bodies for the residues and the operations live once in
+    `tests/engine_support.cpp` (`expect_round_trips`, `expect_squarings`, `expect_products`,
+    `expect_monitor`, `expect_repeats`, `expect_structured`), each tier calling them over its
+    own lengths; the default tier's sample lengths are each odd m at 2^0, 2^1, 2^2 and 2^10
+    words for all five P2 labels.
+  - Every case of a round-trip tally passes through both `to_digits` and `from_digits`, so the
+    digit-0 and the readback sabotage each make every case disagree (W = K).
+  - `to_digits` balances its plain words through `carry`, the one carry the gates wrap;
+    `from_digits` has its own plain-digit carry, since its digits may pass what a double holds.
 
 ## Phase P3 — Squaring chains against the known answers, and the two tiers' budgets
 **Satisfies:** R5, R9, R12 · **Depends on:** P2

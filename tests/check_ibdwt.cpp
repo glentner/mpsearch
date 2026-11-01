@@ -7,8 +7,11 @@
 // against its definition: the positions and weights against Crandall and Fagin's example and
 // eq. (6.5) to (6.7), the transform against the term-by-term sum that defines it, the
 // convolutions against the exact integers of Theorem 1 (doc/weighted-transforms.md) and the carry
-// against BigInt, the lengths and the table against their measurement, and the refusals. Every
-// expected value is computed here or in tests/engine_support.cpp, never by the engine. The
+// against BigInt, the lengths and the table against their measurement, and the refusals; then the
+// residues and the operations at sample lengths, each odd m at 2^0, 2^1, 2^2 and 2^10 words: the
+// round trip through the balanced digits, the squarings and products against BigInt, the
+// round-off monitor, the repeats, and structured inputs with the checksums they are caught by.
+// Every expected value is computed here or in tests/engine_support.cpp, never by the engine. The
 // engine tier, tests/check_engine.cpp, runs the same at every supported length.
 //
 
@@ -34,6 +37,10 @@
 
 
 using engine_support::Tally;
+
+
+// The sample lengths: each odd m up to 15 at 2^0, 2^1, 2^2 and 2^10 words
+static const std::vector<std::uint64_t> SAMPLE_POWERS = {0, 1, 2, 10};
 
 
 // 2 pi, the double nearest it
@@ -317,6 +324,127 @@ static void the_engine_refuses_lengths_and_exponents_it_does_not_hold() {
 		}
 		check::expect(refused, "length_for(" + std::to_string(p) + ") to find no length");
 	}
+
+	// The operations: a residue of more than p bits, a subtraction at bit p or above, and digits
+	// that are not the engine's (too few, outside the balanced range, 2^62 or more in size)
+	for (const engine_support::Assigned& span: {engine_support::assigned_to(1), engine_support::assigned_to(12),
+	                                            engine_support::assigned_to(1'536)}) {
+		const std::uint64_t n = span.length, p = span.last;
+		const ibdwt::Engine engine(p, n);
+		const std::vector<std::uint64_t>& c = engine.transform().positions();
+		expect_engine_error([&] { ibdwt::to_digits(engine, shift_left(BigInt(1), p)); }, p, n, at(p, n) + ", 2^p to digits");
+		expect_engine_error([&] { ibdwt::to_digits(engine, shift_left(BigInt(3), p + 64)); }, p, n, at(p, n) + ", 3 2^(p + 64) to digits");
+		for (std::uint64_t bit: {p, p + 1, 2 * p}) {
+			ibdwt::Residue x = ibdwt::to_digits(engine, BigInt(5));
+			const ibdwt::Residue before = x;
+			expect_engine_error([&] { ibdwt::square_subtract(engine, x, bit); }, p, n, at(p, n) + ", less 2^" + std::to_string(bit));
+			check::expect(x.digits == before.digits, at(p, n) + ": a refused subtraction to leave the residue");
+		}
+		ibdwt::Residue short_x{std::vector<std::int64_t>(n - 1, 0)};
+		ibdwt::Residue high{std::vector<std::int64_t>(n, 0)}, huge{std::vector<std::int64_t>(n, 0)}, fine{std::vector<std::int64_t>(n, 0)};
+		high.digits[n - 1] = std::int64_t(1) << (c[n] - c[n - 1] - 1);
+		huge.digits[0] = std::int64_t(1) << 62;
+		expect_engine_error([&] { ibdwt::square(engine, short_x); }, p, n, at(p, n) + ", a square of " + std::to_string(short_x.digits.size()) + " digits");
+		expect_engine_error([&] { ibdwt::square(engine, high); }, p, n, at(p, n) + ", a square of a digit at the top of its range plus 1");
+		expect_engine_error([&] { ibdwt::multiply(engine, fine, high); }, p, n, at(p, n) + ", a product with an unbalanced operand");
+		expect_engine_error([&] { ibdwt::multiply(engine, fine, short_x); }, p, n, at(p, n) + ", a product with too few digits");
+		expect_engine_error([&] { ibdwt::from_digits(engine, short_x); }, p, n, at(p, n) + ", too few digits to read back");
+		expect_engine_error([&] { ibdwt::from_digits(engine, huge); }, p, n, at(p, n) + ", a digit of 2^62 to read back");
+		check::expect(ibdwt::from_digits(engine, high) == shift_left(BigInt(1), c[n] - 1), at(p, n) + ": an unbalanced digit to read back");
+	}
+}
+
+
+static void residues_round_trip_through_the_balanced_digits() {
+	engine_support::expect_round_trips(engine_support::sample_lengths(SAMPLE_POWERS), 0x7e51d0e5);
+}
+
+
+static void squarings_and_products_equal_bigints_at_every_odd_factor() {
+	//
+	// Each odd m at 2^0, 2^1, 2^2 and 2^10 words, both ends of the assigned exponents: squares,
+	// squares less 2^0, 2^1, 2^(p - 1) and a pseudorandom bit, and products, each in full against
+	// BigInt
+
+	std::vector<std::uint64_t> lengths = engine_support::sample_lengths(SAMPLE_POWERS);
+	engine_support::Digest digest;
+	engine_support::expect_squarings(lengths, 0x5917a7e5, digest);
+	engine_support::expect_products(lengths, 0x9a0d0c75, digest);
+}
+
+
+static void the_round_off_monitor_reports_and_refuses_past_the_threshold() {
+	engine_support::expect_monitor(engine_support::sample_lengths(SAMPLE_POWERS), 0x3017a0e5);
+}
+
+
+static void the_engine_repeats_itself_bit_for_bit() {
+	engine_support::expect_repeats(engine_support::sample_lengths(SAMPLE_POWERS), 0x0e9ea7ed);
+}
+
+
+static void structured_inputs_are_refused_or_squared_right() {
+	//
+	// The checksums first, on outputs known exactly: Theorem 1's integers, computed here at
+	// lengths 12, 48 and 60 (where every character of order 1 to 4 is taken), agree for a square
+	// and a product, and each of an output off by 1, alternating errors of 1, and errors of
+	// period 3 and of period 4, whose sums over a period are 0, disagrees. The distance and the
+	// root mean square are not numbers when an output is not. Then the structured inputs, every
+	// family at four fractions of the digits' range at the sample lengths, refused or squared right
+
+	engine_support::Random random(0xc4ec5005);
+	Tally sums("checksums");
+	for (std::uint64_t n: {12, 48, 60}) {
+		engine_support::Assigned span = engine_support::assigned_to(n);
+		for (std::uint64_t p: {span.first, span.last}) {
+			const ibdwt::Engine engine(p, n);
+			const ibdwt::Transform& transform = engine.transform();
+			const std::vector<std::uint64_t>& c = transform.positions();
+			const ibdwt::Residue x = engine_support::random_digits(transform, random), y = engine_support::random_digits(transform, random);
+			for (bool square: {true, false}) {
+				const ibdwt::Residue& other = square ? x : y;
+				std::vector<double> z(n, 0);
+				std::vector<std::int64_t> exact(n, 0);
+				for (std::uint64_t i = 0; i < n; i++)
+					for (std::uint64_t j = 0; j < n; j++) {
+						std::uint64_t k = (i + j) % n, wrap = i + j >= n;
+						std::int64_t e = std::int64_t(c[i] + c[j]) - std::int64_t(c[k]) - std::int64_t(p * wrap);
+						exact[k] += x.digits[i] * other.digits[j] * (std::int64_t(1) << e);
+					}
+				for (std::uint64_t k = 0; k < n; k++)
+					z[k] = double(exact[k]);
+				std::string what = at(p, n) + (square ? ", square" : ", product");
+				std::vector<double> v = square ? ibdwt::convolve_square(transform, x) : ibdwt::convolve(transform, x, y);
+				sums.add(ibdwt::checksums_agree(transform, x, other, z), what + ": the exact outputs disagree");
+				sums.add(ibdwt::checksums_agree(transform, x, other, v), what + ": the convolution's outputs disagree");
+				const std::uint64_t off = random.next() % n;
+				const char* errors[] = {"an output off by 1", "alternating errors", "errors of period 3", "errors of period 4"};
+				for (int kind = 0; kind < 4; kind++) {
+					std::vector<double> wrong = z;
+					for (std::uint64_t k = 0; k < n; k++) {
+						if (kind == 0)
+							wrong[k] += k == off ? 1 : 0;
+						else if (kind == 1)
+							wrong[k] += k % 2 ? -1 : 1;
+						else if (kind == 2)
+							wrong[k] += k % 3 == 0 ? 1 : k % 3 == 1 ? -1 : 0;
+						else
+							wrong[k] += k % 4 == 0 ? 1 : k % 4 == 2 ? -1 : 0;
+					}
+					sums.add(not ibdwt::checksums_agree(transform, x, other, wrong), what + ": " + errors[kind] + " agree");
+				}
+			}
+		}
+	}
+	sums.expect_none();
+
+	const std::vector<double> nan = {0.25, std::nan(""), 1};
+	check::expect(std::isnan(ibdwt::roundoff(nan)), "the round-off distance of outputs holding a NaN to be NaN");
+	check::expect(std::isnan(ibdwt::rms(nan)), "the root mean square of outputs holding a NaN to be NaN");
+
+	engine_support::Outcomes outcomes = engine_support::expect_structured(engine_support::sample_lengths(SAMPLE_POWERS),
+	                                                                     {0, 1, 2, 3, 4, 5, 6, 7, 8}, {0.25, 0.5, 0.75, 1.0});
+	check::expect(outcomes.refused > 0 and outcomes.squared > 0, "structured inputs both refused and squared");
 }
 
 
@@ -328,4 +456,9 @@ check_by_name {
 	{"every supported length is accepted",                                               every_supported_length_is_accepted},
 	{"the length table holds to its measurement",                                        the_length_table_holds_to_its_measurement},
 	{"the engine refuses lengths and exponents it does not hold",                        the_engine_refuses_lengths_and_exponents_it_does_not_hold},
+	{"residues round-trip through the balanced digits",                                  residues_round_trip_through_the_balanced_digits},
+	{"squarings and products equal BigInt's at every odd factor",                        squarings_and_products_equal_bigints_at_every_odd_factor},
+	{"the round-off monitor reports and refuses past the threshold",                     the_round_off_monitor_reports_and_refuses_past_the_threshold},
+	{"the engine repeats itself bit for bit",                                            the_engine_repeats_itself_bit_for_bit},
+	{"structured inputs are refused or squared right",                                   structured_inputs_are_refused_or_squared_right},
 };

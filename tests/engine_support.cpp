@@ -7,9 +7,11 @@
 
 // Standard libs
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -22,6 +24,7 @@
 #include "ibdwt.hpp"
 #include "lengths.hpp"
 #include "mp.hpp"
+#include "vector_reader.hpp"
 
 
 namespace engine_support {
@@ -272,6 +275,382 @@ namespace engine_support {
 		check::expect(p_max >= 10'000'019, "P_max, " + std::to_string(p_max) + ", to be at least 10,000,019");
 		check::expect(ibdwt::holds(ibdwt::LARGEST_LENGTH, p_max) and not ibdwt::holds(ibdwt::LARGEST_LENGTH, p_max + 1),
 		              "the largest length to hold P_max and not P_max + 1");
+	}
+
+
+
+	static std::string at(std::uint64_t p, std::uint64_t n) {
+		return "exponent " + std::to_string(p) + " at length " + std::to_string(n);
+	}
+
+
+	std::vector<std::uint64_t> sample_lengths(const std::vector<std::uint64_t>& powers) {
+		std::vector<std::uint64_t> out;
+		for (std::uint64_t m = 1; m <= 15; m += 2)
+			for (std::uint64_t k: powers)
+				if ((m << k) <= ibdwt::LARGEST_LENGTH)
+					out.push_back(m << k);
+		std::sort(out.begin(), out.end());
+		out.erase(std::unique(out.begin(), out.end()), out.end());
+		return out;
+	}
+
+
+	Assigned assigned_to(std::uint64_t length) {
+		for (const Assigned& span: assigned())
+			if (span.length == length)
+				return span;
+		check::require(false, "length " + std::to_string(length) + " to be supported");
+		return {length, 1, 0};
+	}
+
+
+	BigInt random_residue(std::uint64_t p, Random& random) {
+		std::vector<std::uint64_t> limbs((p + 63) / 64);
+		for (std::uint64_t& limb: limbs)
+			limb = random.next();
+		if (p % 64 != 0)
+			limbs.back() &= (std::uint64_t(1) << (p % 64)) - 1;
+		BigInt x = BigInt::from_limbs(limbs);
+		return x == mersenne(p) ? BigInt() : x;
+	}
+
+
+	double distance_of(const std::vector<double>& outputs) {
+		double distance = 0;
+		for (double v: outputs)
+			distance = std::max(distance, std::fabs(v - std::round(v)));
+		return distance;
+	}
+
+
+	double rms_of(const std::vector<double>& outputs) {
+		double sum = 0;
+		for (double v: outputs)
+			sum += v * v;
+		return outputs.empty() ? 0 : std::sqrt(sum / double(outputs.size()));
+	}
+
+
+	ibdwt::Residue pattern(const ibdwt::Transform& transform, int family, double fraction) {
+		const std::vector<std::uint64_t>& c = transform.positions();
+		const std::uint64_t n = transform.length();
+		const double two_pi = 6.283185307179586;
+		ibdwt::Residue x;
+		for (std::uint64_t j = 0; j < n; j++) {
+			double m = 1;
+			switch (family) {
+				case 1: m = j % 2 ? -1 : 1; break;
+				case 2: m = j % 3 == 2 ? -1 : 1; break;
+				case 3: m = j % 4 < 2 ? 1 : -1; break;
+				case 4: m = j % 5 == 0 ? -1 : 1; break;
+				case 5: m = j % 6 < 3 ? 1 : -1; break;
+				case 6: m = 2.0 * double(j % 8) / 7.0 - 1; break;
+				case 7: m = std::cos(two_pi * double(j) / double(n)); break;
+				case 8: m = std::cos(two_pi * double(j) * double(n / 4) / double(n) + 0.3); break;
+			}
+			std::int64_t top = (std::int64_t(1) << (c[j + 1] - c[j] - 1)) - 1;
+			x.digits.push_back(std::int64_t(std::llround(fraction * double(top) * m)));
+		}
+		return x;
+	}
+
+
+	void Digest::add(const BigInt& x) {
+		std::string bytes;
+		for (std::uint64_t limb: x.limbs())
+			for (int i = 0; i < 8; i++)
+				bytes.push_back(char((limb >> (8 * i)) & 0xff));
+		digests_ += vectors::sha256(bytes);
+	}
+
+
+	void Digest::print(const std::string& what) const {
+		std::cout << "   residues " << what << ": " << vectors::sha256(digests_) << std::endl;
+	}
+
+
+	void expect_round_trips(const std::vector<std::uint64_t>& lengths, std::uint64_t seed) {
+		//
+		// Every case goes through to_digits and from_digits both, and agrees only if the digits
+		// are balanced and both directions give the value BigInt gives
+
+		Random random(seed);
+		Tally tally("round trips");
+		for (std::uint64_t n: lengths) {
+			Assigned span = assigned_to(n);
+			for (std::uint64_t p: {span.first, span.last}) {
+				ibdwt::Engine engine(p, n);
+				const ibdwt::Transform& transform = engine.transform();
+				const std::vector<std::uint64_t>& c = transform.positions();
+				const BigInt m = mersenne(p);
+				const std::vector<BigInt> residues = {BigInt(), BigInt(1), subtract(m, BigInt(1)), m, random_residue(p, random),
+				                                      random_residue(p, random)};
+				const char* names[] = {"0", "1", "M_p - 1", "M_p", "pseudorandom", "pseudorandom"};
+				for (std::size_t i = 0; i < residues.size(); i++) {
+					const BigInt want = residues[i] == m ? BigInt() : residues[i];
+					bool agree = false;
+					try {
+						ibdwt::Residue r = ibdwt::to_digits(engine, residues[i]);
+						agree = balanced(transform, r) and value_of(c, r.digits, p) == want and ibdwt::from_digits(engine, r) == want;
+					} catch (std::exception const&) {
+					}
+					tally.add(agree, at(p, n) + ": " + names[i]);
+				}
+
+				std::vector<std::vector<std::int64_t>> vectors(4);
+				for (std::uint64_t j = 0; j < n; j++) {
+					std::int64_t half = std::int64_t(1) << (c[j + 1] - c[j] - 1);
+					vectors[0].push_back(-half);
+					vectors[1].push_back(half - 1);
+					vectors[2].push_back(j % 2 ? half - 1 : -half);
+					vectors[3].push_back(2 * half - 1);
+				}
+				const char* shapes[] = {"every digit at the bottom", "every digit at the top", "digits alternating bottom and top",
+				                        "every digit all ones (M_p)"};
+				for (std::size_t i = 0; i < vectors.size(); i++) {
+					const BigInt want = value_of(c, vectors[i], p);
+					bool agree = false;
+					try {
+						BigInt got = ibdwt::from_digits(engine, ibdwt::Residue{vectors[i]});
+						ibdwt::Residue r = ibdwt::to_digits(engine, got);
+						agree = got == want and (i != 3 or got.is_zero()) and balanced(transform, r)
+						        and ibdwt::from_digits(engine, r) == want;
+					} catch (std::exception const&) {
+					}
+					tally.add(agree, at(p, n) + ": " + shapes[i]);
+				}
+			}
+		}
+		tally.expect_none();
+	}
+
+
+	void expect_squarings(const std::vector<std::uint64_t>& lengths, std::uint64_t seed, Digest& digest) {
+		Random random(seed);
+		Tally tally("squarings");
+		for (std::uint64_t n: lengths) {
+			Assigned span = assigned_to(n);
+			for (std::uint64_t p: {span.first, span.last}) {
+				ibdwt::Engine engine(p, n);
+				for (int i = 0; i < 2; i++) {
+					const BigInt x = random_residue(p, random), square = reduce_mersenne(::square(x), p);
+					const std::uint64_t bits[] = {0, 1, p - 1, random.next() % p};
+					for (int v = -1; v < 4; v++) {
+						const bool subtract = v >= 0;
+						const std::uint64_t bit = subtract ? bits[v] : 0;
+						const BigInt want = subtract ? less_power(square, bit, p) : square;
+						std::string what = at(p, n) + (subtract ? ": square less 2^" + std::to_string(bit) : ": square");
+						bool agree = false;
+						try {
+							ibdwt::Residue r = ibdwt::to_digits(engine, x);
+							const bool loaded = ibdwt::from_digits(engine, r) == x;
+							if (subtract)
+								ibdwt::square_subtract(engine, r, bit);
+							else
+								ibdwt::square(engine, r);
+							BigInt got = ibdwt::from_digits(engine, r);
+							digest.add(got);
+							agree = loaded and balanced(engine.transform(), r) and got == want;
+						} catch (std::exception const& error) {
+							what += std::string(", raised ") + error.what();
+						}
+						tally.add(agree, what);
+					}
+				}
+			}
+		}
+		tally.expect_none();
+	}
+
+
+	void expect_products(const std::vector<std::uint64_t>& lengths, std::uint64_t seed, Digest& digest) {
+		Random random(seed);
+		Tally tally("products");
+		for (std::uint64_t n: lengths) {
+			Assigned span = assigned_to(n);
+			for (std::uint64_t p: {span.first, span.last}) {
+				ibdwt::Engine engine(p, n);
+				for (int i = 0; i < 2; i++) {
+					const BigInt x = random_residue(p, random), y = random_residue(p, random);
+					const BigInt want = reduce_mersenne(::multiply(x, y), p);
+					std::string what = at(p, n) + ": product";
+					bool agree = false;
+					try {
+						ibdwt::Residue r = ibdwt::to_digits(engine, x), s = ibdwt::to_digits(engine, y);
+						const ibdwt::Residue before = s;
+						const bool loaded = ibdwt::from_digits(engine, r) == x and ibdwt::from_digits(engine, s) == y;
+						ibdwt::multiply(engine, r, s);
+						BigInt got = ibdwt::from_digits(engine, r);
+						digest.add(got);
+						agree = loaded and balanced(engine.transform(), r) and got == want and s.digits == before.digits;
+					} catch (std::exception const& error) {
+						what += std::string(", raised ") + error.what();
+					}
+					tally.add(agree, what);
+				}
+			}
+		}
+		tally.expect_none();
+	}
+
+
+	static double operate(int op, const ibdwt::Engine& engine, ibdwt::Residue& x, const ibdwt::Residue& y, std::uint64_t bit) {
+		//
+		// A square (0), a square less 2^bit (1) or a product with y (2)
+
+		if (op == 0)
+			return ibdwt::square(engine, x);
+		if (op == 1)
+			return ibdwt::square_subtract(engine, x, bit);
+		return ibdwt::multiply(engine, x, y);
+	}
+
+
+	void expect_monitor(const std::vector<std::uint64_t>& lengths, std::uint64_t seed) {
+		Random random(seed);
+		Tally reported("reported distances"), refused("refusals below the outputs' own distance"),
+		      top("top-of-range squarings refused or right");
+		const char* names[] = {"square", "square less 2^b", "product"};
+		std::size_t exact = 0, by_distance = 0;
+		for (std::uint64_t n: lengths) {
+			Assigned span = assigned_to(n);
+			for (std::uint64_t p: {span.first, span.last}) {
+				ibdwt::Engine engine(p, n);
+				const ibdwt::Transform& transform = engine.transform();
+				const ibdwt::Residue x = random_digits(transform, random), y = random_digits(transform, random);
+				const std::uint64_t bit = random.next() % p;
+				for (int op = 0; op < 3; op++) {
+					std::string what = at(p, n) + ", " + names[op];
+					const double own = distance_of(op == 2 ? ibdwt::convolve(transform, x, y) : ibdwt::convolve_square(transform, x));
+					ibdwt::Residue r = x, s = y;
+					try {
+						double got = operate(op, engine, r, s, bit);
+						reported.add(got == own, what + ": reported " + std::to_string(got) + ", the outputs' own " + std::to_string(own));
+					} catch (std::exception const& error) {
+						reported.add(false, what + ": raised " + error.what());
+					}
+					if (own == 0) {
+						exact++;
+						continue;
+					}
+					ibdwt::Engine strict(p, n, own / 2);
+					r = x;
+					std::string wrong = "accepted";
+					try {
+						operate(op, strict, r, s, bit);
+					} catch (roundoff_error const& error) {
+						std::string text = error.what();
+						bool names_all = text.find(std::to_string(p)) != std::string::npos and text.find(std::to_string(n)) != std::string::npos;
+						if (error.exponent != p or error.length != n or error.distance != own or error.threshold != own / 2 or not names_all)
+							wrong = "the error says: " + text;
+						else if (r.digits != x.digits or s.digits != y.digits)
+							wrong = "the residue or the operand changed";
+						else
+							wrong.clear();
+					} catch (std::exception const& error) {
+						wrong = std::string("raised ") + error.what();
+					}
+					refused.add(wrong.empty(), what + " at threshold half its distance: " + wrong);
+				}
+
+				// Every digit at the top of its range: refused, the residue unchanged, or squared right
+				if (p == span.last) {
+					ibdwt::Residue r;
+					for (std::uint64_t j = 0; j + 1 < transform.positions().size(); j++) {
+						const std::vector<std::uint64_t>& c = transform.positions();
+						r.digits.push_back((std::int64_t(1) << (c[j + 1] - c[j] - 1)) - 1);
+					}
+					const ibdwt::Residue before = r;
+					std::string wrong;
+					try {
+						ibdwt::square(engine, r);
+						BigInt value = value_of(transform.positions(), before.digits, p);
+						if (ibdwt::from_digits(engine, r) != reduce_mersenne(::square(value), p))
+							wrong = "squared wrong without a refusal";
+					} catch (roundoff_error const& error) {
+						if (r.digits != before.digits)
+							wrong = "refused, but the residue changed";
+						else if (error.distance > error.threshold)
+							by_distance++;
+					} catch (std::exception const& error) {
+						wrong = std::string("raised ") + error.what();
+					}
+					top.add(wrong.empty(), at(p, n) + ": every digit at the top: " + wrong);
+				}
+			}
+		}
+		reported.expect_none();
+		refused.expect_none();
+		top.expect_none();
+		std::cout << "   exact outputs: " << exact << " cases with no distance to refuse below" << std::endl;
+		check::expect(by_distance > 0, "an input with every digit at the top to be refused for its distance at some length");
+	}
+
+
+	void expect_repeats(const std::vector<std::uint64_t>& lengths, std::uint64_t seed) {
+		Random random(seed);
+		Tally tally("repeats");
+		const char* names[] = {"square", "square less 2^1", "product"};
+		for (std::uint64_t n: lengths) {
+			Assigned span = assigned_to(n);
+			for (std::uint64_t p: {span.first, span.last}) {
+				ibdwt::Engine one(p, n), two(p, n);
+				const ibdwt::Residue x = random_digits(one.transform(), random), y = random_digits(one.transform(), random);
+				for (int op = 0; op < 3; op++) {
+					bool agree = false;
+					try {
+						ibdwt::Residue a = x, b = x, c = x;
+						double da = operate(op, one, a, y, 1), db = operate(op, two, b, y, 1), dc = operate(op, one, c, y, 1);
+						agree = a.digits == b.digits and b.digits == c.digits and da == db and db == dc;
+					} catch (std::exception const&) {
+					}
+					tally.add(agree, at(p, n) + ", " + names[op] + ": not the same twice");
+				}
+			}
+		}
+		tally.expect_none();
+	}
+
+
+	Outcomes expect_structured(const std::vector<std::uint64_t>& lengths, const std::vector<int>& families,
+	                           const std::vector<double>& fractions) {
+		Tally tally("structured squarings refused or right");
+		std::size_t refusals = 0, accepted = 0;
+		for (std::uint64_t n: lengths) {
+			Assigned span = assigned_to(n);
+			for (std::uint64_t p: {span.first, span.last}) {
+				ibdwt::Engine engine(p, n);
+				const ibdwt::Transform& transform = engine.transform();
+				for (int family: families)
+					for (double fraction: fractions) {
+						const ibdwt::Residue x = pattern(transform, family, fraction);
+						const double size = rms_of(ibdwt::convolve_square(transform, x));
+						std::string what = at(p, n) + ", family " + std::to_string(family) + ", fraction " + std::to_string(fraction);
+						ibdwt::Residue r = x;
+						std::string wrong;
+						try {
+							ibdwt::square(engine, r);
+							accepted++;
+							BigInt want = reduce_mersenne(::square(value_of(transform.positions(), x.digits, p)), p);
+							if (ibdwt::from_digits(engine, r) != want)
+								wrong = "squared wrong without a refusal";
+							else if (not (size <= engine.rms_limit()))
+								wrong = "accepted with a root mean square past the limit";
+						} catch (roundoff_error const&) {
+							refusals++;
+							if (r.digits != x.digits)
+								wrong = "refused, but the residue changed";
+						} catch (std::exception const& error) {
+							wrong = std::string("raised ") + error.what();
+						}
+						tally.add(wrong.empty(), what + ": " + wrong);
+					}
+			}
+		}
+		tally.expect_none();
+		std::cout << "   structured: " << refusals << " refused, " << accepted << " squared" << std::endl;
+		return {refusals, accepted};
 	}
 
 }
