@@ -104,3 +104,9 @@ FP64 FFT stays faster.
   Pollard 1971, Reed–Truong 1975 and Miller–Reed–Truong 1981 were read only in their abstracts (no open
   copy); the note proves what it uses, and a cycle that builds on more than that reads them first.
 - Found by: factory adoption review, 2026-10-11.
+- **A stale "What mps uses"** (deferred from `ibdwt-transform-engine`, its P4, 2026-10-31).
+  `doc/number-theoretic-transforms.md` says "Today `mps` has no arithmetic on numbers wider than 64
+  bits, and no transform of any kind". The first half has been false since `reference-big-integer`
+  (`BigInt`), the second since `ibdwt-transform-engine` (`fft::Plan` and the FP64 engine). That
+  cycle's plan kept the note out of its files, so this cycle, which rewrites the section, corrects
+  both.

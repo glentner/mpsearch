@@ -86,3 +86,9 @@ portable engine's residues (§ Invariants 2), and the round-off monitor stays on
   the 7.5M words (15·2^19) the largest known exponent, 136,279,841, needs are this seed's: R3 here
   compares the optimised engine with the portable one, so the portable engine needs those lengths,
   their differential tests and measured table rows first.
+- **The real-signal transform** (deferred from `ibdwt-transform-engine`, its PLAN § 3, 2026-10-22).
+  The portable engine transforms the weighted signal as complex values with zero imaginary parts,
+  twice the work of a real-signal (or right-angle) transform, to keep one code path for every
+  length, odd m up to 15 included (`doc/weighted-transforms.md`, What mps uses). The real-signal
+  transforms of Sorensen et al. 1987, which Crandall and Fagin 1994 recommend, halve that work; they
+  are this seed's, checked against the portable engine's residues like every other change here.

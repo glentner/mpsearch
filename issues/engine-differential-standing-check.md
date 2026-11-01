@@ -60,3 +60,15 @@ the Lucas–Lehmer cycle produces verdicts on the engine. Options seen so far:
 - Related: `issues/known-answer-standing-check.md`, `issues/ci-job-standing-checks.md` and
   `issues/doc-claims-standing-check.md`, the same gap for the tables, the cluster job and the notes.
 - Found by: `ibdwt-transform-engine` shaping, 2026-10-22.
+- **The suite as built** (deferred from `ibdwt-transform-engine`, its P4, 2026-10-31). The suite is
+  `make check-engine`: `make check`'s two steps, then `bin/check engine`, the engine tier in
+  `tests/check_engine.cpp`. Its ten checks run the digit round-trip, squarings with and without the
+  subtraction, products, the round-off monitor, repeats and structured inputs at both assigned
+  exponents of all 144 supported lengths; then squaring chains, at the length the table names, at
+  the next length and shifted, that reproduce every partial residue up to the table's largest
+  exponent and every final residue up to 100,069; and Lucas–Lehmer chains that end in zero for the
+  27 Mersenne prime exponents from 3 to 100,000. On an Apple M2 Pro with clang, alone and with
+  nothing to rebuild, it took 459 s at P4 (budget 900 s, that GOAL's R12; the cycle's gates time it
+  beside other work). The squaring, product and chain checks print residue digests, which a clang
+  and a GCC build must share (that GOAL's R9). Only the cycle's gates compared them, and nothing does
+  once it merges, so the standing check should run both compilers and compare the digests.

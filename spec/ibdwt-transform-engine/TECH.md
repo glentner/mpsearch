@@ -56,7 +56,7 @@ phases:
   verify: sh spec/ibdwt-transform-engine/verify/p3.sh
 - id: P4
   name: Audit, deferral ledger, push, and the cluster runs' evidence
-  status: pending
+  status: in_progress
   satisfies:
   - R1
   - R2
@@ -358,16 +358,16 @@ the effort's approved job class, and reads the results.
 still `in_progress`; then the pre-push checks and the push; the runs; last the phase commit with the
 evidence, the ledger and the state.
 
-- [ ] **Audit.** Walk R1–R14 against `src/`, `tests/`, `doc/`, `AGENTS.md` and the Makefile, one by
+- [x] **Audit.** Walk R1–R14 against `src/`, `tests/`, `doc/`, `AGENTS.md` and the Makefile, one by
       one, and confirm each has its check or its gate step (PLAN § 2.9). Fix and commit anything
       found (above).
 - [ ] **Deferral ledger:** `spec/ibdwt-transform-engine/evidence/ledger.md` with `## Deferrals` and
       `## Times`.
-  - [ ] Walk P1–P4 of this file and the build's own commits for "do not fix here", "known
+  - [x] Walk P1–P4 of this file and the build's own commits for "do not fix here", "known
         limitation", "left as a follow-up" and any deferral the build introduced. Each gets an
         `issues/<slug>.md` from the ISSUE template and a `ROADMAP.md` entry, or a Notes bullet in an
         existing seed, per `AGENTS.md` § Factory; list each under `## Deferrals` with its home.
-  - [ ] Notes bullets, each with the words "deferred from `ibdwt-transform-engine`" (the ledger
+  - [x] Notes bullets, each with the words "deferred from `ibdwt-transform-engine`" (the ledger
         check looks for them):
         `issues/large-gcd-and-jacobi.md` — the engine multiplies modulo M_p only (R14); the
         half-GCD's plain, zero-padded, unweighted product of operands of varying sizes is not in it,
@@ -377,7 +377,7 @@ evidence, the ledger and the state.
         the work, left out for one code path (PLAN § 3);
         `issues/engine-differential-standing-check.md` — the suite is `make check-engine`, its time
         on this Mac at P4, and what it runs.
-  - [ ] Every `issues/*.md` matches exactly one `**Seed:**` line in `ROADMAP.md`; this cycle's seed
+  - [x] Every `issues/*.md` matches exactly one `**Seed:**` line in `ROADMAP.md`; this cycle's seed
         stays `adopted:ibdwt-transform-engine`.
 - [ ] **Pre-push.** `sh spec/ibdwt-transform-engine/verify/prepush.sh` must be green: the ledger's
       bullets, the no-uncommitted-code rule and the scan first, then the P3 gate on the final tree.
