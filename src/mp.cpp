@@ -4,7 +4,8 @@
 // Multiple-Precision
 //
 // The algorithms are the textbook ones, from Brent and Zimmermann, "Modern Computer Arithmetic",
-// 2010 (MCA below), each citing its source. The mathematics, and the proofs of what is the
+// 2010 (MCA below), and the Jacobi symbol's from Shallit and Sorenson, "A binary algorithm for the
+// Jacobi symbol", 1993, each citing its source. The mathematics, and the proofs of what is the
 // project's own, are in doc/reference-arithmetic.md.
 //
 
@@ -76,21 +77,28 @@ std::size_t BigInt::bit_length() const {
 }
 
 
-int compare(const BigInt& a, const BigInt& b) {
+static int compare_limbs(const std::vector<std::uint64_t>& x, const std::vector<std::uint64_t>& y) {
 	//
-	// -1, 0 or 1 as a is below, equal to or above b
+	// -1, 0 or 1 as x is below, equal to or above y, both limbs with no high zero limb
 	//
-	// No value has a high zero limb, so the longer is the larger; equal lengths compare from the
-	// top limb down (MCA, chapter 1).
+	// The longer is the larger; equal lengths compare from the top limb down (MCA, chapter 1).
 
-	const std::vector<std::uint64_t>& x = a.limbs();
-	const std::vector<std::uint64_t>& y = b.limbs();
 	if (x.size() != y.size())
 		return x.size() < y.size() ? -1 : 1;
 	for (std::size_t i = x.size(); i-- > 0;)
 		if (x[i] != y[i])
 			return x[i] < y[i] ? -1 : 1;
 	return 0;
+}
+
+
+int compare(const BigInt& a, const BigInt& b) {
+	//
+	// -1, 0 or 1 as a is below, equal to or above b
+	//
+	// No value has a high zero limb, so the limbs compare as they stand.
+
+	return compare_limbs(a.limbs(), b.limbs());
 }
 
 
@@ -513,6 +521,88 @@ BigInt power_mod(const BigInt& base, const BigInt& exponent, const BigInt& m) {
 	return r;
 }
 
+
+static void trim(std::vector<std::uint64_t>& x) {
+	//
+	// Drop the high zero limbs, so the limbs hold a value as BigInt does
+
+	while (not x.empty() and x.back() == 0)
+		x.pop_back();
+}
+
+
+static std::size_t strip_twos(std::vector<std::uint64_t>& x) {
+	//
+	// x / 2^z in place, for the z trailing zero bits of a nonzero x; returns z
+	//
+	// By whole limbs and then bits, split as for the right shift.
+
+	std::size_t whole = 0;
+	while (x[whole] == 0)
+		whole++;
+	std::size_t part = std::countr_zero(x[whole]);
+	for (std::size_t i = whole; i < x.size(); i++) {
+		std::uint64_t limb = x[i] >> part;
+		if (part != 0 and i + 1 < x.size())
+			limb |= x[i + 1] << (64 - part);
+		x[i - whole] = limb;
+	}
+	x.resize(x.size() - whole);
+	trim(x);
+	return 64 * whole + part;
+}
+
+
+static void subtract_in_place(std::vector<std::uint64_t>& x, const std::vector<std::uint64_t>& y) {
+	//
+	// x - y in place, for x >= y
+	//
+	// The borrow as in `subtract`, stopping once y is spent and nothing is borrowed.
+
+	std::uint64_t borrow = 0;
+	for (std::size_t i = 0; i < x.size() and (i < y.size() or borrow != 0); i++) {
+		std::uint64_t yi = i < y.size() ? y[i] : 0;
+		std::uint64_t difference = x[i] - yi;
+		std::uint64_t below = x[i] < yi;
+		x[i] = difference - borrow;
+		borrow = below + (difference < borrow);
+	}
+	trim(x);
+}
+
+
+int jacobi(const BigInt& a, const BigInt& n) {
+	//
+	// The Jacobi symbol J(a | n), -1, 0 or 1, for odd n > 0 and any a; n zero or even throws
+	//
+	// The binary algorithm (Shallit and Sorenson, "A binary algorithm for the Jacobi symbol",
+	// 1993). From x = a mod n, y = n and t = 1, each pass strips the factors 2 of x, negating t
+	// for an odd count of them when y is 3 or 5 mod 8 (the symbol of 2); swaps x and y when x < y,
+	// negating t when both are 3 mod 4 (reciprocity); and subtracts y from x, which leaves the
+	// symbol as it was. It ends at x = 0 with y = gcd(a, n): the symbol is t when that is 1, and
+	// 0 otherwise. x and y are two limb vectors changed in place, and a swap moves no limb.
+
+	if (n.is_zero())
+		throw mp_error("modulus zero");
+	if (n.limbs()[0] % 2 == 0)
+		throw mp_error("even modulus");
+
+	std::vector<std::uint64_t> x = compare(a, n) < 0 ? a.limbs() : reduce(a, n).limbs();
+	std::vector<std::uint64_t> y = n.limbs();
+	int t = 1;
+	while (not x.empty()) {
+		std::uint64_t y8 = y[0] % 8;
+		if (strip_twos(x) % 2 == 1 and (y8 == 3 or y8 == 5))
+			t = -t;
+		if (compare_limbs(x, y) < 0) {
+			std::swap(x, y);
+			if (x[0] % 4 == 3 and y[0] % 4 == 3)
+				t = -t;
+		}
+		subtract_in_place(x, y);
+	}
+	return y.size() == 1 and y[0] == 1 ? t : 0;
+}
 
 std::string hex64(std::uint64_t value) {
 	//

@@ -98,17 +98,17 @@ Result test_lucas_lehmer(const long unsigned p) {
 
 Result run_in_order(const long unsigned p, const std::vector<TestFunction>& tests, const ResultSink& completed) {
 	//
-	// Run tests on M_p in order, stopping after the first decisive result
+	// Run tests on M_p in order, stopping after the first decisive result or the first error
 	//
 	// Each result goes to `completed` as soon as its test returns, before the next test
-	// starts. An error decides nothing, so the next test still runs (and the run still fails).
-	// Returns the last result handed over.
+	// starts. An error decides nothing, but the run has failed, so no later test runs or hands
+	// anything over. Returns the last result handed over.
 
 	std::optional<Result> last;
 	for (const TestFunction test: tests) {
 		last = test(p);
 		completed(*last);
-		if (is_decisive(*last))
+		if (is_decisive(*last) or last->outcome() == OUTCOME_ERROR)
 			break;
 	}
 

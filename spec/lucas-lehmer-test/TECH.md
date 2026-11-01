@@ -6,12 +6,12 @@ appetite: big
 status: in_progress
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: P1
+current_phase: P2
 last_updated: '2026-11-01'
 phases:
 - id: P1
   name: The Jacobi symbol and the stop rule
-  status: pending
+  status: done
   satisfies:
   - R5
   - R15
@@ -186,21 +186,29 @@ This cycle's own rules:
 **Goal:** `jacobi` on `BigInt`, equal to Python's on committed vectors that carry their command;
 `run_in_order` stops at an error; the algorithm written up and cited in its module's note.
 
-- [ ] `src/mp.hpp`, `src/mp.cpp`: `int jacobi(const BigInt& a, const BigInt& n)` (PLAN § 2.2), its
+- [x] `src/mp.hpp`, `src/mp.cpp`: `int jacobi(const BigInt& a, const BigInt& n)` (PLAN § 2.2), its
       first line pinned; `mp_error` for a zero or even modulus; Shallit and Sorenson 1993 cited
       (or Brent and Zimmermann 2010, Remark 3: say which in the commit body and the note).
-- [ ] `tests/vectors/generate.py`: the `jacobi` family of research/01 (literal seeds; every exponent
+- [x] `tests/vectors/generate.py`: the `jacobi` family of research/01 (literal seeds; every exponent
       R1 and R2 cover in `make check` with symbols −1, 1 and 0; shifted LL residues; general odd
       moduli; Python's reciprocity loop on every record, Euler's criterion for prime M_p, a binary
       form for the rest); `tests/vectors/jacobi.txt` written by its command;
       `tests/vector_reader.*`: the op and field kind `J`, `jacobi` in `STEMS`.
-- [ ] `tests/check_mp.cpp`: "the Jacobi symbol matches the vectors", grading every record.
-- [ ] `src/math.cpp`: `run_in_order` stops after an error, its comment saying so (R15).
+- [x] `tests/check_mp.cpp`: "the Jacobi symbol matches the vectors", grading every record.
+- [x] `src/math.cpp`: `run_in_order` stops after an error, its comment saying so (R15).
       `tests/check_result.cpp`: "run_in_order stops at the first verdict or error" (renamed from
       "…at the first verdict"), with stand-ins for an error first, in the middle and last.
-- [ ] `doc/reference-arithmetic.md`: the Jacobi symbol (definition, algorithm, invariant,
+- [x] `doc/reference-arithmetic.md`: the Jacobi symbol (definition, algorithm, invariant,
       termination, a check-marked example), cited; "What mps uses" names `jacobi`.
       `doc/references.md`: `ShallitSorenson1993`, Verified against its DOI's metadata.
+- **Built** (amendment, 2026-11-01): `jacobi` cites Shallit and Sorenson 1993 (no locator: the
+      paper's text was not read; the proof in the note is written from Brent and Zimmermann 2010,
+      § 1); a zero modulus throws `mp_error("modulus zero")` and an even one `mp_error("even
+      modulus")`; `compare` now delegates to a static `compare_limbs` that `jacobi` shares. The
+      family is 461 records (research/01's 15 per exponent for the 24 exponents, and 101 on general
+      odd moduli). Left for later phases, as planned: `AGENTS.md` § Map still says `run_in_order`
+      "stops at the first decisive result" (P2's refresh of the stale wording, below, fixes it; P1
+      may not touch `AGENTS.md`), and the three "published Mersenne prime exponents" sentences (P3).
 - **Verify:** `sh spec/lucas-lehmer-test/verify/p1.sh` (`… p1.sh quick` while iterating).
 - **Touches:** `src/mp.*`, `src/math.cpp`, `tests/vectors/generate.py`, `tests/vectors/jacobi.txt`,
   `tests/vector_reader.*`, `tests/check_mp.cpp`, `tests/check_result.cpp`,
@@ -227,7 +235,8 @@ prove it on the known answers at two shifts and prove every check and recovery b
 - [ ] `tests/cli.sh`: only the expectations whose outcome the Lucas–Lehmer test decides, and the
       record version (R16 as the GOAL now words it; the gate compares it with `bcb6fdf`'s, PLAN § 6).
 - [ ] `AGENTS.md`, in this phase's commit: the high-blast-radius line and § Map bullet for
-      `src/lucas.hpp`, `src/lucas.cpp`; § Map's stale wording; `tests/check_lucas.cpp`, `tests/ll.sh`
+      `src/lucas.hpp`, `src/lucas.cpp`; § Map's stale wording (among it the `src/math.*` bullet's
+      "stops at the first decisive result", stale since P1's stop rule); `tests/check_lucas.cpp`, `tests/ll.sh`
       and the vectors in the `tests/` bullet (R18). Never change the four lines `tests/cli.sh` reads or
       the `verify` row.
 - [ ] `doc/lucas-lehmer.md`, in this phase's commit: "What mps uses" as built, each limit as

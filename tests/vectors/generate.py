@@ -487,6 +487,192 @@ def reference():
 	return f
 
 
+# --- jacobi: the Jacobi symbol ------------------------------------------------------------------
+
+# Every odd exponent the Lucas-Lehmer checks run in make check: the odd Mersenne prime exponents up
+# to 10000 in tests/known/mersenne-exponents.txt, and 1237, 1277 and 10303, the exponents up to
+# 20000 with a Lucas-Lehmer row in tests/known/final-residues.txt, whose M_p is composite
+JACOBI_PRIME = [3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281, 3217, 4253, 4423,
+                9689, 9941]
+JACOBI_COMPOSITE = [1237, 1277, 10303]
+
+# Seeds (S+, S-) of the dense residues r:p:S whose symbol modulo M_p is 1 and -1, found once by
+# searching up from 1000 p and fixed here; the family asserts each sign
+JACOBI_SEEDS = {
+	3: (3001, 3000), 5: (5001, 5000), 7: (7001, 7000), 13: (13000, 13003), 17: (17000, 17004),
+	19: (19002, 19000), 31: (31000, 31002), 61: (61000, 61001), 89: (89000, 89003),
+	107: (107000, 107005), 127: (127001, 127000), 521: (521000, 521004), 607: (607000, 607001),
+	1237: (1237000, 1237004), 1277: (1277003, 1277000), 1279: (1279000, 1279002),
+	2203: (2203002, 2203000), 2281: (2281000, 2281001), 3217: (3217003, 3217000),
+	4253: (4253001, 4253000), 4423: (4423004, 4423000), 9689: (9689001, 9689000),
+	9941: (9941000, 9941001), 10303: (10303000, 10303001),
+}
+
+# Composite M_p with small factors, and the seeds (S+, S-) of a residue r:p:S of each sign, found
+# as above
+JACOBI_FACTORED = {11: (11001, 11000), 23: (23001, 23000), 29: (29000, 29005), 37: (37000, 37001)}
+
+# Odd composite p with a prime M_a dividing M_p, and the first iteration i whose s_i - 2 shares a
+# factor with M_p (doc/lucas-lehmer.md, "The zero case is real"): the symbol is 0 there, -1 at i - 1
+JACOBI_ZEROS = [(9, 3), (15, 3), (21, 3), (25, 5)]
+
+
+def jacobi_by_reciprocity(a, n):
+	# The classical loop: reduce a modulo n, strip its factors 2, each negating the sign when n is
+	# 3 or 5 mod 8, and swap by reciprocity, negating it when both are 3 mod 4 (Crandall and
+	# Pomerance, Prime Numbers, 2005, 2.3.1)
+	assert n > 0 and n % 2 == 1
+	a %= n
+	t = 1
+	while a != 0:
+		while a % 2 == 0:
+			a //= 2
+			if n % 8 in (3, 5):
+				t = -t
+		a, n = n, a
+		if a % 4 == 3 and n % 4 == 3:
+			t = -t
+		a %= n
+	return t if n == 1 else 0
+
+
+def jacobi_binary(a, n):
+	# The binary form: strip the factors 2 as above, swap when a < n, and subtract n from a, with
+	# no remainder after the first
+	a %= n
+	t = 1
+	while a != 0:
+		while a % 2 == 0:
+			a //= 2
+			if n % 8 in (3, 5):
+				t = -t
+		if a < n:
+			a, n = n, a
+			if a % 4 == 3 and n % 4 == 3:
+				t = -t
+		a -= n
+	return t if n == 1 else 0
+
+
+def jacobi_by_euler(a, p):
+	# Euler's criterion for a prime M_p: a^((M_p - 1) / 2) = J(a | M_p), and (M_p - 1) / 2 + 1 is
+	# 2^(p - 1), so p - 1 folded squarings of a give J a
+	m = (1 << p) - 1
+	a %= m
+	if a == 0:
+		return 0
+	v = a
+	for _ in range(p - 1):
+		v = v * v
+		while v >> p:
+			v = (v & m) + (v >> p)
+		if v == m:
+			v = 0
+	assert v in (a, m - a), (p, "not a square root of 1 times a")
+	return 1 if v == a else -1
+
+
+def lucas_lehmer_term(p, i):
+	# s_i mod M_p from s_0 = 4
+	m = (1 << p) - 1
+	s = 4 % m
+	for _ in range(i):
+		s = (s * s - 2) % m
+	return s
+
+
+def least_factor(p):
+	# the least factor 2kp + 1 of M_p
+	m = (1 << p) - 1
+	k = 1
+	while m % (2 * k * p + 1) != 0:
+		k += 1
+	return 2 * k * p + 1
+
+
+def jacobi():
+	f = Family("jacobi", [ORACLE, ENCODING,
+	                      "every symbol by the reciprocity loop (Crandall and Pomerance, Prime Numbers, 2005, "
+	                      "2.3.1), checked by Euler's criterion for a prime M_p and by the binary form for "
+	                      "any other modulus; the signs that follow from a theorem, and the seeds' signs, asserted"])
+
+	def add(sa, sn, want=None):
+		a, n = operand(sa), operand(sn)
+		symbol = jacobi_by_reciprocity(a, n)
+		p = int(sn[4:]) if re.fullmatch(r"u:0-[0-9]+", sn) else None
+		if p in JACOBI_PRIME:
+			assert symbol == jacobi_by_euler(a, p), (sa, sn)
+		else:
+			assert symbol == jacobi_binary(a, n), (sa, sn)
+		assert want is None or symbol == want, (sa, sn, symbol, want)
+		f.add("jacobi", sa, sn, str(symbol))
+
+	# Modulo M_p, at every exponent: 0 for a multiple of M_p, a above it among them; 1 for 1, 2^p
+	# and 2^k, since J(2 | M_p) = 1; -1 for -1, 3 and 12 = s_1 - 2 (doc/lucas-lehmer.md, "The symbols
+	# of 2, 3 and 12"); a dense residue of each sign; and -1 for s_i - 2 at the middle of the run,
+	# for the quantity 2^k s_i - 2^(k + 1) a run holding the shift k forms there, and for s_(p-2) - 2,
+	# the last a run checks: the Jacobi invariant, which holds for composite M_p too at these p
+	for p in sorted(JACOBI_PRIME + JACOBI_COMPOSITE):
+		m = (1 << p) - 1
+		n = u((0, p))
+		k = (p - 1) // 2
+		for sa in (x(0), n, u((1, p + 1)), u((p, 2 * p))):
+			add(sa, n, 0)
+		for sa in (x(1), u((p, p + 1)), u((k, k + 1))):
+			add(sa, n, 1)
+		for sa in (u((1, p)), x(3), x(12)):
+			add(sa, n, -1)
+		plus, minus = JACOBI_SEEDS[p]
+		add(r(p, plus), n, 1)
+		add(r(p, minus), n, -1)
+		s = lucas_lehmer_term(p, max(1, k))
+		add(x((s - 2) % m), n, -1)
+		add(x(((s << k) - (1 << (k + 1))) % m), n, -1)
+		if p in JACOBI_PRIME:
+			assert lucas_lehmer_term(p, p - 2) == 0, p
+			add(u((0, 1), (2, p)), n, -1)
+		else:
+			add(x((lucas_lehmer_term(p, p - 2) - 2) % m), n, -1)
+
+	# Modulus 1, whose symbol is 1 for every a
+	for sa in (x(0), x(1), r(200, 900)):
+		add(sa, x(1), 1)
+
+	# Every a below 9, 15 and 45: square factors, and 1 for a non-square, J(2 | 9)
+	for mod in (9, 15, 45):
+		for a in range(mod):
+			add(x(a), x(mod))
+	assert jacobi_by_reciprocity(2, 9) == 1 and all(v * v % 9 != 2 for v in range(9))
+
+	# Composite M_p: its least factor q and a multiple of it, 0, and a residue of each sign
+	for p, (plus, minus) in sorted(JACOBI_FACTORED.items()):
+		n = u((0, p))
+		q = least_factor(p)
+		add(x(q), n, 0)
+		add(x(q * operand(r(64, 910 + p))), n, 0)
+		add(r(p, plus), n, 1)
+		add(r(p, minus), n, -1)
+
+	# The zero of the Jacobi invariant at an odd composite p, and the -1 just before it
+	for p, i in JACOBI_ZEROS:
+		m = (1 << p) - 1
+		n = u((0, p))
+		add(x((lucas_lehmer_term(p, i) - 2) % m), n, 0)
+		add(x((lucas_lehmer_term(p, i - 1) - 2) % m), n, -1)
+
+	# Moduli of several limbs: a 640-bit odd n with a far above it and a multiple of it; and the
+	# square of an odd 300-bit q with a multiple of q and a residue
+	n640 = r(640, 921)
+	q300 = r(300, 935)
+	assert operand(n640) % 2 == 1 and operand(q300) % 2 == 1
+	add(r(3000, 922), n640)
+	add(r(639, 923), n640)
+	add(x(operand(n640) * operand(r(200, 924))), n640, 0)
+	q2 = x(operand(q300) ** 2)
+	add(x(operand(q300) * operand(r(200, 936))), q2, 0)
+	add(r(599, 937), q2)
+	return f
+
 FAMILIES = {
 	"arith": arith,
 	"folding": folding,
@@ -495,6 +681,7 @@ FAMILIES = {
 	"hex": hexadecimal,
 	"decimal": decimal,
 	"reference": reference,
+	"jacobi": jacobi,
 }
 
 

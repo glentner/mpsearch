@@ -31,7 +31,7 @@ static const std::size_t FULL_BITS = 1024;
 
 
 // The kinds of an op's fields, in order: operand (O), value (V), full value (F), string (S),
-// decimal number (D), Res64 (H), comparison (C)
+// decimal number (D), Res64 (H), comparison (C), Jacobi symbol (J)
 static std::map<std::string, std::string>
 fields_by_op {
 	{"cmp",      "OOC"},
@@ -49,13 +49,14 @@ fields_by_op {
 	{"dec",      "OS"},
 	{"ll",       "DF"},
 	{"prp",      "DF"},
+	{"jacobi",   "OOJ"},
 };
 
 
 namespace vectors {
 
 
-	const std::vector<std::string> STEMS = {"arith", "folding", "hex", "products", "modular", "decimal", "reference"};
+	const std::vector<std::string> STEMS = {"arith", "folding", "hex", "products", "modular", "decimal", "reference", "jacobi"};
 
 
 	std::string Record::where() const {
@@ -315,6 +316,8 @@ static bool is_field(char kind, const std::string& field) {
 		return field.size() == 16 and is_upper_hex(field);
 	case 'C':
 		return field == "lt" or field == "eq" or field == "gt";
+	case 'J':
+		return field == "-1" or field == "0" or field == "1";
 	default:
 		return false;
 	}

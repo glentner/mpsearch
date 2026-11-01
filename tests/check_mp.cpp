@@ -318,6 +318,13 @@ static void errors_are_reported_never_values() {
 	expect_mp_error([] { reduce(vectors::operand("r:300:1"), BigInt()); }, "reduce of five limbs by 0");
 	expect_mp_error([] { power_mod(BigInt(3), BigInt(5), BigInt()); }, "power_mod(3, 5, 0)");
 	expect_mp_error([] { power_mod(BigInt(3), BigInt(), BigInt()); }, "power_mod(3, 0, 0)");
+
+	// The Jacobi symbol's modulus zero or even, of one limb and of several
+	expect_mp_error([] { jacobi(BigInt(5), BigInt()); }, "jacobi(5, 0)");
+	expect_mp_error([] { jacobi(BigInt(), BigInt()); }, "jacobi(0, 0)");
+	expect_mp_error([] { jacobi(BigInt(5), BigInt(2)); }, "jacobi(5, 2)");
+	expect_mp_error([] { jacobi(BigInt(5), vectors::operand("u:1-300")); },
+	                "jacobi of 5 by an even modulus of five limbs");
 }
 
 
@@ -501,6 +508,25 @@ static void decimal_matches_the_vectors_and_round_trips() {
 }
 
 
+static void the_jacobi_symbol_matches_the_vectors() {
+	//
+	// jacobi on every record, against the symbol Python's integers computed
+	//
+	// tests/vectors/jacobi.txt: residues modulo M_p for every odd exponent the Lucas-Lehmer checks
+	// run in make check, with each symbol, -1, 1 and 0, the residues a shifted run forms among
+	// them; and general odd moduli, with a factor shared, square factors and a above n.
+
+	std::vector<const vectors::Record*> records = vectors::records("jacobi", "jacobi");
+	vectors::Mismatches mismatches("Jacobi symbols");
+	for (const vectors::Record* record: records) {
+		int want = std::stoi(record->fields[3]);
+		int got = jacobi(vectors::operand(record->fields[1]), vectors::operand(record->fields[2]));
+		if (got != want)
+			mismatches.add(*record, "got " + std::to_string(got) + ", expected " + record->fields[3]);
+	}
+	mismatches.expect_none(records.size());
+}
+
 static check::Suite
 check_by_name {
 	{"SHA-256 matches the FIPS 180-4 examples",           sha256_matches_the_fips_examples},
@@ -523,4 +549,5 @@ check_by_name {
 	{"general reduction matches the vectors",             general_reduction_matches_the_vectors},
 	{"modular powers match the vectors",                  modular_powers_match_the_vectors},
 	{"decimal matches the vectors and round-trips",       decimal_matches_the_vectors_and_round_trips},
+	{"the Jacobi symbol matches the vectors",             the_jacobi_symbol_matches_the_vectors},
 };

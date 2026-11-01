@@ -21,8 +21,9 @@
 #include "exc.hpp"
 
 
-// An operation given an argument outside its domain: a difference below zero, a zero modulus, a
-// string that is not a number in its base, or an exponent outside a reference test's theorem
+// An operation given an argument outside its domain: a difference below zero, a zero modulus, an
+// even modulus for the Jacobi symbol, a string that is not a number in its base, or an exponent
+// outside a reference test's theorem
 class mp_error: public mps_error {
 public:
 	mp_error(const std::string& msg): mps_error(msg) {}
@@ -81,6 +82,7 @@ BigInt reduce_mersenne(const BigInt& x, long unsigned p);
 Division divide(const BigInt& x, const BigInt& m);
 BigInt reduce(const BigInt& x, const BigInt& m);
 BigInt power_mod(const BigInt& base, const BigInt& exponent, const BigInt& m);
+int jacobi(const BigInt& a, const BigInt& n);
 
 std::string hex64(std::uint64_t value);
 std::uint64_t res64(const BigInt& x, long unsigned p);

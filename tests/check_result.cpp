@@ -905,12 +905,13 @@ static Result gives_error(const long unsigned p) {
 }
 
 
-static void run_in_order_stops_at_the_first_verdict() {
+static void run_in_order_stops_at_the_first_verdict_or_error() {
 	//
 	// Tests run in order, each result handed over before the next test starts
 	//
-	// The run stops after a prime, a probable prime or a composite, and goes on past a no
-	// verdict or an error. The last result handed over is returned.
+	// The run stops after a prime, a probable prime or a composite, and after an error, first, in
+	// the middle or last: no later test runs or hands anything over. It goes on past a no verdict.
+	// The last result handed over is returned.
 
 	struct Order {
 		std::vector<TestFunction> tests;
@@ -922,7 +923,9 @@ static void run_in_order_stops_at_the_first_verdict() {
 		{{gives_no_verdict, gives_probable_prime, gives_no_verdict}, {"no verdict", "probable prime"}},
 		{{gives_no_verdict, gives_no_verdict, gives_prime},       {"no verdict", "no verdict", "prime"}},
 		{{gives_no_verdict, gives_no_verdict, gives_no_verdict},  {"no verdict", "no verdict", "no verdict"}},
-		{{gives_error, gives_no_verdict, gives_composite, gives_no_verdict}, {"error", "no verdict", "composite"}},
+		{{gives_error, gives_no_verdict, gives_composite, gives_no_verdict}, {"error"}},
+		{{gives_no_verdict, gives_error, gives_prime},            {"no verdict", "error"}},
+		{{gives_no_verdict, gives_no_verdict, gives_error},       {"no verdict", "no verdict", "error"}},
 		{{gives_composite},                                       {"composite"}},
 	};
 
@@ -936,7 +939,7 @@ static void run_in_order_stops_at_the_first_verdict() {
 		});
 		const std::string label = "the run starting with " + order.handed.front();
 		check::expect(handed == order.handed, label + ": the results handed over");
-		check::expect(ran == order.handed, label + ": no test runs after a verdict");
+		check::expect(ran == order.handed, label + ": no test runs after a verdict or an error");
 		check::expect_equal(verdict_line(last), verdict_line(order.tests[order.handed.size() - 1](7)), label + ": the last result returned");
 	}
 }
@@ -997,6 +1000,6 @@ check_by_name {
 	{"the printer's errors log in the shared style", the_printers_errors_log_in_the_shared_style},
 	{"a sound run prints every result in order",     a_sound_run_prints_every_result_in_order},
 	{"a verdict waits for the run to end",           a_verdict_waits_for_the_run_to_end},
-	{"run_in_order stops at the first verdict",      run_in_order_stops_at_the_first_verdict},
+	{"run_in_order stops at the first verdict or error", run_in_order_stops_at_the_first_verdict_or_error},
 	{"test_all runs the three tests in order",       test_all_runs_the_three_tests_in_order},
 };

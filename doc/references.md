@@ -308,6 +308,15 @@ Every work the notes in this folder, the comments in `src/` or the tables in `te
 - **DOI:** [10.17487/RFC8259](https://doi.org/10.17487/RFC8259)
 - **Verified:** 2026-10-12 against the RFC Editor's page https://www.rfc-editor.org/info/rfc8259 and the DOI's metadata at doi.org. The metadata gives a report with this title, published by the RFC Editor in December 2017, and names T. Bray as its editor but no author. The RFC Editor's page gives the same title, the date December 2017, and T. Bray as the author in its citation metadata.
 
+### ShallitSorenson1993
+
+- **Authors:** J. Shallit and J. Sorenson
+- **Title:** A binary algorithm for the Jacobi symbol
+- **Venue:** ACM SIGSAM Bulletin 27(1), 4–11
+- **Year:** 1993
+- **DOI:** [10.1145/152379.152384](https://doi.org/10.1145/152379.152384)
+- **Verified:** 2026-11-01 against the DOI's metadata from Crossref, which gives a journal article with this title by Jeffrey Shallit and Jonathan Sorenson in ACM SIGSAM Bulletin, volume 27, issue 1, pages 4–11, printed in January 1993, published by the Association for Computing Machinery, with its abstract: a new algorithm for the Jacobi symbol based on Stein's binary algorithm for the greatest common divisor, and its worst case. The paper's text was not read, so the notes and `src/mp.cpp` cite this work without a locator, for the binary algorithm its title and abstract describe; the steps and their proof are written out from the identities of BrentZimmermann2010, § 1.
+
 ### Sorensen1987
 
 - **Authors:** H. V. Sorensen, D. L. Jones, M. T. Heideman and C. S. Burrus
