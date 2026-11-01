@@ -92,3 +92,9 @@ portable engine's residues (§ Invariants 2), and the round-off monitor stays on
   length, odd m up to 15 included (`doc/weighted-transforms.md`, What mps uses). The real-signal
   transforms of Sorensen et al. 1987, which Crandall and Fagin 1994 recommend, halve that work; they
   are this seed's, checked against the portable engine's residues like every other change here.
+- **Twiddle and weight precision** (deferred from `ibdwt-transform-engine`, its seed's Notes,
+  2026-10-31). The retired seed suggested generating twiddles and weights in double-double. The
+  portable engine computes each root and weight in FP64, one by one and never by recurrence, and
+  its length table was measured at that precision, which holds to 2^20 words. Whether the longer
+  lengths above need double-double (or another more accurate generation) to keep their measured
+  maxima is this seed's to decide, by measurement.
