@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:lucas-lehmer-test
 kind: feature
 appetite: big
 ---
@@ -138,10 +138,3 @@ The checkpoint format is the one `.mps` file format, shared with PRP and P-1.
 - **The engine's standing differential check** (Geoffrey's ruling, 2026-10-22). This cycle's shaping
   decides the form of `issues/engine-differential-standing-check.md` before any verdict depends on
   the engine, since the engine's full differential suite runs outside `make check` and `verify`.
-- **No check isolates the magnitude refusal** (deferred from `ibdwt-transform-engine`, its PLAN § 5,
-  2026-10-22). The engine refuses an output that is not finite or reaches 2^51, where no distance can
-  be seen (`ibdwt::MAGNITUDE_LIMIT`). The envelope refuses every input the checks build before an
-  output gets that large, so deleting the magnitude refusal leaves both tiers green; it stays as
-  defence in depth. A block input that reaches 2^51 inside the envelope would isolate it. This cycle,
-  the first to act on the engine's refusals, decides whether to build that input, perhaps with the
-  error injection above.

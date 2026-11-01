@@ -72,3 +72,19 @@ the Lucas–Lehmer cycle produces verdicts on the engine. Options seen so far:
   beside other work). The squaring, product and chain checks print residue digests, which a clang
   and a GCC build must share (that GOAL's R9). Only the cycle's gates compared them, and nothing does
   once it merges, so the standing check should run both compilers and compare the digests.
+- **No check isolates the magnitude refusal** (deferred from `ibdwt-transform-engine`, its PLAN § 5,
+  2026-10-22). The engine refuses an output that is not finite or reaches 2^51, where no distance can
+  be seen (`ibdwt::MAGNITUDE_LIMIT`). The envelope refuses every input the checks build before an
+  output gets that large, so deleting the magnitude refusal leaves both tiers green; it stays as
+  defence in depth. A block input that reaches 2^51 inside the envelope would isolate it.
+  `lucas-lehmer-test`, the first cycle to act on the engine's refusals, was to decide whether to
+  build that input. Its shaping said no (foreman's ruling, 2026-10-31; `spec/lucas-lehmer-test/` Clarifications, Q8): the driver
+  meets all four refusals through one `roundoff_error` path, proved by injection, so the gap is this
+  suite's, and the note moved here from `issues/lucas-lehmer-test.md`.
+- **The form is decided** (`lucas-lehmer-test` shaping, foreman's ruling of 2026-10-31, under
+  Geoffrey's ruling of 2026-10-22 that this shaping decides it; `spec/lucas-lehmer-test/`
+  Clarifications, Q4). It is a landing gate the profile names: `make check-engine` under clang and
+  under GCC with the residue digests compared, before any change to the engine's sources, its length
+  table or the numeric build flags lands. `lucas-lehmer-test` adds the row and passes the gate (its
+  R17). What stays here: whether one gate covers later engines' suites
+  (`issues/ntt-transform-engine.md`, `issues/cpu-transform-throughput.md`), and any scheduled run.

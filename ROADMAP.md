@@ -156,14 +156,26 @@ The test the definition of done is stated in. It runs on the engine with:
 *Horizon: near-term · Depends on: the transform engine (cleared 2026-10-31) · Refs: —*
 **Seed:** [`issues/lucas-lehmer-test.md`](issues/lucas-lehmer-test.md)
 
+## The checkpoint file, and resume without changing the answer
+
+A run near the engine's largest exponent takes days, and nothing it computes outlives the process.
+The Lucas–Lehmer test keeps its good states in memory; this writes the last one to a versioned,
+checksummed `.mps` file on a timer, renamed into place, and resumes from it with the residue an
+uninterrupted run gives. The format is shared with PRP and P-1. With resume in place come the
+Lucas–Lehmer runs too long for a check: the final residues at 1,000,193 and above, and the known
+primes up to a few million.
+
+*Horizon: near-term · Depends on: Lucas–Lehmer · Refs: lucas-lehmer-test shaping, 2026-10-31*
+**Seed:** [`issues/checkpoint-and-resume.md`](issues/checkpoint-and-resume.md)
+
 ## PRP with the Gerbicz error check
 
 Base-3 PRP with Gerbicz's check catches nearly every arithmetic error within the block where it
 happens, then recovers from the last verified state. That makes it the strongest in-flight
 hardware-fault detector for this arithmetic, and the default for every burn-in profile.
 
-*Horizon: near-term · Depends on: the transform engine (cleared 2026-10-31); the checkpoint format
-from Lucas–Lehmer · Refs: —*
+*Horizon: near-term · Depends on: the transform engine (cleared 2026-10-31); the checkpoint file and
+resume · Refs: —*
 **Seed:** [`issues/prp-gerbicz-test.md`](issues/prp-gerbicz-test.md)
 
 ## `mps bench`: time per iteration that compares across machines
@@ -174,6 +186,25 @@ claim on this roadmap and every burn-in walltime is measured with it.
 
 *Horizon: near-term · Depends on: the transform engine (cleared 2026-10-31) · Refs: —*
 **Seed:** [`issues/benchmark-mode.md`](issues/benchmark-mode.md)
+
+## Pin the verdict path's guards in `make check`
+
+Three guards on the verdict path are right but unpinned: the exponent check's re-check on the path
+`bin/mps` runs, `utf8_length`'s table bounds, and `line_text` on factors. Each can be broken with
+`make check` green. A check for each fails when its guard is removed.
+
+*Horizon: near-term · Depends on: — · Refs: verdicts-and-exit-statuses review cycle 2, 2026-10-12;
+lucas-lehmer-test shaping, 2026-10-31*
+**Seed:** [`issues/verdict-path-guards.md`](issues/verdict-path-guards.md)
+
+## A `make check` time budget in the profile
+
+Each cycle bounds only its own growth of `make check`, 5 s at a time, and nothing states what the
+default gate may cost in total. The profile names the measured no-op time, the machine, a ceiling,
+and the rule for a cycle that would pass it, so later shapings read the budget instead of asking.
+
+*Horizon: near-term · Depends on: — · Refs: lucas-lehmer-test shaping, 2026-10-31*
+**Seed:** [`issues/check-time-baseline.md`](issues/check-time-baseline.md)
 
 ---
 

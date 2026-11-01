@@ -39,8 +39,8 @@ The check has blind spots, and they define what the known-answer tests must stil
 ## Why it was deferred
 
 Never started. It depended on the transform engine, which landed on `main` on 2026-10-31
-(`spec/ibdwt-transform-engine/`), so that constraint is cleared. It shares the checkpoint format with
-`issues/lucas-lehmer-test.md`.
+(`spec/ibdwt-transform-engine/`), so that constraint is cleared. It needs the checkpoint file and resume
+of `issues/checkpoint-and-resume.md`, whose format it shares with Lucas–Lehmer and P-1.
 
 ## Outcome / vision
 
@@ -105,3 +105,7 @@ own check. The Gerbicz check makes PRP the default arithmetic of every burn-in p
   refusal is the driver's: replaying from the saved input to tell a hardware fault from a
   reproducible excess, retrying at a larger length from the last good checkpoint, and logging the
   band between the length table's sizing limit (0.35) and the threshold.
+- **A Gerbicz-protected Lucas–Lehmer test** (carried from `issues/lucas-lehmer-test.md` at its
+  shaping, 2026-10-31; `spec/lucas-lehmer-test/` Non-goals). Run as ω^(2^i) in Z[√3]/(M_p) with
+  ω = 2 + √3, it costs about twice a plain Lucas–Lehmer test. Is it worth it for confirming primes,
+  against two independent shifted runs? No published analysis was found.

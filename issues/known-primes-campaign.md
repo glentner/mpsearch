@@ -62,3 +62,6 @@ where measurable. The release that reaches this is `1.0.0`.
 - Shaping sets which exponents run on which class. Each class need not repeat every exponent, but
   each class runs at least the largest one it can reach in a campaign.
 - Found by: factory adoption review, 2026-10-11.
+- **Paired shifted runs** (`lucas-lehmer-test` shaping, 2026-10-31; `spec/lucas-lehmer-test/`
+  Non-goals). `mps -t ll` makes one run with one random shift. Whether a campaign confirms each
+  exponent with a second, independent shifted run, and how it pairs them, is decided here.

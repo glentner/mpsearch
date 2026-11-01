@@ -73,3 +73,8 @@ where both run.
   engine does not have it. So `ROADMAP.md` Part VIII's "depends on the transform engine's general
   multiply" is half true: the transform (`fft::Plan`) is there to build on, and the product is still
   to build.
+- **A factor from a Jacobi symbol of 0** (`lucas-lehmer-test` shaping, 2026-10-31). The
+  Lucas–Lehmer test treats J(s_i − 2 | M_p) = 0 as a failed error check, not a factor
+  (`spec/lucas-lehmer-test/` Clarifications). Reporting gcd(s_i − 2, M_p) as a factor, re-checked
+  exactly before it prints, would need this seed's GCD; whether it is worth a path no correct run
+  reaches is this seed's question.
