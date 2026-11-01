@@ -12,6 +12,12 @@ P4 names. Each is a Notes bullet in a seed that already covers the work ("deferr
 The P4 audit (dispatch A) walked R1–R18 against `src/`, `tests/`, `doc/`, `ci/`, `AGENTS.md` and the
 `Makefile`, each to its check or its gate step (PLAN § 2.9), and found no gap, so it committed no fix.
 
+Review cycle 1 (`REVIEW.md`, F1–F4) reopened P2 and P4. P2's remediation (`1e820ba`) changed
+`src/lucas.cpp`, `tests/check_lucas.cpp`, the note, the profile's verify row and three seeds' line
+references; P4's dispatch A of that cycle (`df877de`) audited what it touched against R1–R18 and
+§ Invariants and found no gap and no new deferral, so the entries below and `ROADMAP.md` are
+unchanged. The times, the landing gate and the cluster runs below are all of `df877de`.
+
 ## Deferrals
 
 - **The Jacobi check's schedule at the top of the range** (TECH P4). The test checks J(s − 2 | M_p)
@@ -40,30 +46,35 @@ speed (`issues/cpu-transform-throughput.md`, `issues/benchmark-mode.md`).
 
 ## Times
 
-R16's two times are quoted from dispatch A's pre-push run (`verify/prepush.sh`, green on `2530c06`,
-the pushed and tested commit, whose code equals this tree's), not from a second run; the check steps
-are from the three runs' `result.json`, all of `2530c06`, each passing 116 checks, 644 smoke-test
-cases and 48 `ll` cases with GCC 14.
+R16's two times are quoted from review cycle 1's dispatch A pre-push run (`remediation/prepush.sh`,
+the frozen `verify/prepush.sh` under P2's wrapper, green on `df877de`, the pushed and tested commit,
+whose code equals this tree's), not from a second run; the check steps are from the three runs'
+`result.json`, all of `df877de` with `ci/test-commit.sh` blob `c4b1f28`, each passing 116 checks,
+644 smoke-test cases and 48 `ll` cases with GCC 14. Each run was `COMPLETED 0:0` on its first
+submission. The first round's runs, of `2530c06`, are superseded: P2's remediation changed code
+after them.
 
-- make check: make check 5.013 s at bcb6fdf, 8.484 s now, +3.471 s (budget +5 s; least of 5 interleaved runs each; load 8.2)
-- make check-long: 47 s on clang++ (budget 900 s)
-- `x86-64-avx512`: check step 58 s
-- `x86-64-avx2`: check step 121 s
-- `aarch64-gb10`: check step 196 s
+- make check: make check 4.973 s at bcb6fdf, 8.431 s now, +3.458 s (budget +5 s; least of 5 interleaved runs each; load 4.5)
+- make check-long: 46 s on clang++ (budget 900 s)
+- `x86-64-avx512`: check step 61 s
+- `x86-64-avx2`: check step 97 s
+- `aarch64-gb10`: check step 197 s
 
 ## Landing gate
 
 From the same pre-push run: `ci/engine-gate.sh` on HEAD, the pushed and tested commit.
 
-- engine-gate: green on 2530c06a79a9d3c83a4f08ba5612f3a89a3af359: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal
+- engine-gate: green on df877dea434e6e9adfe07b320d583b2deebc0a58: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal
 
 The pre-push lines, verbatim:
 
 ```
-prepush: times for ## Times: - make check: make check 5.013 s at bcb6fdf, 8.484 s now, +3.471 s (budget +5 s; least of 5 interleaved runs each; load 8.2); - make check-long: 47 s on clang++ (budget 900 s)
-prepush: landing gate for ## Landing gate: - engine-gate: green on 2530c06a79a9d3c83a4f08ba5612f3a89a3af359: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal
+prepush: times for ## Times: - make check: make check 4.973 s at bcb6fdf, 8.431 s now, +3.458 s (budget +5 s; least of 5 interleaved runs each; load 4.5); - make check-long: 46 s on clang++ (budget 900 s)
+prepush: landing gate for ## Landing gate: - engine-gate: green on df877dea434e6e9adfe07b320d583b2deebc0a58: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal
 ```
 
 The gate's time on this Mac, from P3's full gate (its run mode on a commit of P3's tree, whose code
 equals `2530c06`'s): 500 s under clang and 556 s under g++-16, one after the other, about 18
-minutes. The pre-push line above carries no time.
+minutes. It was not measured again on `df877de`: neither pre-push line carries a time, and P2's
+remediation added refusal and check cases to `tests/check_lucas.cpp`, which `make check-engine`
+runs, so the time on `df877de` may differ somewhat.

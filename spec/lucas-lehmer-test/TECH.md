@@ -3,10 +3,10 @@ slug: lucas-lehmer-test
 title: The Lucas–Lehmer test on the engine, with a shift and its error checks
 kind: feature
 appetite: big
-status: in_progress
+status: in_review
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: P4
+current_phase: done
 last_updated: '2026-11-01'
 phases:
 - id: P1
@@ -61,7 +61,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/verify/p3.sh
 - id: P4
   name: Audit, deferral ledger, push, the landing gate and the cluster runs' evidence
-  status: in_progress
+  status: done
   satisfies:
   - R1
   - R2
@@ -434,6 +434,17 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
   three Notes bullets as they were. The frozen `verify/prepush.sh` on `1e820ba` passed its ledger
   notes, code-committed and scan steps and went red at "files: AGENTS.md" on the old verify row, as
   P2's amendment rules; `remediation/prepush.sh` runs it under the wrapper.
+- **Dispatch B, review cycle 1** (amendment, 2026-11-01): the foreman pushed `df877de` and ran it on
+  the three targets from its `ci/test-commit.sh` (blob `c4b1f28`, unchanged), each `COMPLETED 0:0`
+  on the first submission (none resubmitted), each passing 116 checks, 644 smoke-test cases and 48
+  `ll` cases with GCC 14; check steps 61 s, 97 s and 197 s. The new evidence replaced the first
+  round's, through `verify/redact.sh` only. The ledger's `## Times` and `## Landing gate` quote
+  review cycle 1's dispatch A pre-push lines (no second run) and name `df877de` as the tested
+  commit; `## Deferrals` is unchanged. The landing gate's time on this Mac stays P3's, on
+  `2530c06`'s code, marked as not remeasured. The gate is the retuned `verify:`, with
+  `remediation/p4.sh` in place of `verify/p4.sh`. Its `audit` mode green, then the full `verify:`
+  green; its own R16 run gave `make check` +3.470 s over `bcb6fdf` (4.968 s against 8.438 s,
+  least of 5 interleaved, load 4.5; budget +5 s), the long tier 46 s.
 - **Verify:** `sh spec/lucas-lehmer-test/remediation/p4.sh`, then the four checkers (the frontmatter's
   `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p4.sh`, whose `audit` mode the
   wrapper keeps).
