@@ -1,5 +1,5 @@
 ---
-status: unshaped
+status: adopted:ibdwt-transform-engine
 kind: feature
 appetite: big
 ---

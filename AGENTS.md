@@ -15,6 +15,10 @@ make                      # bin/mps from src/*.cpp (objects in lib/)
 make check                # bin/check from tests/*.cpp and the modules, built with the standard
                           # libraries' bounds assertions (objects in lib/check/); run it, then
                           # the smoke test tests/cli.sh
+make check-engine         # make check's two steps, then `bin/check engine`: the engine's checks at
+                          # every supported length (minutes, not seconds; not in make check)
+make lengths              # bin/measure: measure the length table again into src/lengths.txt and
+                          # print its rows for src/lengths.cpp (tens of minutes; see src/lengths.hpp)
 make clean                # remove what the build wrote: the objects in lib/ and the record of
                           # the settings that built them (lib/settings), the binaries in bin/
 bin/mps --help
@@ -55,12 +59,30 @@ needs `make -B`.
   and `run_in_order`, which runs them and stops at the first decisive result.
 - `src/result.cpp`, `src/result.hpp`: the result type, the verdict line, the JSON record and the
   exit status.
+- `src/fft.cpp`, `src/fft.hpp`: the complex fast Fourier transform of every length m·2^k with odd
+  m up to 15 (`fft::Plan`), each root of unity computed on its own (`fft::root`).
+- `src/ibdwt.cpp`, `src/ibdwt.hpp`: the FP64 weighted-transform engine that squares modulo M_p:
+  the positions and weights, `Transform` (any exponent a length can lay out; statistics only) and
+  `Engine` (only where the length table holds the exponent), the balanced digits (`Residue`), the
+  convolutions and the carry (internal, declared in no header), the round-off distance and
+  `engine_error`/`roundoff_error`. Nothing in `bin/mps` calls it yet; `make check` and `make
+  check-engine` check it against `BigInt`.
+- `src/lengths.cpp`, `src/lengths.hpp`: the supported lengths, the measurement's protocol and the
+  length table (each length's largest exponent and root-mean-square envelope), and `require_held`,
+  which refuses an exponent a length does not hold.
+- `src/lengths.txt`, `src/measure.cpp`: the measurement the table is set from, one probe a line
+  with its command and protocol in its header, and `bin/measure`, the command that makes it
+  (`make lengths`); `bin/measure --probe LENGTH EXPONENT` measures one probe again.
 - `doc/`: the mathematics, one note per algorithm family, with `README.md` (the index) and
   `references.md` (the bibliography, each entry checked against the work).
 - `tests/`: the checks. `check.hpp` and `check.cpp` are the runner (a check is a `static void`
-  function listed in its file's `check_by_name` table), `check_<module>.cpp` hold one module's
-  checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make check` runs
-  both. `vector_reader.hpp` and `vector_reader.cpp` read the vector families in `vectors/`, which
+  function listed in its file's `check_by_name` table, whose tier is the default or, for
+  `check::Tier::ENGINE`, the engine tier `bin/check engine` runs), `check_<module>.cpp` hold one
+  module's checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make
+  check` runs both. `check_ibdwt.cpp` holds the engine's default-tier checks and
+  `check_engine.cpp` its engine tier; `engine_support.hpp` and `engine_support.cpp` are what both
+  share (pseudorandom digits, values on `BigInt`, the table's assignment, the tally a check grades
+  with). `vector_reader.hpp` and `vector_reader.cpp` read the vector families in `vectors/`, which
   `vectors/generate.py` wrote once with Python's integers, each file carrying the command that
   reproduces it; they hold SHA-256 and SplitMix64 too. `known/` holds the tables of known answers,
   each row with its source, written by `known/generate.py`, whose header is the manual:
@@ -173,6 +195,10 @@ A CONFIRMED finding in any of these files needs a human decision before the cycl
 - `tests/known/mersenne-exponents.txt` (the Mersenne prime exponents)
 - `tests/known/final-residues.txt` (the final residues of composite exponents)
 - `tests/known/partial-residues.txt` (the residues after a stated number of iterations, and the fingerprints)
+- `src/fft.hpp`, `src/fft.cpp` (the transform the weighted-transform engine runs on)
+- `src/ibdwt.hpp`, `src/ibdwt.cpp` (the FP64 weighted-transform engine)
+- `src/lengths.hpp`, `src/lengths.cpp` (the supported lengths, the measurement's protocol and the length table)
+- `src/lengths.txt`, `src/measure.cpp` (the measurement the length table is set from, and its command)
 
 A cycle that adds an arithmetic engine, a test driver that prints a verdict, a checkpoint or result format of `mps`, or a table of known answers adds its paths here in the same commit.
 

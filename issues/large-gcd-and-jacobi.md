@@ -66,3 +66,10 @@ where both run.
   title states. This cycle reads it before building from it, and adds a located citation to both
   notes.
 - Found by: factory adoption review, 2026-10-11.
+- **The general product is still to build** (deferred from `ibdwt-transform-engine`, its P4,
+  2026-10-31). That engine multiplies two residues modulo M_p only (`ibdwt::multiply`, its GOAL's
+  R14): the weights and the cyclic wrap reduce every product modulo M_p. The half-GCD needs the plain
+  product of operands of varying sizes, a zero-padded, unweighted convolution with no wrap, and the
+  engine does not have it. So `ROADMAP.md` Part VIII's "depends on the transform engine's general
+  multiply" is half true: the transform (`fft::Plan`) is there to build on, and the product is still
+  to build.

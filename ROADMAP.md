@@ -224,10 +224,26 @@ signed releases. A fleet comparison is meaningless across mixed builds.
 
 # After the burn-in — standing checks
 
-Four checks that keep running what earlier cycles proved once, in gates that became records when
-they merged: that the known answers only grow; that the cluster test job and its target files work;
-that the notes' numbers and citations hold; and that `--` ends the options for every flag, in every
-position. They sit between Part III and Part IV, after the CPU burn-in and before the GPU work.
+Five checks that keep running what earlier cycles proved once, in gates that became records when
+they merged: that the transform engine still matches the reference arithmetic at every length; that
+the known answers only grow; that the cluster test job and its target files work; that the notes'
+numbers and citations hold; and that `--` ends the options for every flag, in every position. They
+sit between Part III and Part IV, after the CPU burn-in and before the GPU work. The engine's check
+is the exception: its form is decided before the Lucas–Lehmer test produces verdicts.
+
+## A standing check for the engine's differential tests
+
+The FP64 transform engine is tested in two tiers. `make check` runs a short one, and a separate make
+target runs the full differential suite, about 15 minutes of squarings, products and chains against
+the reference big integer and the known answers at every supported length. Nothing runs the full
+suite once the engine's cycle merges, and it stays out of `make check` and the profile's `verify` by
+decision. A standing check runs it before a change to the engine, its length table or the numeric
+build flags lands. Its form (the cluster test job, a scheduled run, or a landing gate) is decided at
+its shaping, no later than the Lucas–Lehmer cycle's, before any verdict depends on the engine.
+
+*Horizon: near-term, before Lucas–Lehmer verdicts · Depends on: the transform engine · Refs:
+ibdwt-transform-engine GOAL sign-off, 2026-10-22*
+**Seed:** [`issues/engine-differential-standing-check.md`](issues/engine-differential-standing-check.md)
 
 ## A standing check that the known answers only grow
 

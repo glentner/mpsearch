@@ -47,6 +47,15 @@ Every work the notes in this folder, the comments in `src/` or the tables in `te
 - **DOI:** [10.1090/S0002-9904-1903-01079-9](https://doi.org/10.1090/S0002-9904-1903-01079-9)
 - **Verified:** 2026-10-12 against the DOI's metadata at doi.org, which gives a journal article by F. N. Cole with this title in the Bulletin of the American Mathematical Society, volume 10, issue 3, pages 134–137, 1903. The publisher's page refused this checker (HTTP 403). The article was read in full in Project Euclid's copy, https://projecteuclid.org/download/pdf_1/euclid.bams/1183417760, where it runs from p. 134 to p. 137, with the form of the factors of a Mersenne number on p. 136 and the factorization of $M_{67}$ on p. 137.
 
+### CooleyTukey1965
+
+- **Authors:** J. W. Cooley and J. W. Tukey
+- **Title:** An algorithm for the machine calculation of complex Fourier series
+- **Venue:** Mathematics of Computation 19(90), 297–301
+- **Year:** 1965
+- **DOI:** [10.1090/S0025-5718-1965-0178586-1](https://doi.org/10.1090/S0025-5718-1965-0178586-1)
+- **Verified:** 2026-10-31 against the DOI's metadata, read in Crossref's record of the DOI, https://api.crossref.org/works/10.1090/S0025-5718-1965-0178586-1, which gives a journal article by James W. Cooley and John W. Tukey with this title in Mathematics of Computation, volume 19, issue 90, pages 297–301, printed in 1965, published by the American Mathematical Society. The publisher's page was not read, so the notes and `src/fft.*` cite this work without a locator, for the factored, mixed-radix transform its title and opening describe, as the abstract and opening paragraph read through scite's record of the DOI give it (the plan's research, 2026-10-22).
+
 ### CrandallFagin1994
 
 - **Authors:** R. Crandall and B. Fagin
@@ -307,3 +316,12 @@ Every work the notes in this folder, the comments in `src/` or the tables in `te
 - **Year:** 1987
 - **DOI:** [10.1109/TASSP.1987.1165220](https://doi.org/10.1109/TASSP.1987.1165220)
 - **Verified:** 2026-10-12 against the DOI's metadata at doi.org, which gives a journal article by H. Sorensen, D. Jones, M. Heideman and C. Burrus with this title in IEEE Transactions on Acoustics, Speech, and Signal Processing, volume 35, issue 6, pages 849–863, June 1987, and against its abstract, read in OpenAlex's record of the DOI, https://api.openalex.org/works/doi:10.1109/TASSP.1987.1165220, which gives the full names H. V. Sorensen, Douglas L. Jones, Michael T. Heideman and C. S. Burrus. The publisher's page served this checker no content, so the notes cite this work without a locator, for the real-valued FFT algorithms its title and abstract describe.
+
+### SteeleLeaFlood2014
+
+- **Authors:** G. L. Steele Jr., D. Lea and C. H. Flood
+- **Title:** Fast splittable pseudorandom number generators
+- **Venue:** Proceedings of the 2014 ACM International Conference on Object Oriented Programming Systems Languages & Applications (OOPSLA '14), ACM, New York, 453–472; also ACM SIGPLAN Notices 49(10), 453–472
+- **Year:** 2014
+- **DOI:** [10.1145/2660193.2660195](https://doi.org/10.1145/2660193.2660195)
+- **Verified:** 2026-10-31 against the DOI's metadata, read in Crossref's record of the DOI, https://api.crossref.org/works/10.1145/2660193.2660195, which gives a proceedings article by Guy L. Steele Jr., Doug Lea and Christine H. Flood with this title in the Proceedings of the 2014 ACM International Conference on Object Oriented Programming Systems Languages & Applications, SPLASH '14, ACM, pages 453–472, 15 October 2014, and against the record of the same article in ACM SIGPLAN Notices, https://api.crossref.org/works/10.1145/2714064.2660195, volume 49, issue 10, pages 453–472, 2014. The publisher's page refused this checker (HTTP 403) and the paper itself was not read, so `src/measure.cpp` and the checks cite it without a locator, for SplitMix64, the generator its title names; the mixing constants they use are the ones that name commonly denotes.
