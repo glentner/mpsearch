@@ -3,10 +3,10 @@ slug: lucas-lehmer-test
 title: The Lucas–Lehmer test on the engine, with a shift and its error checks
 kind: feature
 appetite: big
-status: in_progress
+status: in_review
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: P4
+current_phase: done
 last_updated: '2026-11-01'
 phases:
 - id: P1
@@ -61,7 +61,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/verify/p3.sh
 - id: P4
   name: Audit, deferral ledger, push, the landing gate and the cluster runs' evidence
-  status: in_progress
+  status: done
   satisfies:
   - R1
   - R2
@@ -314,10 +314,10 @@ still `in_progress`; then the pre-push checks and the push; the runs; last the p
 evidence, the ledger and the state. The push target is the one branch `PUSH_REF` names
 (`origin/feature/lucas-lehmer-test`, `verify/common.sh`), pushed as a fast-forward.
 
-- [ ] **Audit.** Walk R1–R18 against `src/`, `tests/`, `doc/`, `ci/`, `AGENTS.md` and the Makefile, one
+- [x] **Audit.** Walk R1–R18 against `src/`, `tests/`, `doc/`, `ci/`, `AGENTS.md` and the Makefile, one
       by one, and confirm each has its check or its gate step (PLAN § 2.9). Fix and commit anything
       found (above).
-- [ ] **Deferral ledger.** Walk P1–P4 of this file and the build's own commits for "do not fix here",
+- [x] **Deferral ledger.** Walk P1–P4 of this file and the build's own commits for "do not fix here",
       "known limitation", "left as a follow-up" and any deferral the build introduced. Each gets an
       `issues/<slug>.md` from the ISSUE template and a `ROADMAP.md` entry, or a Notes bullet in an
       existing seed, per `AGENTS.md` § Factory. The three this plan already knows, each a Notes bullet
@@ -334,19 +334,19 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
         profile's `landing gate` row, what it compares; its time on this Mac is in this cycle's ledger.
       Every `issues/*.md` matches exactly one `**Seed:**` line in `ROADMAP.md`; this cycle's seed stays
       `adopted:lucas-lehmer-test`.
-- [ ] **Pre-push.** `sh spec/lucas-lehmer-test/verify/prepush.sh` must be green (about 60 minutes).
+- [x] **Pre-push.** `sh spec/lucas-lehmer-test/verify/prepush.sh` must be green (about 60 minutes).
       `prepush.sh scan` runs the scan alone; see it catch a planted site name once and a planted
       detailed line naming a made-up node once, then remove both plants.
-- [ ] **Push.** `git push origin feature/lucas-lehmer-test`, fast-forward only (the foreman authorizes it
+- [x] **Push.** `git push origin feature/lucas-lehmer-test`, fast-forward only (the foreman authorizes it
       for this phase). Never force. The push ends dispatch A: report the pushed commit, its
       `ci/test-commit.sh` hash (`git hash-object`), and prepush's last two lines. The foreman submits
       the three runs (`x86-64-avx512`, `x86-64-avx2`, `aarch64-gb10`) from that commit's
       `ci/test-commit.sh`, as its header says, and resubmits a run that fails for a reason outside the
       tree. Only runs that test the tree are recorded.
-- [ ] **Evidence** (dispatch B). Pass each piece through `sh spec/lucas-lehmer-test/verify/redact.sh IN
+- [x] **Evidence** (dispatch B). Pass each piece through `sh spec/lucas-lehmer-test/verify/redact.sh IN
       OUT`: for each target `evidence/<target>.json`, `.out` and `.check.log`; and `evidence/jobs.tsv`
       (a header `label job_id state exit_code` and one tab-separated line per job from `sacct`).
-- [ ] **Ledger** (dispatch B): `spec/lucas-lehmer-test/evidence/ledger.md` with `## Deferrals` (each
+- [x] **Ledger** (dispatch B): `spec/lucas-lehmer-test/evidence/ledger.md` with `## Deferrals` (each
       seed above, and any the walk found, with its home), `## Times` (``- make check: <prepush's timing
       sentence>`` and ``- make check-long: <s> s on clang++ (budget 900 s)``, from dispatch A's prepush
       line; then one line per target, ``- `<target>`: check step <s> s``, from its `result.json`), and
@@ -356,6 +356,12 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
       three Notes bullets, so no new seed and `ROADMAP.md` unchanged. The foreman, not dispatch A,
       pushes the branch (its change to the Push item above): dispatch A stops after a green pre-push
       with the tree clean and P4 `in_progress`.
+- **Dispatch B** (amendment, 2026-11-01): the foreman pushed `2530c06` and ran it on the three
+      targets, each `COMPLETED 0:0` on the first submission (none resubmitted), each passing 116
+      checks, 644 smoke-test cases and 48 `ll` cases with GCC 14; check steps 58 s, 121 s and 196 s.
+      The evidence went through `verify/redact.sh` only. The ledger quotes dispatch A's pre-push
+      lines (no second run) and takes the landing gate's time on this Mac from P3's full gate, since
+      the pre-push line carries none and `issues/engine-differential-standing-check.md` points there.
 - **Verify:** `sh spec/lucas-lehmer-test/verify/p4.sh` (`… p4.sh audit` runs P4's own checks without
   the cumulative gate, for a fast first look).
 - **Touches:** `spec/lucas-lehmer-test/evidence/*`, `issues/large-gcd-and-jacobi.md`,

@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "requested": "2530c06a79a9d3c83a4f08ba5612f3a89a3af359",
+  "commit": "2530c06a79a9d3c83a4f08ba5612f3a89a3af359",
+  "target": "aarch64-gb10",
+  "cluster": "<cluster>",
+  "host": "<host>",
+  "arch": "aarch64",
+  "job_id": "483208",
+  "start": "2026-11-01T11:26:12Z",
+  "end": "2026-11-01T11:30:54Z",
+  "compiler": "g++ (Spack GCC) 14.2.0",
+  "make": "GNU Make 4.3",
+  "steps": [
+    {
+      "name": "clone",
+      "status": "passed",
+      "seconds": 1
+    },
+    {
+      "name": "checkout",
+      "status": "passed",
+      "seconds": 1
+    },
+    {
+      "name": "toolchain",
+      "status": "passed",
+      "seconds": 1
+    },
+    {
+      "name": "build",
+      "status": "passed",
+      "seconds": 82
+    },
+    {
+      "name": "check",
+      "status": "passed",
+      "seconds": 196
+    }
+  ],
+  "status": "passed"
+}
