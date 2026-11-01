@@ -10,7 +10,9 @@
 
 
 // Standard libs
+#include <charconv>
 #include <cstdint>
+#include <cstdio>
 #include <iostream>
 #include <map>
 #include <optional>
@@ -75,6 +77,34 @@ Result Result::error(Worktype worktype, long unsigned p, const std::string& reas
 }
 
 
+Result Result::prime_by_residue(Worktype worktype, long unsigned p, const RunReport& run) {
+	//
+	// A prime, by the zero final residue of a complete run whose every error check passed
+
+	Result result(OUTCOME_PRIME, worktype, p);
+	result.res64_ = 0;
+	result.run_ = run;
+	return result;
+}
+
+
+Result Result::composite_by_residue(Worktype worktype, long unsigned p, std::uint64_t res64, const RunReport& run) {
+	Result result = composite_by_residue(worktype, p, res64);
+	result.run_ = run;
+	return result;
+}
+
+
+Result Result::error(Worktype worktype, long unsigned p, const std::string& reason, const RunReport& run) {
+	//
+	// An error from a run on a transform, with what the run had done when it ended
+
+	Result result = error(worktype, p, reason);
+	result.run_ = run;
+	return result;
+}
+
+
 // The outcome as the verdict line words it
 static std::map<Outcome, std::string>
 word_by_outcome {
@@ -86,13 +116,14 @@ word_by_outcome {
 };
 
 
-// The outcome as the JSON record's status words it (an error has no record)
+// The outcome as the JSON record's status words it
 static std::map<Outcome, std::string>
 label_by_outcome {
 	{OUTCOME_PRIME,           "prime"},
 	{OUTCOME_PROBABLE_PRIME,  "probable-prime"},
 	{OUTCOME_COMPOSITE,       "composite"},
 	{OUTCOME_NO_VERDICT,      "no-verdict"},
+	{OUTCOME_ERROR,           "error"},
 };
 
 
@@ -214,6 +245,69 @@ static std::string joined(const std::vector<std::string>& parts, const std::stri
 }
 
 
+static std::string distance_text(double distance) {
+	//
+	// A round-off distance as the verdict line writes it: four decimal places
+
+	char text[32];
+	std::snprintf(text, sizeof text, "%.4f", distance);
+	return text;
+}
+
+
+static std::string number_text(double value) {
+	//
+	// A finite double as the JSON record writes it: the shortest decimal that reads back as the
+	// same double, as Python's `repr` writes a float, with `.0` on a whole number
+
+	char text[64];
+	char* end = std::to_chars(text, text + sizeof text, value).ptr;
+	std::string out(text, end);
+	if (out.find_first_of(".e") == std::string::npos)
+		out += ".0";
+	return out;
+}
+
+
+static std::string run_line(const RunReport& run) {
+	//
+	// A run as its verdict line names it, after the outcome and its detail
+
+	std::vector<std::string> lengths;
+	for (const std::uint64_t length: run.lengths)
+		lengths.push_back(std::to_string(length));
+	return (lengths.size() == 1 ? ", length " : ", lengths ") + joined(lengths, " ") +
+	       ", shift " + std::to_string(run.shift) +
+	       ", jacobi " + std::to_string(run.jacobi_checks) + " checked " + std::to_string(run.jacobi_failures) + " failed" +
+	       ", degenerate " + std::to_string(run.degenerate_failures) +
+	       ", confirmation " + std::to_string(run.confirmation_failures) +
+	       ", transient " + std::to_string(run.transient_faults) +
+	       ", retries " + std::to_string(run.length_retries) +
+	       ", large distances " + std::to_string(run.large_distances) +
+	       ", largest distance " + distance_text(run.largest_distance);
+}
+
+
+static std::string run_record(const RunReport& run) {
+	//
+	// A run as its JSON record names it, each key after a comma
+
+	std::vector<std::string> lengths;
+	for (const std::uint64_t length: run.lengths)
+		lengths.push_back(std::to_string(length));
+	return ", \"lengths\": [" + joined(lengths, ", ") + "]" +
+	       ", \"shift\": " + std::to_string(run.shift) +
+	       ", \"jacobi_checks\": " + std::to_string(run.jacobi_checks) +
+	       ", \"jacobi_failures\": " + std::to_string(run.jacobi_failures) +
+	       ", \"degenerate_failures\": " + std::to_string(run.degenerate_failures) +
+	       ", \"confirmation_failures\": " + std::to_string(run.confirmation_failures) +
+	       ", \"transient_faults\": " + std::to_string(run.transient_faults) +
+	       ", \"length_retries\": " + std::to_string(run.length_retries) +
+	       ", \"large_distances\": " + std::to_string(run.large_distances) +
+	       ", \"largest_distance\": " + number_text(run.largest_distance);
+}
+
+
 bool is_decisive(const Result& result) {
 	//
 	// Whether a result decides its exponent
@@ -238,22 +332,27 @@ std::string verdict_line(const Result& result) {
 	//
 	// One line for a result, without its newline
 	//
-	// `M<p> <worktype>: <outcome>[, <detail>] (mps <version>)`, the exponent written from the
-	// parsed number. The detail is `factor <f>` or `res64 <16 hex digits>` for a composite, and
-	// the reason for a no verdict or an error, its control bytes escaped so that the line
-	// stays one line. An error's line goes only to stderr.
+	// `M<p> <worktype>: <outcome>[, <detail>][, <run>] (mps <version>)`, the exponent written
+	// from the parsed number. The detail is `factor <f>` for a composite by factor, `res64 <16
+	// hex digits>` for a result by residue, prime or composite, and the reason for a no verdict
+	// or an error, its control bytes escaped so that the line stays one line. A result from a
+	// run on a transform then names the run: `length <n>`, or `lengths <n> <n>...` when it moved,
+	// `shift <k>`, `jacobi <c> checked <f> failed`, `degenerate <n>`, `confirmation <n>`,
+	// `transient <n>`, `retries <n>`, `large distances <n>` and `largest distance <d.dddd>`. An
+	// error's line goes only to stderr.
 
 	std::string line = "M" + std::to_string(result.exponent()) + " " + name_by_worktype[result.worktype()] + ": " +
 	                   word_by_outcome[result.outcome()];
 
-	if (result.outcome() == OUTCOME_COMPOSITE) {
-		if (result.res64())
-			line += ", res64 " + hex64(*result.res64());
-		else
-			line += ", factor " + joined(result.factors(), ", ");
-	} else if (result.outcome() == OUTCOME_NO_VERDICT or result.outcome() == OUTCOME_ERROR) {
+	if (result.outcome() == OUTCOME_COMPOSITE and not result.res64())
+		line += ", factor " + joined(result.factors(), ", ");
+	else if (result.res64())
+		line += ", res64 " + hex64(*result.res64());
+	else if (result.outcome() == OUTCOME_NO_VERDICT or result.outcome() == OUTCOME_ERROR)
 		line += ", " + line_text(result.reason());
-	}
+
+	if (result.run())
+		line += run_line(*result.run());
 
 	return line + " (" + APP_NAME + " " + APP_VERSION + ")";
 }
@@ -264,36 +363,38 @@ std::string json_record(const Result& result) {
 	// One JSON object for a result, on one line, without its newline
 	//
 	// The record's format: the keys `exponent` (a number), `worktype` (`tf`, `p1`, `ll`, or
-	// `ptest` for the exponent check), `status` (`prime`, `probable-prime`, `composite` or
-	// `no-verdict`), then `factors` (an array of exact strings) for a composite by factor,
-	// `res64` (16 uppercase hexadecimal digits) for a composite by residue, or `reason` for a
-	// no verdict, then `program` and `record_version`, in that order and spaced as Python's
-	// `json.dumps` writes them. The exponent check's factor is written `2^a-1`, never in
-	// decimal: a decimal form waits for the big integer, and would change the format.
+	// `ptest` for the exponent check), `status` (`prime`, `probable-prime`, `composite`,
+	// `no-verdict` or `error`), then `factors` (an array of exact strings) for a composite by
+	// factor, `res64` (16 uppercase hexadecimal digits) for a result by residue, prime or
+	// composite, or `reason` for a no verdict or an error; then, for a result from a run on a
+	// transform, `lengths` (an array of numbers), `shift`, `jacobi_checks`, `jacobi_failures`,
+	// `degenerate_failures`, `confirmation_failures`, `transient_faults`, `length_retries`,
+	// `large_distances` (numbers) and `largest_distance` (a number with a point or an exponent);
+	// then `program` and `record_version`, in that order and spaced as Python's `json.dumps`
+	// writes them. The exponent check's factor is written `2^a-1`, never in decimal: a decimal
+	// form waits for the big integer, and would change the format.
 	//
 	// `record_version` is this format's own version, `RECORD_VERSION`; any change to the
 	// record bumps it in the same commit. `program.version` is the program's, never the
-	// format's. An error has no record: its text is empty, and the printer never asks for it.
-
-	if (result.outcome() == OUTCOME_ERROR)
-		return "";
+	// format's.
 
 	std::string record = "{\"exponent\": " + std::to_string(result.exponent()) +
 	                     ", \"worktype\": " + json_text(name_by_worktype[result.worktype()]) +
 	                     ", \"status\": " + json_text(label_by_outcome[result.outcome()]);
 
-	if (result.outcome() == OUTCOME_COMPOSITE) {
-		if (result.res64()) {
-			record += ", \"res64\": " + json_text(hex64(*result.res64()));
-		} else {
-			std::vector<std::string> factors;
-			for (const std::string& factor: result.factors())
-				factors.push_back(json_text(factor));
-			record += ", \"factors\": [" + joined(factors, ", ") + "]";
-		}
-	} else if (result.outcome() == OUTCOME_NO_VERDICT) {
+	if (result.outcome() == OUTCOME_COMPOSITE and not result.res64()) {
+		std::vector<std::string> factors;
+		for (const std::string& factor: result.factors())
+			factors.push_back(json_text(factor));
+		record += ", \"factors\": [" + joined(factors, ", ") + "]";
+	} else if (result.res64()) {
+		record += ", \"res64\": " + json_text(hex64(*result.res64()));
+	} else if (result.outcome() == OUTCOME_NO_VERDICT or result.outcome() == OUTCOME_ERROR) {
 		record += ", \"reason\": " + json_text(result.reason());
 	}
+
+	if (result.run())
+		record += run_record(*result.run());
 
 	return record + ", \"program\": {\"name\": " + json_text(APP_NAME) + ", \"version\": " + json_text(APP_VERSION) +
 	       "}, \"record_version\": " + std::to_string(RECORD_VERSION) + "}";
@@ -355,10 +456,11 @@ void report_result(std::vector<Result>& run, const Result& result, bool json, st
 	//
 	// Take one result as it arrives
 	//
-	// The result joins the run. An error is reported on stderr and never printed on `out`. A
-	// no verdict prints at once, so its line appears as its test completes, unless a verdict
-	// is already held, whose line must come first. A verdict prints nothing yet: only
-	// `report_run` knows whether the run holds no error and no contradiction.
+	// The result joins the run. An error is reported on stderr at once, and under -j its record
+	// prints on `out` too, so a reader of the records sees why the run failed; its line never
+	// prints on `out`. A no verdict prints at once, so its line appears as its test completes,
+	// unless a verdict is already held, whose line must come first. A verdict prints nothing
+	// yet: only `report_run` knows whether the run holds no error and no contradiction.
 
 	bool held = false;
 	for (const Result& earlier: run)
@@ -369,6 +471,8 @@ void report_result(std::vector<Result>& run, const Result& result, bool json, st
 
 	if (result.outcome() == OUTCOME_ERROR) {
 		logging::critical(verdict_line(result));
+		if (json)
+			out << json_record(result) << std::endl;
 		return;
 	}
 

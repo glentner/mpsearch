@@ -113,6 +113,32 @@ fi
 got="version '$version'"
 expect "version read from src/main.hpp" [ -n "$version" ]
 
+# P_max, the largest exponent the length table holds, lives only in src/lengths.cpp: the largest
+# value of its map of largest exponents. Left at 0 when it cannot be read, which makes every
+# expectation of a line that names it fail.
+p_max=0
+in_table=no
+lengths_source="$here/../src/lengths.cpp"
+if [ -r "$lengths_source" ]; then
+	while IFS= read -r line; do
+		case $line in
+			'largest_exponent_by_length {')
+				in_table=yes
+				;;
+			'};')
+				in_table=no
+				;;
+			*'{'*', '*'},')
+				if [ "$in_table" = yes ]; then
+					value=${line#*, }
+					value=${value%\}*}
+					[ "$value" -le "$p_max" ] || p_max=$value
+				fi
+				;;
+		esac
+	done <"$lengths_source"
+fi
+
 for option in --version -v; do
 	run "$option"
 	expect "$option exits 0" [ "$status" -eq 0 ]
@@ -161,9 +187,13 @@ for pair in "3:2${nl}" "4:2${nl}3${nl}" "30:$below_30" "31:$below_30" "32:${belo
 	expect "-p $n prints the primes below $n" [ "$out" = "$primes" ]
 done
 
-# Each -t name runs its test alone, and all three run for all and when -t is absent. No test
-# decides anything yet, so each says so in one line on stdout, as it completes, and the run
-# exits 42, no verdict.
+# Each -t name runs its test alone, and all three run for all and when -t is absent. Trial
+# factoring and P-1 decide nothing yet, so each says so in one line on stdout, as it completes.
+# The Lucas-Lehmer test decides: M3 and M31 are prime, and their line prints when the run ends,
+# which exits 0. It refuses an even exponent, one past P_max and, where the exponent check is
+# skipped, a composite one with a no verdict, before any squaring. A Lucas-Lehmer verdict's line
+# holds a shift chosen at random, so it is compared up to its length, and its record up to its
+# lengths.
 start_tf='    info [mps] Running quick factor test'
 start_p1='    info [mps] Running P-1 test'
 start_ll='    info [mps] Running Lucas-Lehmer test'
@@ -171,38 +201,78 @@ start_all="$start_tf$nl$start_p1$nl$start_ll"
 tail=" (mps $version)"
 line_tf="tf: no verdict, trial factoring is not implemented yet$tail"
 line_p1="p1: no verdict, P-1 is not implemented yet$tail"
-line_ll="ll: no verdict, Lucas-Lehmer is not implemented yet$tail"
+line_ll_prime="ll: prime, res64 0000000000000000, length "
+line_ll_odd="ll: no verdict, the Lucas-Lehmer test applies to odd exponents of 3 or more$tail"
+line_ll_past="ll: no verdict, the exponent is past $p_max, the largest the length table holds (P_max)$tail"
+line_ll_33="ll: no verdict, the Lucas-Lehmer test runs on prime exponents, and 33 is composite$tail"
+line_ll_9s="ll: no verdict, the exponent is past $p_max, the largest the length table holds (P_max); the Lucas-Lehmer test runs on prime exponents, and 999999999 is composite$tail"
 
-lines_all() { # P: the three no-verdict lines for M_P, each ended
-	printf 'M%s %s\nM%s %s\nM%s %s\n' "$1" "$line_tf" "$1" "$line_p1" "$1" "$line_ll"
+program='"program": {"name": "mps", "version": "'"$version"'"}, "record_version": 2}'
+record_tf='"worktype": "tf", "status": "no-verdict", "reason": "trial factoring is not implemented yet", '"$program"
+record_p1='"worktype": "p1", "status": "no-verdict", "reason": "P-1 is not implemented yet", '"$program"
+record_ll_prime='"worktype": "ll", "status": "prime", "res64": "0000000000000000", "lengths": ['
+record_ll_odd='"worktype": "ll", "status": "no-verdict", "reason": "the Lucas-Lehmer test applies to odd exponents of 3 or more", '"$program"
+record_ll_past='"worktype": "ll", "status": "no-verdict", "reason": "the exponent is past '"$p_max"', the largest the length table holds (P_max)", '"$program"
+record_ll_33='"worktype": "ll", "status": "no-verdict", "reason": "the Lucas-Lehmer test runs on prime exponents, and 33 is composite", '"$program"
+record_ll_9s='"worktype": "ll", "status": "no-verdict", "reason": "the exponent is past '"$p_max"', the largest the length table holds (P_max); the Lucas-Lehmer test runs on prime exponents, and 999999999 is composite", '"$program"
+
+
+expected() { # P: for a run of all three tests on M_P, its exit status into code; its stdout into
+             # head, the lines up to the Lucas-Lehmer line when that holds a shift, and last, how
+             # that line starts (empty when none does); and the same records into rhead and rlast
+	case $1 in
+		2|4)  code=42 ll="M$1 $line_ll_odd$nl" last= rll="{\"exponent\": $1, $record_ll_odd$nl" rlast= ;;
+		3|31) code=0 ll= last="M$1 $line_ll_prime" rll= rlast="{\"exponent\": $1, $record_ll_prime" ;;
+		33)   code=42 ll="M$1 $line_ll_33$nl" last= rll="{\"exponent\": $1, $record_ll_33$nl" rlast= ;;
+		999999999) code=42 ll="M$1 $line_ll_9s$nl" last= rll="{\"exponent\": $1, $record_ll_9s$nl" rlast= ;;
+		*)    code=42 ll="M$1 $line_ll_past$nl" last= rll="{\"exponent\": $1, $record_ll_past$nl" rlast= ;;
+	esac
+	head="M$1 $line_tf${nl}M$1 $line_p1$nl$ll"
+	rhead="{\"exponent\": $1, $record_tf$nl{\"exponent\": $1, $record_p1$nl$rll"
 }
+
+
+verdicts() { # TEXT HEAD START END: TEXT is HEAD, then, when START is not empty, one line that
+             # starts with START and ends with END
+	if [ -z "$3" ]; then
+		[ "$1" = "$2" ]
+		return
+	fi
+	vd_rest=${1#"$2"}
+	[ "$2$vd_rest" = "$1" ] || return 1
+	case $vd_rest in
+		*"$nl"?*)       return 1 ;;
+		"$3"*"$4$nl")   return 0 ;;
+	esac
+	return 1
+}
+
 
 for test_name in tf trial-factor p1 p-minus-1 ll lucas-lehmer all; do
 	case $test_name in
-		tf|trial-factor)  want=$start_tf lines="M31 $line_tf$nl" ;;
-		p1|p-minus-1)     want=$start_p1 lines="M31 $line_p1$nl" ;;
-		ll|lucas-lehmer)  want=$start_ll lines="M31 $line_ll$nl" ;;
-		all)              want=$start_all lines=$(lines_all 31; echo .) lines=${lines%.} ;;
+		tf|trial-factor)  want=$start_tf code=42 head="M31 $line_tf$nl" last= ;;
+		p1|p-minus-1)     want=$start_p1 code=42 head="M31 $line_p1$nl" last= ;;
+		ll|lucas-lehmer)  want=$start_ll code=0 head= last="M31 $line_ll_prime" ;;
+		all)              want=$start_all; expected 31 ;;
 	esac
 	run_stderr -t "$test_name" 31
-	expect "-t $test_name 31 exits 42" [ "$status" -eq 42 ]
+	expect "-t $test_name 31 exits $code" [ "$status" -eq "$code" ]
 	expect "-t $test_name 31 runs exactly its test" [ "$err" = "$want" ]
 	run_all -t "$test_name" 31
-	expect "-t $test_name 31 prints its line for each test" [ "$out" = "$lines" ]
+	expect "-t $test_name 31 prints its line for each test" verdicts "$out" "$head" "$last" "$tail"
 done
 
 run_stderr 31
-expect "31 exits 42" [ "$status" -eq 42 ]
+expect "31 exits 0" [ "$status" -eq 0 ]
 expect "31 runs all three tests" [ "$err" = "$start_all" ]
 
 # Each prime exponent passes the exponent check silently and gets the three lines, tf, p1 and
 # ll in the order they ran, each naming the exponent and the program's version.
 for pval in 2 3 31 999999929 999999937; do
-	lines=$(lines_all "$pval"; echo .)
-	lines=${lines%.}
+	expected "$pval"
 	run_all "$pval"
-	expect "$pval exits 42" [ "$status" -eq 42 ]
-	expect "$pval prints three no-verdict lines in order" [ "$out" = "$lines" ]
+	expect "$pval exits $code" [ "$status" -eq "$code" ]
+	expect "$pval prints its three lines in order" verdicts "$out" "$head" "$last" "$tail"
 	run_stderr "$pval"
 	expect "$pval runs all three tests" [ "$err" = "$start_all" ]
 done
@@ -346,7 +416,7 @@ done
 
 # --file takes the next word as its path, so -t after it still selects the test.
 run_stderr --file out.mps -t ll 31
-expect "--file out.mps -t ll 31 exits 42" [ "$status" -eq 42 ]
+expect "--file out.mps -t ll 31 exits 0" [ "$status" -eq 0 ]
 expect "--file out.mps -t ll 31 runs the Lucas-Lehmer test alone" [ "$err" = "$start_ll" ]
 
 run --no-such-option 31
@@ -375,7 +445,7 @@ expect "PVAL '-1' after -- is named in the error" has "$err" "PVAL '-1'"
 expect "PVAL '-1' after -- runs no test" lacks "$err" "Running"
 
 run_stderr -- 31
-expect "-- 31 exits 42" [ "$status" -eq 42 ]
+expect "-- 31 exits 0" [ "$status" -eq 0 ]
 
 # With -p, PVAL may be 0 or 1 too, and a bad one prints nothing on stdout.
 for pval in abc 1000000000; do
@@ -394,7 +464,7 @@ expect "0 -p prints nothing" [ -z "$out" ]
 # Leading zeros don't count against the bound. (The bound itself, 999999999, is composite, so
 # the exponent check answers it; see below.)
 run_stderr 0000000031
-expect "PVAL 0000000031 exits 42" [ "$status" -eq 42 ]
+expect "PVAL 0000000031 exits 0" [ "$status" -eq 0 ]
 case "$nl$err$nl" in
 	*"$nl    info [mps] Running Lucas-Lehmer test$nl"*) logged=yes ;;
 	*)                                                  logged=no ;;
@@ -402,10 +472,9 @@ esac
 expect "PVAL 0000000031 runs the tests" [ "$logged" = yes ]
 
 # The exponent is written from its value, so leading zeros never reach the line.
-lines=$(lines_all 31; echo .)
-lines=${lines%.}
+expected 31
 run_all 0000000031
-expect "PVAL 0000000031 prints its lines for M31" [ "$out" = "$lines" ]
+expect "PVAL 0000000031 prints its lines for M31" verdicts "$out" "$head" "$last" "$tail"
 
 # A composite exponent is answered before any test runs, without -t and under every -t name:
 # one line naming the factor 2^a-1, with a the exponent's smallest prime factor, and exit 40.
@@ -431,12 +500,11 @@ done
 # -s and --skip-ptest skip the exponent check: the tests run on a composite exponent as on a
 # prime one, and nothing is printed for the check.
 for pval in 4 33 999999999 31; do
-	lines=$(lines_all "$pval"; echo .)
-	lines=${lines%.}
+	expected "$pval"
 	for skip in -s --skip-ptest; do
 		run_all "$skip" "$pval"
-		expect "$skip $pval exits 42" [ "$status" -eq 42 ]
-		expect "$skip $pval prints the tests' lines" [ "$out" = "$lines" ]
+		expect "$skip $pval exits $code" [ "$status" -eq "$code" ]
+		expect "$skip $pval prints the tests' lines" verdicts "$out" "$head" "$last" "$tail"
 		run_stderr "$skip" "$pval"
 		expect "$skip $pval runs all three tests" [ "$err" = "$start_all" ]
 	done
@@ -444,7 +512,7 @@ done
 
 run_all -s -t ll 33
 expect "-s -t ll 33 exits 42" [ "$status" -eq 42 ]
-expect "-s -t ll 33 prints the Lucas-Lehmer line" [ "$out" = "M33 $line_ll$nl" ]
+expect "-s -t ll 33 prints its no-verdict line" [ "$out" = "M33 $line_ll_33$nl" ]
 
 # -p lists the primes whatever -s says, and never asks the exponent check.
 run_all -p 33 -s
@@ -453,26 +521,16 @@ expect "-p 33 -s prints the primes below 33" [ "$out" = "${below_30}31$nl" ]
 
 # -j and --json print one JSON object per line on stdout in place of each verdict line, in the
 # same order, with the same status and the same log on stderr. The records are compared byte for
-# byte: keys in a fixed order, spaced as written here, the exponent from its value.
-program='"program": {"name": "mps", "version": "'"$version"'"}, "record_version": 1}'
-record_tf='"worktype": "tf", "status": "no-verdict", "reason": "trial factoring is not implemented yet", '"$program"
-record_p1='"worktype": "p1", "status": "no-verdict", "reason": "P-1 is not implemented yet", '"$program"
-record_ll='"worktype": "ll", "status": "no-verdict", "reason": "Lucas-Lehmer is not implemented yet", '"$program"
-
-records_all() { # P: the three no-verdict records for M_P, each ended
-	printf '{"exponent": %s, %s\n{"exponent": %s, %s\n{"exponent": %s, %s\n' \
-		"$1" "$record_tf" "$1" "$record_p1" "$1" "$record_ll"
-}
-
+# byte: keys in a fixed order, spaced as written here, the exponent from its value; a Lucas-Lehmer
+# record, which holds a random shift, up to its lengths.
 for typed in 2:2 3:3 31:31 999999929:999999929 999999937:999999937 0000000031:31; do
 	pval=${typed%%:*}
 	value=${typed#*:}
-	records=$(records_all "$value"; echo .)
-	records=${records%.}
+	expected "$value"
 	for json in -j --json; do
 		run_all "$json" "$pval"
-		expect "$json $pval exits 42" [ "$status" -eq 42 ]
-		expect "$json $pval prints three no-verdict records for $value" [ "$out" = "$records" ]
+		expect "$json $pval exits $code" [ "$status" -eq "$code" ]
+		expect "$json $pval prints its three records for $value" verdicts "$out" "$rhead" "$rlast" ", $program"
 		run_stderr "$json" "$pval"
 		expect "$json $pval logs as without $json" [ "$err" = "$start_all" ]
 	done
@@ -480,14 +538,14 @@ done
 
 for test_name in tf trial-factor p1 p-minus-1 ll lucas-lehmer all; do
 	case $test_name in
-		tf|trial-factor)  want=$start_tf records="{\"exponent\": 31, $record_tf$nl" ;;
-		p1|p-minus-1)     want=$start_p1 records="{\"exponent\": 31, $record_p1$nl" ;;
-		ll|lucas-lehmer)  want=$start_ll records="{\"exponent\": 31, $record_ll$nl" ;;
-		all)              want=$start_all records=$(records_all 31; echo .) records=${records%.} ;;
+		tf|trial-factor)  want=$start_tf code=42 rhead="{\"exponent\": 31, $record_tf$nl" rlast= ;;
+		p1|p-minus-1)     want=$start_p1 code=42 rhead="{\"exponent\": 31, $record_p1$nl" rlast= ;;
+		ll|lucas-lehmer)  want=$start_ll code=0 rhead= rlast="{\"exponent\": 31, $record_ll_prime" ;;
+		all)              want=$start_all; expected 31 ;;
 	esac
 	run_all -j -t "$test_name" 31
-	expect "-j -t $test_name 31 exits 42" [ "$status" -eq 42 ]
-	expect "-j -t $test_name 31 prints its record for each test" [ "$out" = "$records" ]
+	expect "-j -t $test_name 31 exits $code" [ "$status" -eq "$code" ]
+	expect "-j -t $test_name 31 prints its record for each test" verdicts "$out" "$rhead" "$rlast" ", $program"
 	run_stderr -j -t "$test_name" 31
 	expect "-j -t $test_name 31 runs exactly its test" [ "$err" = "$want" ]
 done
@@ -511,43 +569,41 @@ for pair in 4:2 9:3 33:3 999999999:3 999002449:31607; do
 done
 
 for pval in 4 33 999999999 31; do
-	records=$(records_all "$pval"; echo .)
-	records=${records%.}
+	expected "$pval"
 	for skip in -s --skip-ptest; do
 		run_all -j "$skip" "$pval"
-		expect "-j $skip $pval exits 42" [ "$status" -eq 42 ]
-		expect "-j $skip $pval prints the tests' records" [ "$out" = "$records" ]
+		expect "-j $skip $pval exits $code" [ "$status" -eq "$code" ]
+		expect "-j $skip $pval prints the tests' records" verdicts "$out" "$rhead" "$rlast" ", $program"
 	done
 done
 
 # -j is a flag like any other: it groups, stands anywhere, warns when given twice and takes no
 # value.
-records_31=$(records_all 31; echo .)
-records_31=${records_31%.}
-records_33=$(records_all 33; echo .)
-records_33=${records_33%.}
+expected 33
+rhead_33=$rhead rlast_33=$rlast
+expected 31
 
 run_all -jd 31
-expect "-jd 31 exits 42" [ "$status" -eq 42 ]
-expect "-jd 31 prints the records" [ "$out" = "$records_31" ]
+expect "-jd 31 exits 0" [ "$status" -eq 0 ]
+expect "-jd 31 prints the records" verdicts "$out" "$rhead" "$rlast" ", $program"
 run_all -dj 31
-expect "-dj 31 exits 42" [ "$status" -eq 42 ]
-expect "-dj 31 prints the records" [ "$out" = "$records_31" ]
+expect "-dj 31 exits 0" [ "$status" -eq 0 ]
+expect "-dj 31 prints the records" verdicts "$out" "$rhead" "$rlast" ", $program"
 run_all -sj 33
 expect "-sj 33 exits 42" [ "$status" -eq 42 ]
-expect "-sj 33 prints the tests' records" [ "$out" = "$records_33" ]
+expect "-sj 33 prints the tests' records" verdicts "$out" "$rhead_33" "$rlast_33" ", $program"
 run_all -js 33
 expect "-js 33 exits 42" [ "$status" -eq 42 ]
-expect "-js 33 prints the tests' records" [ "$out" = "$records_33" ]
+expect "-js 33 prints the tests' records" verdicts "$out" "$rhead_33" "$rlast_33" ", $program"
 run_all 31 -j
-expect "31 -j exits 42" [ "$status" -eq 42 ]
-expect "31 -j prints the records" [ "$out" = "$records_31" ]
+expect "31 -j exits 0" [ "$status" -eq 0 ]
+expect "31 -j prints the records" verdicts "$out" "$rhead" "$rlast" ", $program"
 run_all -jt ll 31
-expect "-jt ll 31 exits 42" [ "$status" -eq 42 ]
-expect "-jt ll 31 prints the Lucas-Lehmer record" [ "$out" = "{\"exponent\": 31, $record_ll$nl" ]
+expect "-jt ll 31 exits 0" [ "$status" -eq 0 ]
+expect "-jt ll 31 prints the Lucas-Lehmer record" verdicts "$out" "" "{\"exponent\": 31, $record_ll_prime" ", $program"
 run_all -j -j 31
-expect "-j -j 31 exits 42" [ "$status" -eq 42 ]
-expect "-j -j 31 prints the records once" [ "$out" = "$records_31" ]
+expect "-j -j 31 exits 0" [ "$status" -eq 0 ]
+expect "-j -j 31 prints the records once" verdicts "$out" "$rhead" "$rlast" ", $program"
 run_stderr -j -j 31
 expect "-j -j 31 warns once" once "$err" "Duplicate use of -j/--json"
 

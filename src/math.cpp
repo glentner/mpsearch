@@ -17,6 +17,7 @@
 #include "math.hpp"
 #include "mp.hpp"
 #include "log.hpp"
+#include "lucas.hpp"
 #include "result.hpp"
 
 
@@ -89,10 +90,10 @@ Result test_lucas_lehmer(const long unsigned p) {
 	//
 	// The Lucas-Lehmer test of M_p
 	//
-	// Not implemented yet, so it decides nothing and says so.
+	// As `lucas::test` runs it with its defaults: a shift chosen at random, the length the table
+	// names, and none of the checks' injections.
 
-	logging::info("Running Lucas-Lehmer test");
-	return Result::no_verdict(WORK_LL, p, "Lucas-Lehmer is not implemented yet");
+	return lucas::test(p);
 }
 
 

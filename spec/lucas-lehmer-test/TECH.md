@@ -6,7 +6,7 @@ appetite: big
 status: in_progress
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: P2
+current_phase: P3
 last_updated: '2026-11-01'
 phases:
 - id: P1
@@ -23,7 +23,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/verify/p1.sh
 - id: P2
   name: 'The test: the shift, the checks, the recovery and the result'
-  status: pending
+  status: done
   satisfies:
   - R1
   - R2
@@ -220,27 +220,37 @@ This cycle's own rules:
 **Goal:** `mps -t ll p` runs the test of PLAN § 2.3 and reports its run in both views; the checks
 prove it on the known answers at two shifts and prove every check and recovery by injection.
 
-- [ ] `src/lucas.hpp`, `src/lucas.cpp` (PLAN § 2.3, § 2.4): the constants, `Step`, `Options` with its
+- [x] `src/lucas.hpp`, `src/lucas.cpp` (PLAN § 2.3, § 2.4): the constants, `Step`, `Options` with its
       three hooks, `largest_exponent`, `unshifted`, `jacobi_of`, `degenerate`, `confirms_prime`,
       `test`, the pinned first lines; the refusals of R14 before any squaring; the log lines of
       PLAN § 2.5; no `reference::` or `known::`.
-- [ ] `src/math.cpp`: `test_lucas_lehmer` returns `lucas::test(p)`. `src/math.hpp` if needed.
-- [ ] `src/result.hpp`, `src/result.cpp`: `RunReport`, `prime_by_residue`, the run-carrying
+- [x] `src/math.cpp`: `test_lucas_lehmer` returns `lucas::test(p)`. `src/math.hpp` if needed.
+- [x] `src/result.hpp`, `src/result.cpp`: `RunReport`, `prime_by_residue`, the run-carrying
       `composite_by_residue` and `error`, `run()`, the views of PLAN § 2.5, an error's record printed
       on stdout under `-j`, `RECORD_VERSION` 2 — in one commit with the record's change (R12, § Conventions).
-- [ ] `tests/check_lucas.cpp`: the twelve labels of PLAN § 2.6; `tests/check_result.cpp`,
+- [x] `tests/check_lucas.cpp`: the twelve labels of PLAN § 2.6; `tests/check_result.cpp`,
       `tests/check_math.cpp`: what the new behaviour makes wrong, and the views of a run and of an
       error.
-- [ ] `tests/ll.sh` (PLAN § 2.6); `Makefile`: `MODULES += lucas`, `check` and `check-engine` run it.
-- [ ] `tests/cli.sh`: only the expectations whose outcome the Lucas–Lehmer test decides, and the
+- [x] `tests/ll.sh` (PLAN § 2.6); `Makefile`: `MODULES += lucas`, `check` and `check-engine` run it.
+- [x] `tests/cli.sh`: only the expectations whose outcome the Lucas–Lehmer test decides, and the
       record version (R16 as the GOAL now words it; the gate compares it with `bcb6fdf`'s, PLAN § 6).
-- [ ] `AGENTS.md`, in this phase's commit: the high-blast-radius line and § Map bullet for
+- [x] `AGENTS.md`, in this phase's commit: the high-blast-radius line and § Map bullet for
       `src/lucas.hpp`, `src/lucas.cpp`; § Map's stale wording (among it the `src/math.*` bullet's
       "stops at the first decisive result", stale since P1's stop rule); `tests/check_lucas.cpp`, `tests/ll.sh`
       and the vectors in the `tests/` bullet (R18). Never change the four lines `tests/cli.sh` reads or
       the `verify` row.
-- [ ] `doc/lucas-lehmer.md`, in this phase's commit: "What mps uses" as built, each limit as
+- [x] `doc/lucas-lehmer.md`, in this phase's commit: "What mps uses" as built, each limit as
       "`NAME` (value)"; the 0-symbol text per the GOAL's Clarification; no stale sentence (PLAN § 2.7).
+- **Built** (amendment, 2026-11-01): `GOOD_STATES` stays 32; `make check` measured +3.429 s
+      over `bcb6fdf` (4.973 s against 8.402 s, the full gate's interleaved least of 5, load 5.9).
+      `lucas::test` turns any `engine_error` other than a refusal into an error result carrying the
+      run (PLAN § 2.3.5), checked in "the test replays a refused squaring once"; the attempt count
+      of `Step` is kept per iteration since the last good state. `tests/cli.sh` adds no
+      expectation (`planned` stays 644): P_max is read from `src/lengths.cpp` without one of its
+      own, since a value not read fails every line that names it. `AGENTS.md` § Build and run's
+      `make check` and `make check-engine` comments name `tests/ll.sh` in this commit, because the
+      targets change here; P3 adds the `check-long` and landing-gate lines. The three "published
+      Mersenne prime exponents" sentences stay for P3, `doc/lucas-lehmer.md`'s among them.
 - **Verify:** `sh spec/lucas-lehmer-test/verify/p2.sh`.
 - **Touches:** `src/lucas.*`, `src/math.*`, `src/result.*`, `tests/check_lucas.cpp`,
   `tests/check_result.cpp`, `tests/check_math.cpp`, `tests/ll.sh`, `tests/cli.sh`, `Makefile`,

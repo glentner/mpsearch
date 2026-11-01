@@ -4,7 +4,8 @@
 // Results
 //
 // What a test or the exponent check found, and its three views: the verdict line, the JSON
-// record and the exit status. The printer streams each no-verdict line as its test completes
+// record and the exit status. A result from a run on a transform carries that run's report. The
+// printer streams each no-verdict line, and under -j each error's record, as its test completes,
 // and holds every verdict until the run is known to hold no error and no contradiction.
 //
 
@@ -48,7 +49,23 @@ name_by_worktype {
 
 
 // The JSON record's own format version, bumped with any change to the record
-static const int RECORD_VERSION = 1;
+static const int RECORD_VERSION = 2;
+
+
+// What a test that runs on a transform did: each length it ran at, in order, the shift it began
+// from, and the counts of its error checks and faults
+struct RunReport {
+	std::vector<std::uint64_t> lengths {};
+	std::uint64_t shift = 0;
+	std::uint64_t jacobi_checks = 0;
+	std::uint64_t jacobi_failures = 0;
+	std::uint64_t degenerate_failures = 0;
+	std::uint64_t confirmation_failures = 0;
+	std::uint64_t transient_faults = 0;   // refused squarings whose replay was accepted
+	std::uint64_t length_retries = 0;     // moves to a larger length
+	std::uint64_t large_distances = 0;    // accepted squarings past the sizing distance
+	double largest_distance = 0;
+};
 
 
 class Result {
@@ -60,6 +77,9 @@ public:
 	static Result composite_by_residue(Worktype worktype, long unsigned p, std::uint64_t res64);
 	static Result no_verdict(Worktype worktype, long unsigned p, const std::string& reason);
 	static Result error(Worktype worktype, long unsigned p, const std::string& reason);
+	static Result prime_by_residue(Worktype worktype, long unsigned p, const RunReport& run);
+	static Result composite_by_residue(Worktype worktype, long unsigned p, std::uint64_t res64, const RunReport& run);
+	static Result error(Worktype worktype, long unsigned p, const std::string& reason, const RunReport& run);
 
 	Outcome outcome() const { return outcome_; }
 	Worktype worktype() const { return worktype_; }
@@ -67,6 +87,7 @@ public:
 	const std::vector<std::string>& factors() const { return factors_; }
 	std::optional<std::uint64_t> res64() const { return res64_; }
 	const std::string& reason() const { return reason_; }
+	const std::optional<RunReport>& run() const { return run_; }
 
 private:
 
@@ -80,6 +101,7 @@ private:
 	std::vector<std::string> factors_ {};
 	std::optional<std::uint64_t> res64_ {};
 	std::string reason_ {};
+	std::optional<RunReport> run_ {};
 };
 
 

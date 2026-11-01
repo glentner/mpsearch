@@ -15,7 +15,7 @@ BOUNDS   := -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MOD
 EXE      := bin/mps
 CHECK    := bin/check
 MEASURE  := bin/measure
-MODULES  := ansi cli io known mp math reference result fft ibdwt lengths
+MODULES  := ansi cli io known mp math reference result fft ibdwt lengths lucas
 OBJECTS  := $(addprefix lib/,$(addsuffix .o,$(MODULES)))
 CHECKED  := $(addprefix lib/check/,$(addsuffix .o,$(MODULES)))
 CHECKS   := $(patsubst tests/%.cpp,lib/check/%.o,$(sort $(wildcard tests/*.cpp)))
@@ -68,12 +68,15 @@ lib bin lib/check:
 lib/settings: $(CHANGED) | lib
 	@/bin/rm -f $(BUILT) && printf '%s\n' $(QUOTED) >$(@)
 
+# The checks, the smoke test of the command line, and the Lucas-Lehmer test's known answers
+# through bin/mps, each always run
 check: $(EXE) $(CHECK)
-	@status=0; $(CHECK) || status=1; sh tests/cli.sh $(EXE) || status=1; exit $$status
+	@status=0; $(CHECK) || status=1; sh tests/cli.sh $(EXE) || status=1; sh tests/ll.sh $(EXE) || status=1; exit $$status
 
-# make check's two steps, and then the engine tier of the checks, each always run
+# make check's three steps, and then the engine tier of the checks, each always run
 check-engine: $(EXE) $(CHECK)
-	@status=0; $(CHECK) || status=1; sh tests/cli.sh $(EXE) || status=1; $(CHECK) engine || status=1; exit $$status
+	@status=0; $(CHECK) || status=1; sh tests/cli.sh $(EXE) || status=1; sh tests/ll.sh $(EXE) || status=1; \
+	$(CHECK) engine || status=1; exit $$status
 
 # Measure every supported length again (src/lengths.hpp's protocol) into src/lengths.txt, and print
 # the table's two maps for src/lengths.cpp

@@ -135,7 +135,7 @@ static void display_lists_the_primes_below_n() {
 
 static void the_stubs_decide_nothing() {
 	//
-	// Each test, not implemented yet, says so and decides nothing
+	// Trial factoring and P-1, not implemented yet, say so and decide nothing
 	//
 	// For prime and composite exponents alike: a no verdict naming its test, the exponent and
 	// why, after the test's start line on stderr.
@@ -149,7 +149,6 @@ static void the_stubs_decide_nothing() {
 	static const std::vector<Stub> stubs = {
 		{test_quick_factor,  WORK_TF,  "trial factoring is not implemented yet",  "Running quick factor test"},
 		{test_p_minus_one,   WORK_P1,  "P-1 is not implemented yet",              "Running P-1 test"},
-		{test_lucas_lehmer,  WORK_LL,  "Lucas-Lehmer is not implemented yet",     "Running Lucas-Lehmer test"},
 	};
 
 	for (long unsigned p: {2ul, 3ul, 4ul, 31ul, 33ul, 999'999'937ul, 999'999'999ul})

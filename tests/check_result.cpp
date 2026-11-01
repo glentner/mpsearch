@@ -3,8 +3,8 @@
 //
 // Checks: results
 //
-// Each outcome is built directly, since no test decides anything yet, and run through the
-// verdict line, the JSON record, the exit status and the printer, in both of its modes. The
+// Each outcome is built directly, never by a test, and run through the verdict line, the JSON
+// record, the exit status and the printer, in both of its modes. The
 // statuses are compared as literal numbers, never as `Status` names, which an edit could move.
 // The residues here are synthetic and never paired with a real composite exponent. Every
 // record must pass a strict JSON reader that lives only here, and that reader is itself
@@ -39,10 +39,11 @@ namespace {
 		//
 		// A strict reader for one JSON object (RFC 8259, 2017)
 		//
-		// Accepts objects, arrays, strings and their escapes, integers, and `true`, `false`
-		// and `null`. Rejects duplicate keys, trailing commas, leading zeros, fractions and
-		// exponents, raw control characters, unknown escapes, any other top level, and
-		// trailing text. Keeps the top-level keys in order and their string values decoded.
+		// Accepts objects, arrays, strings and their escapes, numbers with their fractions and
+		// exponents, and `true`, `false` and `null`. Rejects duplicate keys, trailing commas,
+		// leading zeros, a point or an exponent without digits, raw control characters, unknown
+		// escapes, any other top level, and trailing text. Keeps the top-level keys in order and
+		// their string values decoded.
 
 		JsonReader(const std::string& text): text(text) {}
 
@@ -90,18 +91,35 @@ namespace {
 			return true;
 		}
 
+		bool digit() const {
+			return at < text.size() and text[at] >= '0' and text[at] <= '9';
+		}
+
+		bool digits() {
+			if (not digit())
+				return false;
+			while (digit())
+				at++;
+			return true;
+		}
+
 		bool number() {
 			take('-');
 			if (take('0')) {
-				if (at < text.size() and text[at] >= '0' and text[at] <= '9')
+				if (digit())
 					return false;
-			} else {
-				if (not (at < text.size() and text[at] >= '1' and text[at] <= '9'))
-					return false;
-				while (at < text.size() and text[at] >= '0' and text[at] <= '9')
-					at++;
+			} else if (not (digit() and digits())) {
+				return false;
 			}
-			return not (peek('.') or peek('e') or peek('E'));
+			if (take('.') and not digits())
+				return false;
+			if (take('e') or take('E')) {
+				if (not take('+'))
+					take('-');
+				if (not digits())
+					return false;
+			}
+			return true;
 		}
 
 		bool string(std::string& decoded) {
@@ -307,7 +325,7 @@ static std::string program() {
 	//
 	// The end of every record: the program, its version and the record's own version
 
-	return "\"program\": {\"name\": \"mps\", \"version\": \"" + APP_VERSION + "\"}, \"record_version\": 1}";
+	return "\"program\": {\"name\": \"mps\", \"version\": \"" + APP_VERSION + "\"}, \"record_version\": 2}";
 }
 
 
@@ -319,6 +337,18 @@ struct Shown {
 	std::string record;
 	int status;
 };
+
+
+static RunReport one_length() {
+	return {.lengths = {2}, .shift = 7, .jacobi_checks = 8, .largest_distance = 0.125};
+}
+
+
+static RunReport two_lengths() {
+	return {.lengths = {64, 72}, .shift = 1000, .jacobi_checks = 10, .jacobi_failures = 1, .degenerate_failures = 2,
+	        .confirmation_failures = 3, .transient_faults = 4, .length_retries = 1, .large_distances = 5,
+	        .largest_distance = 0.375};
+}
 
 
 static std::vector<Shown> each_outcome() {
@@ -347,12 +377,38 @@ static std::vector<Shown> each_outcome() {
 		 "M7 p1: no verdict, P-1 is not implemented yet" + tail(),
 		 "{\"exponent\": 7, \"worktype\": \"p1\", \"status\": \"no-verdict\", \"reason\": \"P-1 is not implemented yet\", " + program(),
 		 42},
+		{"prime with its run", Result::prime_by_residue(WORK_LL, 31, one_length()),
+		 "M31 ll: prime, res64 0000000000000000, length 2, shift 7, jacobi 8 checked 0 failed, degenerate 0, confirmation 0, "
+		 "transient 0, retries 0, large distances 0, largest distance 0.1250" + tail(),
+		 "{\"exponent\": 31, \"worktype\": \"ll\", \"status\": \"prime\", \"res64\": \"0000000000000000\", \"lengths\": [2], "
+		 "\"shift\": 7, \"jacobi_checks\": 8, \"jacobi_failures\": 0, \"degenerate_failures\": 0, \"confirmation_failures\": 0, "
+		 "\"transient_faults\": 0, \"length_retries\": 0, \"large_distances\": 0, \"largest_distance\": 0.125, " + program(),
+		 0},
+		{"composite by residue with its run", Result::composite_by_residue(WORK_LL, 999'999'937, 0x0123'4567'89AB'CDEF, two_lengths()),
+		 "M999999937 ll: composite, res64 0123456789ABCDEF, lengths 64 72, shift 1000, jacobi 10 checked 1 failed, degenerate 2, "
+		 "confirmation 3, transient 4, retries 1, large distances 5, largest distance 0.3750" + tail(),
+		 "{\"exponent\": 999999937, \"worktype\": \"ll\", \"status\": \"composite\", \"res64\": \"0123456789ABCDEF\", "
+		 "\"lengths\": [64, 72], \"shift\": 1000, \"jacobi_checks\": 10, \"jacobi_failures\": 1, \"degenerate_failures\": 2, "
+		 "\"confirmation_failures\": 3, \"transient_faults\": 4, \"length_retries\": 1, \"large_distances\": 5, "
+		 "\"largest_distance\": 0.375, " + program(),
+		 40},
 	};
 }
 
 
 static Result an_error() {
 	return Result::error(WORK_LL, 31, "a constructed failure");
+}
+
+
+static Result an_error_with_its_run() {
+	//
+	// An error from a run on a transform: four failed checks, and a distance whose record needs an
+	// exponent
+
+	const RunReport run = {.lengths = {448}, .shift = 3, .jacobi_checks = 4, .jacobi_failures = 4,
+	                 .largest_distance = 2.384185791015625e-07};
+	return Result::error(WORK_LL, 9941, "a constructed failure", run);
 }
 
 
@@ -412,16 +468,30 @@ static void each_outcome_has_its_record() {
 
 	for (const Shown& shown: each_outcome())
 		check::expect_equal(json_record(shown.result), shown.record, "the record of a " + shown.kind);
-	check::expect_equal(RECORD_VERSION, 1, "the record's format version is 1");
+	check::expect_equal(RECORD_VERSION, 2, "the record's format version is 2");
 }
 
 
-static void an_error_has_a_line_and_no_record() {
+static void an_error_has_a_line_and_a_record() {
 	//
-	// An error's line, which only stderr shows, and no record
+	// An error's line, which only stderr shows, and its record, which -j prints
+	//
+	// With its run, when it comes from one, after the reason in both.
 
 	check::expect_equal(verdict_line(an_error()), "M31 ll: error, a constructed failure" + tail(), "the line of an error");
-	check::expect_equal(json_record(an_error()), std::string(""), "no record for an error");
+	check::expect_equal(json_record(an_error()),
+	                    "{\"exponent\": 31, \"worktype\": \"ll\", \"status\": \"error\", \"reason\": \"a constructed failure\", " + program(),
+	                    "the record of an error");
+	check::expect_equal(verdict_line(an_error_with_its_run()),
+	                    "M9941 ll: error, a constructed failure, length 448, shift 3, jacobi 4 checked 4 failed, degenerate 0, "
+	                    "confirmation 0, transient 0, retries 0, large distances 0, largest distance 0.0000" + tail(),
+	                    "the line of an error with its run");
+	check::expect_equal(json_record(an_error_with_its_run()),
+	                    "{\"exponent\": 9941, \"worktype\": \"ll\", \"status\": \"error\", \"reason\": \"a constructed failure\", "
+	                    "\"lengths\": [448], \"shift\": 3, \"jacobi_checks\": 4, \"jacobi_failures\": 4, \"degenerate_failures\": 0, "
+	                    "\"confirmation_failures\": 0, \"transient_faults\": 0, \"length_retries\": 0, \"large_distances\": 0, "
+	                    "\"largest_distance\": 2.384185791015625e-07, " + program(),
+	                    "the record of an error with its run");
 }
 
 
@@ -441,9 +511,12 @@ static void every_record_is_valid_json() {
 	//
 	// Every record is one strictly valid JSON object of printable ASCII
 	//
-	// With its keys in the record's order.
+	// With its keys in the record's order. The errors' records too, since -j prints them.
 
-	for (const Shown& shown: each_outcome()) {
+	std::vector<Shown> shown_all = each_outcome();
+	shown_all.push_back({"error", an_error(), "", "", 20});
+	shown_all.push_back({"error with its run", an_error_with_its_run(), "", "", 20});
+	for (const Shown& shown: shown_all) {
 		const std::string record = json_record(shown.result);
 		check::expect(valid_json(record), "the record of a " + shown.kind + " is valid JSON");
 		check::expect(printable_ascii(record), "the record of a " + shown.kind + " is printable ASCII");
@@ -473,8 +546,12 @@ static void the_json_reader_rejects_bad_text() {
 		"{\"a\": {\"b\": 1, \"b\": 2}}",
 		"{\"a\": 01}",
 		"{\"a\": -01}",
-		"{\"a\": 1.5}",
-		"{\"a\": 1e5}",
+		"{\"a\": 1.}",
+		"{\"a\": .5}",
+		"{\"a\": 1.e5}",
+		"{\"a\": 1e}",
+		"{\"a\": 1e+}",
+		"{\"a\": -}",
 		"{\"a\": NaN}",
 		"{\"a\": tru}",
 		"{\"a\" 1}",
@@ -494,6 +571,7 @@ static void the_json_reader_rejects_bad_text() {
 		"{}",
 		" {\"a\": 0} ",
 		"{\"a\": [], \"b\": {\"c\": null}, \"d\": [true, false, -3, 0, 120], \"e\": \"\\u0041\\\"\\\\\\/\\b\\f\\n\\r\\t\"}",
+		"{\"a\": 1.5, \"b\": -0.25e-3, \"c\": 2E+07, \"d\": 0.0}",
 	};
 	for (const std::string& text: good)
 		check::expect(valid_json(text), "the reader accepts '" + text + "'");
@@ -703,7 +781,8 @@ static void the_printer_shows_each_outcome() {
 
 static void an_error_prints_no_verdict() {
 	//
-	// A run holding an error exits 20, prints nothing for it, and reports it on stderr
+	// A run holding an error exits 20, prints its record under -j and nothing for it otherwise,
+	// and reports it on stderr
 	//
 	// A verdict from before or after the error never prints either; a no verdict already
 	// printed stays.
@@ -715,19 +794,20 @@ static void an_error_prints_no_verdict() {
 		std::string label;
 		std::vector<Result> results;
 		std::vector<Result> printed;
+		std::vector<Result> recorded;  // under -j
 	};
 	const std::vector<Run> runs = {
-		{"an error",                {an_error()},             {}},
-		{"a no verdict, an error",  {nv, an_error()},         {nv}},
-		{"a composite, an error",   {composite, an_error()},  {}},
-		{"an error, a composite",   {an_error(), composite},  {}},
+		{"an error",                {an_error()},             {},    {an_error()}},
+		{"a no verdict, an error",  {nv, an_error()},         {nv},  {nv, an_error()}},
+		{"a composite, an error",   {composite, an_error()},  {},    {an_error()}},
+		{"an error, a composite",   {an_error(), composite},  {},    {an_error()}},
 	};
 
 	for (const bool json: {false, true})
 		for (const Run& run: runs) {
 			const Printed printed = print_run(run.results, json);
 			std::string expected;
-			for (const Result& result: run.printed)
+			for (const Result& result: json ? run.recorded : run.printed)
 				expected += shown(result, json);
 			check::expect_equal(printed.status, 20, run.label + ": the status" + mode(json));
 			check::expect_equal(printed.out, expected, run.label + ": stdout" + mode(json));
@@ -947,9 +1027,11 @@ static void run_in_order_stops_at_the_first_verdict_or_error() {
 
 static void test_all_runs_the_three_tests_in_order() {
 	//
-	// Trial factoring, P-1 and Lucas-Lehmer, each handing over its no verdict
+	// Trial factoring, P-1 and Lucas-Lehmer, each handing over its result
 	//
-	// None decides, so all three run, and each logs its start line first.
+	// The first two decide nothing, so all three run, each logging its start line first, and the
+	// Lucas-Lehmer test ends M31 in a prime verdict. Its line holds a shift chosen at random, so it
+	// is compared up to its length.
 
 	std::vector<std::string> handed;
 	std::ostringstream err;
@@ -960,12 +1042,15 @@ static void test_all_runs_the_three_tests_in_order() {
 	const std::vector<std::string> expected = {
 		"M31 tf: no verdict, trial factoring is not implemented yet" + tail(),
 		"M31 p1: no verdict, P-1 is not implemented yet" + tail(),
-		"M31 ll: no verdict, Lucas-Lehmer is not implemented yet" + tail(),
+		"M31 ll: prime, res64 0000000000000000, length ",
 	};
 	check::require(handed.size() == expected.size(), "test_all hands over three results");
-	for (size_t i = 0; i < expected.size(); i++)
+	for (size_t i = 0; i < expected.size() - 1; i++)
 		check::expect_equal(handed[i], expected[i], "test_all's result " + std::to_string(i + 1));
-	check::expect_equal(verdict_line(last), expected.back(), "test_all returns the last");
+	check::expect_equal(handed.back().substr(0, expected.back().size()), expected.back(), "test_all's result 3, up to its length");
+	check::expect(handed.back().ends_with(tail()), "test_all's result 3 ends with the program");
+	check::expect(last.outcome() == OUTCOME_PRIME, "test_all returns the prime");
+	check::expect_equal(verdict_line(last), handed.back(), "test_all returns the last");
 
 	const std::string log = err.str();
 	const size_t tf = log.find("Running quick factor test");
@@ -981,7 +1066,7 @@ static check::Suite
 check_by_name {
 	{"each outcome has its line",                    each_outcome_has_its_line},
 	{"each outcome has its record",                  each_outcome_has_its_record},
-	{"an error has a line and no record",            an_error_has_a_line_and_no_record},
+	{"an error has a line and a record",             an_error_has_a_line_and_a_record},
 	{"residues are sixteen uppercase digits",        residues_are_sixteen_uppercase_digits},
 	{"every record is valid JSON",                   every_record_is_valid_json},
 	{"the JSON reader rejects bad text",             the_json_reader_rejects_bad_text},

@@ -1,12 +1,12 @@
 # MPSearch: agent notes
 
 `mps` tests Mersenne numbers 2^p − 1 for primality with trial factoring, P-1 and the Lucas–Lehmer
-test. All three are stubs today, and PRP is planned (see `ROADMAP.md`). It is dependency-free C++20,
-built with a plain Makefile. The goal is a
-feature-complete tester that runs the same mathematics on CPUs, GPUs and TPUs. It must verify the
-known Mersenne primes at a speed and efficiency that rival the established programs, and it doubles
-as a burn-in and regression test for HPC nodes: a known exponent has a known answer and an expected
-walltime. Read `README.md` and `ROADMAP.md` first.
+test. The Lucas–Lehmer test runs on the FP64 engine; trial factoring and P-1 are stubs today, and
+PRP is planned (see `ROADMAP.md`). It is dependency-free C++20, built with a plain Makefile. The
+goal is a feature-complete tester that runs the same mathematics on CPUs, GPUs and TPUs. It must
+verify the known Mersenne primes at a speed and efficiency that rival the established programs, and
+it doubles as a burn-in and regression test for HPC nodes: a known exponent has a known answer and
+an expected walltime. Read `README.md` and `ROADMAP.md` first.
 
 ## Build and run
 
@@ -14,8 +14,9 @@ walltime. Read `README.md` and `ROADMAP.md` first.
 make                      # bin/mps from src/*.cpp (objects in lib/)
 make check                # bin/check from tests/*.cpp and the modules, built with the standard
                           # libraries' bounds assertions (objects in lib/check/); run it, then
-                          # the smoke test tests/cli.sh
-make check-engine         # make check's two steps, then `bin/check engine`: the engine's checks at
+                          # the smoke test tests/cli.sh, then tests/ll.sh: bin/mps -t ll on the
+                          # known answers
+make check-engine         # make check's three steps, then `bin/check engine`: the engine's checks at
                           # every supported length (minutes, not seconds; not in make check)
 make lengths              # bin/measure: measure the length table again into src/lengths.txt and
                           # print its rows for src/lengths.cpp (tens of minutes; see src/lengths.hpp)
@@ -45,8 +46,9 @@ needs `make -B`.
 - `src/exc.hpp`: `mps_error`, the base of the project's exceptions.
 - `src/io.cpp`, `src/io.hpp`: the `.mps` checkpoint file (format sketch only).
 - `src/mp.cpp`, `src/mp.hpp`: `BigInt`, the reference multiple-precision integer every engine is
-  checked against, and its operations (`mp_error` for their errors); `hex64`, the Res64 text the
-  result printer uses.
+  checked against, and its operations (`mp_error` for their errors); `jacobi`, the Jacobi symbol
+  of a `BigInt` modulo an odd `BigInt`, which the Lucas–Lehmer test checks with; `hex64`, the
+  Res64 text the result printer uses.
 - `src/reference.cpp`, `src/reference.hpp`: the reference Lucas–Lehmer and base-3 PRP tests on
   `BigInt` (`reference::lucas_lehmer`, `reference::prp3`), which return residues and decide nothing;
   `make check` runs them, and nothing in `bin/mps` calls them, `-t` included.
@@ -55,18 +57,30 @@ needs `make -B`.
   `known_error`, naming the table and the row of the first rule it breaks; `make check` reads the
   tables through it, and nothing in `bin/mps` calls it yet.
 - `src/math.cpp`, `src/math.hpp`: the prime sieve; the exponent check (`check_exponent`), which
-  reports a factor only through its re-check (`composite_by_exponent`); the three tests (stubs);
-  and `run_in_order`, which runs them and stops at the first decisive result.
-- `src/result.cpp`, `src/result.hpp`: the result type, the verdict line, the JSON record and the
-  exit status.
+  reports a factor only through its re-check (`composite_by_exponent`); the three tests, trial
+  factoring and P-1 (stubs) and `test_lucas_lehmer`, which runs `lucas::test` with its defaults;
+  and `run_in_order`, which runs them and stops at the first decisive result or the first error.
+- `src/lucas.cpp`, `src/lucas.hpp`: the Lucas–Lehmer test on the FP64 engine (`lucas::test`). It
+  refuses, before any squaring, an exponent that is even or below 3, past the largest the length
+  table holds (`lucas::largest_exponent`) or composite; otherwise it runs from s_0 = 4 at a shift
+  drawn at random, at the length the table names, and checks the residue at `GOOD_STATES` points
+  and at the end: the degenerate states, the Jacobi symbol and, on a zero, the prime confirmation.
+  A failed check sends it back to its last good state, held in memory; a refused squaring is
+  replayed, and moves the run to a larger length when the refusal reproduces; the limits are the
+  header's constants. It logs progress and fills the run's report (`RunReport`). `lucas::Options`
+  carries the checks' injections, which nothing in `bin/mps` sets.
+- `src/result.cpp`, `src/result.hpp`: the result type, the verdict line, the JSON record
+  (`RECORD_VERSION`) and the exit status; a result from a run on a transform carries its report
+  (`RunReport`: each length, the shift and the error checks' counts), and under `-j` an error
+  prints its record too.
 - `src/fft.cpp`, `src/fft.hpp`: the complex fast Fourier transform of every length m·2^k with odd
   m up to 15 (`fft::Plan`), each root of unity computed on its own (`fft::root`).
 - `src/ibdwt.cpp`, `src/ibdwt.hpp`: the FP64 weighted-transform engine that squares modulo M_p:
   the positions and weights, `Transform` (any exponent a length can lay out; statistics only) and
   `Engine` (only where the length table holds the exponent), the balanced digits (`Residue`), the
   convolutions and the carry (internal, declared in no header), the round-off distance and
-  `engine_error`/`roundoff_error`. Nothing in `bin/mps` calls it yet; `make check` and `make
-  check-engine` check it against `BigInt`.
+  `engine_error`/`roundoff_error`. `bin/mps` runs it through the Lucas–Lehmer test
+  (`src/lucas.*`); `make check` and `make check-engine` check it against `BigInt`.
 - `src/lengths.cpp`, `src/lengths.hpp`: the supported lengths, the measurement's protocol and the
   length table (each length's largest exponent and root-mean-square envelope), and `require_held`,
   which refuses an exponent a length does not hold.
@@ -78,20 +92,23 @@ needs `make -B`.
 - `tests/`: the checks. `check.hpp` and `check.cpp` are the runner (a check is a `static void`
   function listed in its file's `check_by_name` table, whose tier is the default or, for
   `check::Tier::ENGINE`, the engine tier `bin/check engine` runs), `check_<module>.cpp` hold one
-  module's checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only. `make
-  check` runs both. `check_ibdwt.cpp` holds the engine's default-tier checks and
-  `check_engine.cpp` its engine tier; `engine_support.hpp` and `engine_support.cpp` are what both
-  share (pseudorandom digits, values on `BigInt`, the table's assignment, the tally a check grades
-  with). `vector_reader.hpp` and `vector_reader.cpp` read the vector families in `vectors/`, which
-  `vectors/generate.py` wrote once with Python's integers, each file carrying the command that
-  reproduces it; they hold SHA-256 and SplitMix64 too. `known/` holds the tables of known answers,
-  each row with its source, written by `known/generate.py`, whose header is the manual:
-  `mersenne-exponents.txt` (the Mersenne prime exponents), `final-residues.txt` (the final
-  residues of composite exponents) and `partial-residues.txt` (the residues after a stated number
-  of iterations, and the fingerprints). `log_peer.hpp` and `log_peer.cpp` are a second unit the
-  logger's checks log from, so a state that isn't shared shows; they hold the checks' guards
-  (`SavedLogger` restores the logger's state, `CaptureCerr` captures `std::cerr`) and, run last,
-  the check that the state is restored.
+  module's checks, and `cli.sh` is the smoke test of `bin/mps`, in shell built-ins only.
+  `check_lucas.cpp` holds the Lucas–Lehmer test's checks: the known answers at two given shifts, and
+  every error check, recovery and length move proved by injection through `lucas::Options`. `ll.sh`
+  runs `bin/mps -t ll` on the known answers of `known/`, in shell built-ins only, up to the bounds
+  in its header. `make check` runs `bin/check`, `cli.sh` and `ll.sh`. `check_ibdwt.cpp` holds the
+  engine's default-tier checks and `check_engine.cpp` its engine tier; `engine_support.hpp` and
+  `engine_support.cpp` are what both share (pseudorandom digits, values on `BigInt`, the table's
+  assignment, the tally a check grades with). `vector_reader.hpp` and `vector_reader.cpp` read the
+  vector families in `vectors/`, which `vectors/generate.py` wrote once with Python's integers, each
+  file carrying the command that reproduces it (`jacobi.txt` holds the Jacobi symbol's); they hold
+  SHA-256 and SplitMix64 too. `known/` holds the tables of known answers, each row with its source,
+  written by `known/generate.py`, whose header is the manual: `mersenne-exponents.txt` (the Mersenne
+  prime exponents), `final-residues.txt` (the final residues of composite exponents) and
+  `partial-residues.txt` (the residues after a stated number of iterations, and the fingerprints).
+  `log_peer.hpp` and `log_peer.cpp` are a second unit the logger's checks log from, so a state that
+  isn't shared shows; they hold the checks' guards (`SavedLogger` restores the logger's state,
+  `CaptureCerr` captures `std::cerr`) and, run last, the check that the state is restored.
 - `ci/test-commit.sh`: the cluster test job. It builds and checks one commit on one target in a
   fresh run directory in scratch and leaves the logs and `result.json` there; its header is the
   manual. `ci/targets/`: one `key=value` file per target, naming its partition, resources, modules
@@ -199,6 +216,7 @@ A CONFIRMED finding in any of these files needs a human decision before the cycl
 - `src/ibdwt.hpp`, `src/ibdwt.cpp` (the FP64 weighted-transform engine)
 - `src/lengths.hpp`, `src/lengths.cpp` (the supported lengths, the measurement's protocol and the length table)
 - `src/lengths.txt`, `src/measure.cpp` (the measurement the length table is set from, and its command)
+- `src/lucas.hpp`, `src/lucas.cpp` (the Lucas–Lehmer test driver: its shift, error checks, recovery, length retry and verdict)
 
 A cycle that adds an arithmetic engine, a test driver that prints a verdict, a checkpoint or result format of `mps`, or a table of known answers adds its paths here in the same commit.
 
