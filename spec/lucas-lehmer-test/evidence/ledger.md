@@ -16,7 +16,19 @@ Review cycle 1 (`REVIEW.md`, F1–F4) reopened P2 and P4. P2's remediation (`1e8
 `src/lucas.cpp`, `tests/check_lucas.cpp`, the note, the profile's verify row and three seeds' line
 references; P4's dispatch A of that cycle (`df877de`) audited what it touched against R1–R18 and
 § Invariants and found no gap and no new deferral, so the entries below and `ROADMAP.md` are
-unchanged. The times, the landing gate and the cluster runs below are all of `df877de`.
+unchanged. That round's times, landing gate and cluster runs, of `df877de`, are superseded by
+review cycle 2's.
+
+Review cycle 2 (`REVIEW.md`, F5 and F6) reopened P1, P2 and P4. Both fixes are tests and vectors
+only, with no `src/` change: P1's remediation (`8ea53d6`, F6) added 32 Jacobi pairs to
+`tests/vectors/jacobi.txt`, written by `tests/vectors/generate.py`, and named them in
+`tests/check_mp.cpp`'s comment; P2's (`7efc00b`, F5) pinned R13's progress line and the class's
+other reported values in `tests/check_lucas.cpp`. P4's dispatch A of that cycle audited what they
+touched against R1–R18 and § Invariants and found one gap, fixed in `0c45bc3` before the pre-push:
+a comment in `tests/vectors/generate.py` named the review that found a pair, a spec reference in a
+product file; the sentence is gone and the vectors are unchanged. It found no new deferral, so the
+entries below and `ROADMAP.md` are unchanged. The times, the landing gate and the cluster runs
+below are all of `0c45bc3`.
 
 ## Deferrals
 
@@ -46,35 +58,37 @@ speed (`issues/cpu-transform-throughput.md`, `issues/benchmark-mode.md`).
 
 ## Times
 
-R16's two times are quoted from review cycle 1's dispatch A pre-push run (`remediation/prepush.sh`,
-the frozen `verify/prepush.sh` under P2's wrapper, green on `df877de`, the pushed and tested commit,
-whose code equals this tree's), not from a second run; the check steps are from the three runs'
-`result.json`, all of `df877de` with `ci/test-commit.sh` blob `c4b1f28`, each passing 116 checks,
-644 smoke-test cases and 48 `ll` cases with GCC 14. Each run was `COMPLETED 0:0` on its first
-submission. The first round's runs, of `2530c06`, are superseded: P2's remediation changed code
-after them.
+R16's two times are quoted from review cycle 2's dispatch A pre-push run (`remediation/prepush.sh`,
+the frozen `verify/prepush.sh` under P2's wrapper, green on `0c45bc3`, the tested commit, on the
+pushed branch, whose code equals this tree's), not from a second run; the check steps are from the
+three runs' `result.json`, all of `0c45bc3` with `ci/test-commit.sh` blob `c4b1f28`, each passing
+116 checks, 644 smoke-test cases and 48 `ll` cases with GCC 14. Each run was `COMPLETED 0:0` on its
+first submission. The earlier rounds' runs, of `2530c06` and `df877de`, are superseded: each review
+cycle's remediation changed the tree after them.
 
-- make check: make check 4.973 s at bcb6fdf, 8.431 s now, +3.458 s (budget +5 s; least of 5 interleaved runs each; load 4.5)
+- make check: make check 4.974 s at bcb6fdf, 8.783 s now, +3.809 s (budget +5 s; least of 5 interleaved runs each; load 4.4)
 - make check-long: 46 s on clang++ (budget 900 s)
-- `x86-64-avx512`: check step 61 s
-- `x86-64-avx2`: check step 97 s
-- `aarch64-gb10`: check step 197 s
+- `x86-64-avx512`: check step 74 s
+- `x86-64-avx2`: check step 115 s
+- `aarch64-gb10`: check step 211 s
 
 ## Landing gate
 
-From the same pre-push run: `ci/engine-gate.sh` on HEAD, the pushed and tested commit.
+From the same pre-push run: `ci/engine-gate.sh` on HEAD as it then was, `0c45bc3`, the tested
+commit.
 
-- engine-gate: green on df877dea434e6e9adfe07b320d583b2deebc0a58: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal
+- engine-gate: green on 0c45bc31db7156c26bb9b0686438d622cf4038e7: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal
 
 The pre-push lines, verbatim:
 
 ```
-prepush: times for ## Times: - make check: make check 4.973 s at bcb6fdf, 8.431 s now, +3.458 s (budget +5 s; least of 5 interleaved runs each; load 4.5); - make check-long: 46 s on clang++ (budget 900 s)
-prepush: landing gate for ## Landing gate: - engine-gate: green on df877dea434e6e9adfe07b320d583b2deebc0a58: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal
+prepush: times for ## Times: - make check: make check 4.974 s at bcb6fdf, 8.783 s now, +3.809 s (budget +5 s; least of 5 interleaved runs each; load 4.4); - make check-long: 46 s on clang++ (budget 900 s)
+prepush: landing gate for ## Landing gate: - engine-gate: green on 0c45bc31db7156c26bb9b0686438d622cf4038e7: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal
 ```
 
 The gate's time on this Mac, from P3's full gate (its run mode on a commit of P3's tree, whose code
 equals `2530c06`'s): 500 s under clang and 556 s under g++-16, one after the other, about 18
-minutes. It was not measured again on `df877de`: neither pre-push line carries a time, and P2's
-remediation added refusal and check cases to `tests/check_lucas.cpp`, which `make check-engine`
-runs, so the time on `df877de` may differ somewhat.
+minutes. It was not measured again on `df877de` or `0c45bc3`: neither round's pre-push line carries
+a time, and both remediations added check cases (review cycle 1's to `tests/check_lucas.cpp`,
+review cycle 2's to it and to `tests/vectors/jacobi.txt`, which `tests/check_mp.cpp` reads), all of
+which `make check-engine` runs, so the time on `0c45bc3` may differ somewhat.

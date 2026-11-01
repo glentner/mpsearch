@@ -3,10 +3,10 @@ slug: lucas-lehmer-test
 title: The Lucas–Lehmer test on the engine, with a shift and its error checks
 kind: feature
 appetite: big
-status: in_progress
+status: in_review
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: P4
+current_phase: done
 last_updated: '2026-11-01'
 phases:
 - id: P1
@@ -61,7 +61,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/verify/p3.sh
 - id: P4
   name: Audit, deferral ledger, push, the landing gate and the cluster runs' evidence
-  status: in_progress
+  status: done
   satisfies:
   - R1
   - R2
@@ -559,6 +559,20 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
   `prepush: landing gate for ## Landing gate: - engine-gate: green on 0c45bc31db7156c26bb9b0686438d622cf4038e7: make check-engine under Apple clang version 21.0.0 (clang-2100.3.34.2) and g++-16 (Homebrew GCC 16.2.0) 16.2.0, 5 residue digests equal`.
   The tested commit is `0c45bc3`; this note's commit changes only `TECH.md`. Stopped before the
   push, with P4 `in_progress`.
+- **Dispatch B, review cycle 2** (amendment, 2026-11-01): the foreman pushed the branch (head
+  `f242b1f`, the human-gate record, spec only, with `0c45bc3` and `a9adc2d` below it) and ran
+  `0c45bc3` on the three targets from its `ci/test-commit.sh` (blob `c4b1f28`, unchanged), each
+  `COMPLETED 0:0` on the first submission (none resubmitted), each passing 116 checks, 644
+  smoke-test cases and 48 `ll` cases with GCC 14; check steps 74 s, 115 s and 211 s. The new
+  evidence replaced review cycle 1's, through `verify/redact.sh` only. The ledger's `## Times` and
+  `## Landing gate` quote review cycle 2's dispatch A pre-push lines (no second run) and name
+  `0c45bc3` as the tested commit; its history paragraph records review cycle 2 (F5 and F6, tests
+  and vectors only, no `src/` change; the audit fix in `0c45bc3`); `## Deferrals` is unchanged.
+  The landing gate's time on this Mac stays P3's, on `2530c06`'s code, marked as not remeasured.
+  The gate is the retuned `verify:`, with F5's and F6's checkers. Its `audit` mode green (and seen
+  red once, on a `jobs.tsv` with one run's state planted as `FAILED`, then restored), then the full
+  `verify:` green; its own R16 run gave `make check` +3.800 s over `bcb6fdf` (4.985 s against
+  8.785 s, least of 5 interleaved, load 6.5; budget +5 s), the long tier 46 s.
 - **Verify:** `sh spec/lucas-lehmer-test/remediation/p4.sh`, then the six checkers F1–F6 (the
   frontmatter's `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p4.sh`, whose
   `audit` mode the wrapper keeps).
