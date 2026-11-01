@@ -117,3 +117,49 @@ The cluster runs are graded by the orchestrator: `evidence/` holds three targets
 ## Optional completeness sub-pass
 
 Not run.
+
+## Review cycle 2 — changes-requested (2026-11-01)
+
+- **Reviewed commit:** 7bd10396e671f797d81e8ba1e14100e51a4602e9 (code equal to `df877de`, the tested commit)  ·  **Base:** main (`bcb6fdf`)
+- **Mode:** a fresh blind pass over the full spec-excluded diff (the default), not scoped to cycle 1's findings. The reviewer was barred from `REVIEW.md`, `remediation/`, PLAN, TECH, `verify/` and `evidence/`.
+- **Disclosure (reviewer's own):** while checking a same-commit rule it ran `git show 1e820ba` and saw that commit's message, which names cycle 1's F1–F4. Its mutation runs were already finished, and none of its findings depend on it.
+- **Cycle 1's findings:** F1 (every refusal reason), F2 (the verify row), F3 (symbol 0) and F4 (line references) are each graded passing by this pass's own evidence: R14 on every reason combination by CLI, the verify row against the Makefile, mutant L22 (a zero symbol accepted) killed, and no stale line references found.
+
+### Verification run
+
+- `make check` on clang and `CXX=g++-16`: `check: 116 passed, 0 failed`, `cli: 644 passed, 0 failed`, `ll: 48 passed, 0 failed`. GCC gave 0 warnings.
+- `make check-long`: 45.3 s on clang and 48.8 s on GCC (budget 900 s).
+- R16: least of 6 interleaved runs against `origin/main` in a scratch clone gave 4.968 s against 8.443 s, so +3.48 s (budget +5 s). Two stray idle-loop shells held about one core each during all timing runs; base and head were interleaved, so both saw the same load.
+- `MPS_GCC=g++-16 sh ci/engine-gate.sh` is green on 7bd1039: clang 493 s, GCC 543 s, 5 digests equal. Compare mode exits 1 on a changed digest, a FAIL line, a missing `ll:` or digest, and a red summary. It exits 2 on an unreadable log and on a fake GCC or clang.
+- `bin/mps -t ll` on M216091 (prime, 108.8 s, three correct progress lines); shifts across five runs of 31; and R14 on 2, `-s 4`, `-s 9`, `-s 33`, 20381701, `-s 20381697`, `-s 20381698`, 999999937, `-s 999999999` and `-s 999999998`.
+- The Jacobi symbol checked against the reviewer's own Euler-criterion and factorization oracle on 11,286 cases. `generate.py jacobi` reproduces the vectors byte for byte. `jacobi_of`, `unshifted`, `degenerate` and `confirms_prime` were checked on 3,895 shifted LL residues.
+- A build that aborts if any `lucas::Options` field is set passes all of cli.sh and ll.sh, so the hooks are unreachable from `bin/mps`.
+- 67 source mutants of `src/lucas.cpp` and `src/mp.cpp`'s Jacobi, each under clang and g++-16. 7 equivalent (L01, L06, L14, L47, L50, M08, M09), each with a reason. Two findings below.
+
+### Requirement → evidence matrix
+
+R1–R12 and R14–R18 ✅, each by the commands above and the reviewer's matrix (kill lists per R-ID). R13 ✅ in behaviour (correct lines on M216091), with its fields not pinned (F5). R5 ✅, with one borrow path in the symbol's helper unpinned (F6). No scope creep, and no § Invariants concern.
+
+### Findings
+
+#### [LOW/CONFIRMED] F5 — R13's progress fields are not pinned
+- **Where:** `src/lucas.cpp:273`, `:275`, `:277`; `tests/check_lucas.cpp` (`the test logs its progress`)
+- **Failure scenario:** three mutants survive `make check` under both compilers:
+  - deleting `line_largest = 0;` makes every later line repeat the run's largest distance, not the largest since the last line;
+  - deleting `line_time = now;` makes the per-iteration time measure from the run's start;
+  - an ETA of `each * last` instead of `each * (last - i)`.
+
+  The check asserts only that each field's words appear.
+- **Evidence:** the reviewer's mutant runs under clang and g++-16. A driver at M9941 with a 0.3 distance at iteration 100: the real code goes 0.3000, 0.1875, 0.1562; the first mutant gives 0.3000 on every line through iteration 9864.
+- **Touches:** R13. **Class:** every value a progress line reports is pinned to what R13 says it means: the iteration count, the time per iteration since the last line, the time left, and the largest distance since the last line. **Route (surviving mutants):** a sweep over every statement of `src/lucas.cpp` that feeds a reported value (the progress line, the run report's counters and fields, the log of distances), not only its decisions. Each mutant runs under clang and g++-16, with equivalent mutants recorded and why.
+
+#### [LOW/CONFIRMED] F6 — the Jacobi vectors miss a borrow path in `subtract_in_place`
+- **Where:** `src/mp.cpp:568` (`subtract_in_place`, :556); `tests/vectors/jacobi.txt`, `tests/vectors/generate.py`
+- **Failure scenario:** the mutant `borrow = below;` (dropping a borrow carried through a limb where x equals y) survives `make check` under both compilers. On 41 crafted 3-limb pairs it disagrees with a reciprocity oracle on 28. The first is `jacobi(600000000000000050000000000000005, 700000000000000050000000000000003)`: −1, mutant +1. The real code agrees on all 41.
+- **Reach:** random residues mod M_p take this path with probability about 2⁻⁶⁴ per limb, so no real run is affected. It is reachable, and `src/mp.cpp` is on the high-blast-radius list.
+- **Touches:** R5. **Class:** the vectors reach every carry and borrow path of the symbol's multi-limb helpers (`subtract_in_place`, `compare_limbs`, the strip and swap steps): equal limbs, a borrow carried across one or more equal limbs, a borrow into the top limb. The vectors are written by their command and recomputed by an independent oracle. **Route (surviving mutant):** a sweep over every decision and arithmetic statement of the Jacobi code path in `src/mp.cpp`, under both compilers, with equivalent mutants recorded and why.
+
+### Human-gate triggers
+
+- F5 and F6 cite listed paths (`src/lucas.cpp`, `src/mp.cpp`), but their routes add tests and vectors only. If remediation must change either source file, the foreman signs it off under the standing autonomy decision before the change lands and records it here.
+- Cycle 1's F1 trigger: signed off (above) and still on record for publish.
