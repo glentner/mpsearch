@@ -3,10 +3,10 @@ slug: lucas-lehmer-test
 title: The Lucas–Lehmer test on the engine, with a shift and its error checks
 kind: feature
 appetite: big
-status: blocked
+status: in_progress
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: done
+current_phase: P2
 last_updated: '2026-11-01'
 phases:
 - id: P1
@@ -20,10 +20,10 @@ phases:
   parallel: false
   hammerable: false
   hill: uphill
-  verify: sh spec/lucas-lehmer-test/verify/p1.sh
+  verify: sh spec/lucas-lehmer-test/remediation/p3.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py && python3 -I spec/lucas-lehmer-test/remediation/F5-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F6-mutants.py check
 - id: P2
   name: 'The test: the shift, the checks, the recovery and the result'
-  status: done
+  status: in_progress
   satisfies:
   - R1
   - R2
@@ -45,7 +45,7 @@ phases:
   parallel: false
   hammerable: false
   hill: uphill
-  verify: sh spec/lucas-lehmer-test/remediation/p3.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py
+  verify: sh spec/lucas-lehmer-test/remediation/p3.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py && python3 -I spec/lucas-lehmer-test/remediation/F5-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F6-mutants.py check
 - id: P3
   name: The long tier, the landing gate and the remaining notes
   status: done
@@ -61,7 +61,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/verify/p3.sh
 - id: P4
   name: Audit, deferral ledger, push, the landing gate and the cluster runs' evidence
-  status: done
+  status: in_progress
   satisfies:
   - R1
   - R2
@@ -86,7 +86,7 @@ phases:
   parallel: false
   hammerable: false
   hill: uphill
-  verify: sh spec/lucas-lehmer-test/remediation/p4.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py
+  verify: sh spec/lucas-lehmer-test/remediation/p4.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py && python3 -I spec/lucas-lehmer-test/remediation/F5-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F6-mutants.py check
 review:
   verdict: changes-requested
   cycle: 2
@@ -214,7 +214,42 @@ This cycle's own rules:
       odd moduli). Left for later phases, as planned: `AGENTS.md` § Map still says `run_in_order`
       "stops at the first decisive result" (P2's refresh of the stale wording, below, fixes it; P1
       may not touch `AGENTS.md`), and the three "published Mersenne prime exponents" sentences (P3).
-- **Verify:** `sh spec/lucas-lehmer-test/verify/p1.sh` (`… p1.sh quick` while iterating).
+- **Review cycle 2 remediation** (amendment, 2026-11-01; REVIEW.md F6, the foreman's routing: P1,
+  P2 and P4 reopened, P3 done; F5 is P2's, below). Fixed as its class, with tests and vectors only:
+  `src/mp.cpp` is unchanged.
+  - [x] **F6** (R5): the vectors reach every carry and borrow path of `jacobi`'s steps on limbs.
+        `generate.py` names the paths (`JACOBI_LIMB_PATHS`: the comparison's unequal counts, a
+        decision below the top limb and equality; the strip's one and several whole limbs, bits
+        carried down and an emptied top limb; the subtraction's equal limbs below the top with
+        nothing borrowed, a borrow across an equal limb, across two or more limbs in a row, ending
+        at a limb one above, into the top limb, past the shorter operand and across a zero limb
+        there, the longer operand with nothing borrowed past the shorter, and a trim of two or more
+        limbs; a gcd of several limbs whose low limb is 1), traces `jacobi` on limbs as the C++ runs
+        it (`jacobi_limb_paths`), and writes 32 pairs built for the rare ones (`JACOBI_LIMB_PAIRS`,
+        review cycle 2's among them). It asserts that each pair reaches its path with the
+        reciprocity loop's symbol, and that the pairs reach every path. `jacobi.txt` is its
+        command's output, 493 records (461 before), in its format with its trailer; each new
+        symbol is the reciprocity loop's, checked by the binary form. The pairs are coprime but the
+        gcd's: 21 of −1, 8 of +1, 3 of 0. `tests/check_mp.cpp`'s comment on the vectors names them.
+  - **Checker** `remediation/F6-mutants.py` (record `F6-mutants.txt`, tied by sha256 to
+        `src/mp.*`, the vectors, `generate.py` and `tests/check_mp.cpp`). `check` traces every
+        record whose modulus has at most 2048 bits with its own model of `jacobi` on limbs and
+        requires every path; then the record; then, live, the borrow through an equal limb
+        dropped (review cycle 2's mutant) red under clang++. The sweep covers every decision and
+        arithmetic statement of `compare_limbs`, `trim`, `strip_twos`, `subtract_in_place` and
+        `jacobi` (the reduction of a ≥ n is `reduce`'s, with its own vectors, and is not swept):
+        50 mutants, 42 killed under each compiler and 8 equivalent, each with its reason.
+        On `7bd1039`'s tree, in a local clone, the same sweep under clang++ left three
+        survivors, each now killed: review cycle 2's borrow, a strip counting whole limbs as 1 bit
+        each, and a gcd read by its low limb alone. Seen red there: four paths no record takes
+        (the borrow across an equal limb, across two or more limbs in a row and across a zero limb
+        past the shorter operand, and the gcd of several limbs), the record not that tree's, and
+        the live mutant green.
+  - **Gate:** P1's `verify:` is P2's, and F6's checker and F5's both run in it, so it ran once on
+        the tree holding both phases' work (P2's amendment, below, has its line).
+- **Verify:** `sh spec/lucas-lehmer-test/remediation/p3.sh`, then the six checkers F1–F6 (the
+  frontmatter's `verify:` from review cycle 2: a reopened phase earlier than the latest done one
+  runs the latest done phase's cumulative gate; before it, `sh spec/lucas-lehmer-test/verify/p1.sh`).
 - **Touches:** `src/mp.*`, `src/math.cpp`, `tests/vectors/generate.py`, `tests/vectors/jacobi.txt`,
   `tests/vector_reader.*`, `tests/check_mp.cpp`, `tests/check_result.cpp`,
   `doc/reference-arithmetic.md`, `doc/references.md`, `doc/README.md`.
@@ -308,7 +343,7 @@ prove it on the known answers at two shifts and prove every check and recovery b
         lines in `issues/lucas-lehmer-test.md`).
   - **Gate:** the retuned `verify:` green in full; R16 `make check` +3.464 s over `bcb6fdf`
         (4.978 s against 8.442 s, least of 5 interleaved, load 4.4; budget +5 s).
-- **Verify:** `sh spec/lucas-lehmer-test/remediation/p3.sh`, then the four checkers (the
+- **Verify:** `sh spec/lucas-lehmer-test/remediation/p3.sh`, then the six checkers F1–F6 (the
   frontmatter's `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p2.sh`).
 - **Touches:** `src/lucas.*`, `src/math.*`, `src/result.*`, `tests/check_lucas.cpp`,
   `tests/check_result.cpp`, `tests/check_math.cpp`, `tests/ll.sh`, `tests/cli.sh`, `Makefile`,
@@ -445,9 +480,16 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
   `remediation/p4.sh` in place of `verify/p4.sh`. Its `audit` mode green, then the full `verify:`
   green; its own R16 run gave `make check` +3.470 s over `bcb6fdf` (4.968 s against 8.438 s,
   least of 5 interleaved, load 4.5; budget +5 s), the long tier 46 s.
-- **Verify:** `sh spec/lucas-lehmer-test/remediation/p4.sh`, then the four checkers (the frontmatter's
-  `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p4.sh`, whose `audit` mode the
-  wrapper keeps).
+- **Review cycle 2 remediation** (amendment, 2026-11-01): P4 reopened, since P1's and P2's
+  remediation change the vectors and the checks, and the cluster evidence of `df877de` no longer
+  covers HEAD; its `verify:` gains F5's and F6's checkers. Dispatch A again: the audit of what the
+  remediation touched, `remediation/prepush.sh` on the committed tree, then a stop before the push
+  with P4 `in_progress`; the foreman pushes and submits the three runs, and dispatch B redoes the
+  evidence and the ledger's `## Times` and `## Landing gate`, and closes P4 under the retuned
+  `verify:`.
+- **Verify:** `sh spec/lucas-lehmer-test/remediation/p4.sh`, then the six checkers F1–F6 (the
+  frontmatter's `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p4.sh`, whose
+  `audit` mode the wrapper keeps).
 - **Touches:** `spec/lucas-lehmer-test/evidence/*`, `issues/large-gcd-and-jacobi.md`,
   `issues/checkpoint-and-resume.md`, `issues/engine-differential-standing-check.md`, `ROADMAP.md`
   (only if a new seed is filed); `src/`, `tests/`, `doc/`, `ci/` only if the audit finds a gap.

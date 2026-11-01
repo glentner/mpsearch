@@ -516,6 +516,70 @@ JACOBI_FACTORED = {11: (11001, 11000), 23: (23001, 23000), 29: (29000, 29005), 3
 # factor with M_p (doc/lucas-lehmer.md, "The zero case is real"): the symbol is 0 there, -1 at i - 1
 JACOBI_ZEROS = [(9, 3), (15, 3), (21, 3), (25, 5)]
 
+# The paths of jacobi's steps on limbs in src/mp.cpp: the comparison, the strip of the factors 2
+# and the subtraction in place, and the gcd it ends with. Random operands take most of them at
+# almost every pass, and these almost never: a limb equal in both operands has probability 2^-64.
+JACOBI_LIMB_PATHS = [
+	"compare: unequal limb counts",
+	"compare: decided below the top limb",
+	"compare: equal",
+	"strip: one whole limb",
+	"strip: two or more whole limbs",
+	"strip: bits carried down from the next limb",
+	"strip: the top limb emptied and trimmed",
+	"subtract: equal limbs below the top, nothing borrowed",
+	"subtract: a borrow across an equal limb",
+	"subtract: a borrow across two or more limbs in a row",
+	"subtract: a borrow that ends at a limb one above",
+	"subtract: a borrow into the top limb",
+	"subtract: a borrow past the shorter operand",
+	"subtract: a borrow across a zero limb past the shorter operand",
+	"subtract: the longer operand, nothing borrowed past the shorter",
+	"subtract: trimmed by two or more limbs",
+	"symbol: a gcd of several limbs whose low limb is 1",
+]
+
+# Pairs (path, a, n) written for the rare paths, each asserted by tracing it. Mostly a odd and below
+# n, so the first pass swaps them and subtracts a from n limb by limb, the limbs as written here
+# (most significant first); for a strip, an even a, whose factors 2 the first pass strips; for the
+# gcd, a and n multiples of 2^64 + 1 and of 2^128 + 1. The first pair of the borrow across an equal
+# limb is review cycle 2's.
+JACOBI_T, JACOBI_U, JACOBI_H = 0x0123456789ABCDEF, 0xFEDCBA9876543210, 0x7000000000000001
+JACOBI_LIMB_PAIRS = [
+	("subtract: equal limbs below the top, nothing borrowed", limbs_from_top(0x10, JACOBI_T, 3), limbs_from_top(0x20, JACOBI_T, 5)),
+	("subtract: equal limbs below the top, nothing borrowed", limbs_from_top(0x10, JACOBI_U, JACOBI_T, 7), limbs_from_top(0x11, JACOBI_U, JACOBI_T, 9)),
+	("subtract: a borrow across an equal limb", limbs_from_top(6, 5, 5), limbs_from_top(7, 5, 3)),
+	("subtract: a borrow across an equal limb", limbs_from_top(0x10, JACOBI_T, 5), limbs_from_top(0x20, JACOBI_T, 3)),
+	("subtract: a borrow across an equal limb", limbs_from_top(0x13, MASK, 0x43), limbs_from_top(0x15, MASK, 0x3F)),
+	("subtract: a borrow across two or more limbs in a row", limbs_from_top(0x10, JACOBI_U, JACOBI_T, 5), limbs_from_top(0x20, JACOBI_U, JACOBI_T, 3)),
+	("subtract: a borrow across two or more limbs in a row", limbs_from_top(0x10, 0, 0, 0, 7), limbs_from_top(0x27, 0, 0, 0, 1)),
+	("subtract: a borrow across two or more limbs in a row", limbs_from_top(0x31, MASK, MASK, 11), limbs_from_top(0x33, MASK, MASK, 1)),
+	("subtract: a borrow that ends at a limb one above", limbs_from_top(0x10, JACOBI_T, 7), limbs_from_top(0x20, JACOBI_T + 1, 1)),
+	("subtract: a borrow that ends at a limb one above", limbs_from_top(0x10, 0, 7), limbs_from_top(0x23, 1, 5)),
+	("subtract: a borrow into the top limb", limbs_from_top(0x1F, JACOBI_T, 5), limbs_from_top(0x20, JACOBI_T, 3)),
+	("subtract: a borrow into the top limb", limbs_from_top(0x1F, 0x1E, 9), limbs_from_top(0x21, 0x1E, 3)),
+	("subtract: a borrow past the shorter operand", limbs_from_top(JACOBI_T, 5), limbs_from_top(0x20, JACOBI_T, 1)),
+	("subtract: a borrow past the shorter operand", limbs_from_top(JACOBI_U, 15), limbs_from_top(0x2B, JACOBI_T, 13)),
+	("subtract: a borrow across a zero limb past the shorter operand", 5, limbs_from_top(1, 0, 0, 3)),
+	("subtract: a borrow across a zero limb past the shorter operand", 0x23, limbs_from_top(0x45, 0, 0x21)),
+	("subtract: a borrow across a zero limb past the shorter operand", limbs_from_top(JACOBI_T, 11), limbs_from_top(0x5, 0, JACOBI_T, 7)),
+	("subtract: the longer operand, nothing borrowed past the shorter", 5, limbs_from_top(1, 0, 7)),
+	("subtract: trimmed by two or more limbs", limbs_from_top(JACOBI_H, JACOBI_T, 3), limbs_from_top(JACOBI_H, JACOBI_T, 5)),
+	("subtract: trimmed by two or more limbs", limbs_from_top(JACOBI_H, JACOBI_U, JACOBI_T, 9), limbs_from_top(JACOBI_H, JACOBI_U, JACOBI_T, 15)),
+	("compare: decided below the top limb", limbs_from_top(JACOBI_H, JACOBI_T, 3), limbs_from_top(JACOBI_H, JACOBI_T + 2, 3)),
+	("strip: one whole limb", 3 << 64, limbs_from_top(0x20, JACOBI_T, 3)),
+	("strip: one whole limb", 7 << 64, limbs_from_top(0x20, JACOBI_T, 5)),
+	("strip: two or more whole limbs", 5 << 128, limbs_from_top(0x40, JACOBI_T, JACOBI_U, 3)),
+	("strip: two or more whole limbs", 5 << 131, limbs_from_top(0x40, JACOBI_T, JACOBI_U, 3)),
+	("strip: two or more whole limbs", 3 << 192, limbs_from_top(0x40, JACOBI_T, JACOBI_U, 1, 5)),
+	("strip: bits carried down from the next limb", limbs_from_top(JACOBI_T, 0x30), limbs_from_top(0x20, JACOBI_T, 3)),
+	("strip: the top limb emptied and trimmed", (1 << 63) + 3, limbs_from_top(1, (1 << 63) + 33)),
+	("strip: the top limb emptied and trimmed", (1 << 63) + 3, limbs_from_top(1, (1 << 63) + 0x103)),
+	("symbol: a gcd of several limbs whose low limb is 1", ((1 << 64) + 1) * 3, ((1 << 64) + 1) * 5),
+	("symbol: a gcd of several limbs whose low limb is 1", ((1 << 128) + 1) * 7, ((1 << 128) + 1) * 9),
+	("symbol: a gcd of several limbs whose low limb is 1", ((1 << 64) + 1) * 11, ((1 << 64) + 1) * 13 * 3),
+]
+
 
 def jacobi_by_reciprocity(a, n):
 	# The classical loop: reduce a modulo n, strip its factors 2, each negating the sign when n is
@@ -552,6 +616,105 @@ def jacobi_binary(a, n):
 				t = -t
 		a -= n
 	return t if n == 1 else 0
+
+
+def jacobi_limb_paths(a, n):
+	# The binary form on limbs as jacobi in src/mp.cpp runs it: (the symbol, the paths it takes,
+	# named as in JACOBI_LIMB_PATHS). Limbs are lists of 64-bit values, least significant first,
+	# with no high zero limb, changed in place; a is reduced below n first only when a >= n.
+	paths = set()
+
+	def to_limbs(v):
+		out = []
+		while v:
+			out.append(v & MASK)
+			v >>= 64
+		return out
+
+	def trim(v):
+		dropped = 0
+		while v and v[-1] == 0:
+			v.pop()
+			dropped += 1
+		return dropped
+
+	def compare(v, w):
+		if len(v) != len(w):
+			paths.add("compare: unequal limb counts")
+			return -1 if len(v) < len(w) else 1
+		for i in range(len(v) - 1, -1, -1):
+			if v[i] != w[i]:
+				if i + 1 < len(v):
+					paths.add("compare: decided below the top limb")
+				return -1 if v[i] < w[i] else 1
+		paths.add("compare: equal")
+		return 0
+
+	def strip(v):
+		whole = 0
+		while v[whole] == 0:
+			whole += 1
+		if whole:
+			paths.add("strip: one whole limb" if whole == 1 else "strip: two or more whole limbs")
+		part = (v[whole] & -v[whole]).bit_length() - 1
+		for i in range(whole, len(v)):
+			limb = v[i] >> part
+			if part != 0 and i + 1 < len(v):
+				limb |= (v[i + 1] << (64 - part)) & MASK
+				paths.add("strip: bits carried down from the next limb")
+			v[i - whole] = limb
+		del v[len(v) - whole:]
+		if trim(v):
+			paths.add("strip: the top limb emptied and trimmed")
+		return 64 * whole + part
+
+	def subtract(v, w):
+		equal = v == w
+		borrow = run = i = 0
+		while i < len(v) and (i < len(w) or borrow != 0):
+			wi = w[i] if i < len(w) else 0
+			if borrow:
+				if i >= len(w):
+					paths.add("subtract: a borrow past the shorter operand")
+				if i == len(v) - 1:
+					paths.add("subtract: a borrow into the top limb")
+				if (v[i] - wi) & MASK == 1:
+					paths.add("subtract: a borrow that ends at a limb one above")
+			if v[i] == wi and borrow:
+				paths.add("subtract: a borrow across an equal limb" if i < len(w) else
+				          "subtract: a borrow across a zero limb past the shorter operand")
+				run += 1
+				if run >= 2:
+					paths.add("subtract: a borrow across two or more limbs in a row")
+			else:
+				run = 0
+				if v[i] == wi and i < len(w) and i + 1 < len(v) and not equal:
+					paths.add("subtract: equal limbs below the top, nothing borrowed")
+			difference = (v[i] - wi) & MASK
+			below = 1 if v[i] < wi else 0
+			v[i] = (difference - borrow) & MASK
+			borrow = below + (1 if difference < borrow else 0)
+			i += 1
+		if i < len(v):
+			paths.add("subtract: the longer operand, nothing borrowed past the shorter")
+		if trim(v) >= 2:
+			paths.add("subtract: trimmed by two or more limbs")
+
+	v = to_limbs(a if a < n else a % n)
+	w = to_limbs(n)
+	t = 1
+	while v:
+		w8 = w[0] % 8
+		if strip(v) % 2 == 1 and w8 in (3, 5):
+			t = -t
+		if compare(v, w) < 0:
+			v, w = w, v
+			if v[0] % 4 == 3 and w[0] % 4 == 3:
+				t = -t
+		subtract(v, w)
+	if len(w) > 1 and w[0] == 1:
+		paths.add("symbol: a gcd of several limbs whose low limb is 1")
+	return (t if w == [1] else 0), paths
 
 
 def jacobi_by_euler(a, p):
@@ -671,6 +834,17 @@ def jacobi():
 	q2 = x(operand(q300) ** 2)
 	add(x(operand(q300) * operand(r(200, 936))), q2, 0)
 	add(r(599, 937), q2)
+
+	# The rare limb paths of jacobi's steps: each pair reaches the path it is written for, and the
+	# pairs reach every path, each traced on limbs with the symbol the reciprocity loop's
+	reached = set()
+	for path, a, n in JACOBI_LIMB_PAIRS:
+		symbol, paths = jacobi_limb_paths(a, n)
+		assert path in paths, (path, hex(a), hex(n))
+		assert symbol == jacobi_by_reciprocity(a, n), (path, hex(a), hex(n))
+		reached |= paths
+		add(x(a), x(n))
+	assert reached == set(JACOBI_LIMB_PATHS), set(JACOBI_LIMB_PATHS) ^ reached
 	return f
 
 FAMILIES = {

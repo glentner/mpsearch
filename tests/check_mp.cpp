@@ -514,7 +514,8 @@ static void the_jacobi_symbol_matches_the_vectors() {
 	//
 	// tests/vectors/jacobi.txt: residues modulo M_p for every odd exponent the Lucas-Lehmer checks
 	// run in make check, with each symbol, -1, 1 and 0, the residues a shifted run forms among
-	// them; and general odd moduli, with a factor shared, square factors and a above n.
+	// them; general odd moduli, with a factor shared, square factors and a above n; and pairs that
+	// take the rare carry and borrow paths of its steps on limbs, which generate.py traces.
 
 	std::vector<const vectors::Record*> records = vectors::records("jacobi", "jacobi");
 	vectors::Mismatches mismatches("Jacobi symbols");
