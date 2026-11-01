@@ -38,8 +38,9 @@ The check has blind spots, and they define what the known-answer tests must stil
 
 ## Why it was deferred
 
-Never started. It depends on the transform engine (`issues/ibdwt-transform-engine.md`) and shares the
-checkpoint format with `issues/lucas-lehmer-test.md`.
+Never started. It depended on the transform engine, which landed on `main` on 2026-10-31
+(`spec/ibdwt-transform-engine/`), so that constraint is cleared. It shares the checkpoint format with
+`issues/lucas-lehmer-test.md`.
 
 ## Outcome / vision
 

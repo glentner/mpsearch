@@ -27,9 +27,10 @@ Evidence:
   gate checks it unless that cycle's plan asks.
 - `make check` reads no history: the loader sees one table's text, and the cycle's R11 kept
   `make check` from running any tool beyond what it used, `git` included.
-- The next cycles that append are the engine cycles (`issues/ibdwt-transform-engine.md`,
-  `issues/ntt-transform-engine.md`), burn-in (`issues/burn-in-mode.md`) and the factor tables
-  (`issues/known-factor-tables.md`), each adding rows to a table that exists.
+- The next cycles that append are the integer engine (`issues/ntt-transform-engine.md`), burn-in
+  (`issues/burn-in-mode.md`) and the factor tables (`issues/known-factor-tables.md`), each adding
+  rows to a table that exists. The FP64 engine landed on 2026-10-31 (`spec/ibdwt-transform-engine/`)
+  without appending a row.
 
 ## Why it was deferred
 

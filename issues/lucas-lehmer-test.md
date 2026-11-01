@@ -44,10 +44,11 @@ about half the time when one was. That is why GIMPS moved first-time tests to PR
 
 ## Why it was deferred
 
-Never started. It depends on the transform engine (`issues/ibdwt-transform-engine.md`). For the
-smallest exponents, a reference Lucas–Lehmer test on the reference big integer landed on `main` on
-2026-10-16 (`lucas_lehmer` in `src/reference.hpp`, `spec/reference-big-integer/`). It is not wired
-into `mps -t` or the verdicts, and it is the known answer this test is graded against.
+Never started. It depended on the transform engine, which landed on `main` on 2026-10-31
+(`spec/ibdwt-transform-engine/`), so that constraint is cleared. For the smallest exponents, a
+reference Lucas–Lehmer test on the reference big integer landed on `main` on 2026-10-16
+(`lucas_lehmer` in `src/reference.hpp`, `spec/reference-big-integer/`). It is not wired into
+`mps -t` or the verdicts, and it is the known answer this test is graded against.
 
 ## Outcome / vision
 

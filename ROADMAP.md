@@ -118,7 +118,14 @@ Since then, on `main`:
 - a build that follows its compiler and flags: `lib/settings` records the settings that built
   `lib/` and `bin/`, and a run with other settings rebuilds every object it links, so switching
   between clang and GCC needs neither `make -B` nor `make clean`; and `.gitignore` covers
-  `__pycache__/` (`objects-follow-the-compiler`, 2026-10-17).
+  `__pycache__/` (`objects-follow-the-compiler`, 2026-10-17);
+- a portable FP64 engine for Crandall and Fagin's weighted transform, outside the command line: a
+  complex FFT of every length m·2^k ≤ 2^20 with odd m ≤ 15, the balanced digit form and its
+  round-trip with `BigInt`, and squaring (with a subtraction of 2^e) and the product of two residues
+  modulo 2^p − 1, each measuring its round-off and refusing past a threshold with its input
+  unchanged; a length table set by measurement and committed with its data and the command that
+  made it; checked against `BigInt` and the known answers in a short tier in `make check` and a full
+  suite in `make check-engine` (`ibdwt-transform-engine`, 2026-10-31).
 
 ---
 
@@ -136,19 +143,6 @@ speed. At the end of this Part, `mps` verifies every known Mersenne prime up to 
 CPU. It has checkpoints, the Jacobi and Gerbicz error checks, and a benchmark that checks its own
 answer.
 
-## Squaring modulo 2^p − 1 with a weighted transform (FP64, portable)
-
-The core of everything after it: Crandall and Fagin's irrational-base discrete weighted transform.
-Reduction modulo 2^p − 1 comes free, with roughly 17–20 bits per word, so the largest known exponent
-fits about 7.5 million words. This entry defines the engine contract every backend implements, and
-builds the first, portable implementation with a round-off monitor and a measured table of lengths
-and maximum exponents. It also defines the balanced digit form the transform works in, and its
-round-trip with the reference big integer, deferred here from that cycle.
-
-*Horizon: near-term · Depends on: the reference big integer (cleared 2026-10-16); the known answers
-(cleared 2026-10-17) · Refs: reference-big-integer P5, 2026-10-16*
-**Seed:** [`issues/ibdwt-transform-engine.md`](issues/ibdwt-transform-engine.md)
-
 ## Lucas–Lehmer with error checks, shifts and checkpoints
 
 The test the definition of done is stated in. It runs on the engine with:
@@ -159,7 +153,7 @@ The test the definition of done is stated in. It runs on the engine with:
 - versioned, checksummed, atomically replaced checkpoints that it resumes from without changing the
   answer.
 
-*Horizon: near-term · Depends on: the transform engine · Refs: —*
+*Horizon: near-term · Depends on: the transform engine (cleared 2026-10-31) · Refs: —*
 **Seed:** [`issues/lucas-lehmer-test.md`](issues/lucas-lehmer-test.md)
 
 ## PRP with the Gerbicz error check
@@ -168,8 +162,8 @@ Base-3 PRP with Gerbicz's check catches nearly every arithmetic error within the
 happens, then recovers from the last verified state. That makes it the strongest in-flight
 hardware-fault detector for this arithmetic, and the default for every burn-in profile.
 
-*Horizon: near-term · Depends on: the transform engine; the checkpoint format from Lucas–Lehmer ·
-Refs: —*
+*Horizon: near-term · Depends on: the transform engine (cleared 2026-10-31); the checkpoint format
+from Lucas–Lehmer · Refs: —*
 **Seed:** [`issues/prp-gerbicz-test.md`](issues/prp-gerbicz-test.md)
 
 ## `mps bench`: time per iteration that compares across machines
@@ -178,7 +172,7 @@ A repeatable timing at a fixed exponent, length, iteration count and layout, wit
 repeats. It ends on a known residue, so a fast wrong engine can't look like a win. Every performance
 claim on this roadmap and every burn-in walltime is measured with it.
 
-*Horizon: near-term · Depends on: the transform engine · Refs: —*
+*Horizon: near-term · Depends on: the transform engine (cleared 2026-10-31) · Refs: —*
 **Seed:** [`issues/benchmark-mode.md`](issues/benchmark-mode.md)
 
 ---
@@ -234,15 +228,15 @@ is the exception: its form is decided before the Lucas–Lehmer test produces ve
 ## A standing check for the engine's differential tests
 
 The FP64 transform engine is tested in two tiers. `make check` runs a short one, and a separate make
-target runs the full differential suite, about 15 minutes of squarings, products and chains against
-the reference big integer and the known answers at every supported length. Nothing runs the full
-suite once the engine's cycle merges, and it stays out of `make check` and the profile's `verify` by
-decision. A standing check runs it before a change to the engine, its length table or the numeric
+target runs the full differential suite, within a 15-minute budget: squarings, products and chains
+against the reference big integer and the known answers at every supported length. Nothing runs the
+full suite once the engine's cycle merges, and it stays out of `make check` and the profile's `verify`
+by decision. A standing check runs it before a change to the engine, its length table or the numeric
 build flags lands. Its form (the cluster test job, a scheduled run, or a landing gate) is decided at
 its shaping, no later than the Lucas–Lehmer cycle's, before any verdict depends on the engine.
 
-*Horizon: near-term, before Lucas–Lehmer verdicts · Depends on: the transform engine · Refs:
-ibdwt-transform-engine GOAL sign-off, 2026-10-22*
+*Horizon: near-term, before Lucas–Lehmer verdicts · Depends on: the transform engine (cleared
+2026-10-31) · Refs: ibdwt-transform-engine GOAL sign-off, 2026-10-22*
 **Seed:** [`issues/engine-differential-standing-check.md`](issues/engine-differential-standing-check.md)
 
 ## A standing check that the known answers only grow
@@ -314,8 +308,8 @@ and runs it about 5× faster than FP64 on FP64-poor GPUs. Ordinary 32-bit NTT pr
 weights past 2^16 words, and 2^64 − 2^32 + 1 has no lengths with a factor of 3. It is built exact on
 the CPU against the same contract and answers, with hybrids (FP64+M31, FP32+M31) designed in.
 
-*Horizon: near-term · Depends on: the engine contract; the known answers (cleared 2026-10-17) ·
-Refs: —*
+*Horizon: near-term · Depends on: the engine contract (cleared 2026-10-31); the known answers
+(cleared 2026-10-17) · Refs: —*
 **Seed:** [`issues/ntt-transform-engine.md`](issues/ntt-transform-engine.md)
 
 ## NVIDIA GPUs: CUDA engines, FP64 where it's fast and integer where it isn't
@@ -343,8 +337,8 @@ A four- or six-step decomposition sized to the caches, with weights, squaring an
 the passes, run across every performance core. It is measured against the best established Arm
 program on the M4 Max, then the best x86 program on an EPYC node.
 
-*Horizon: mid-term · Depends on: `mps bench`; the portable engine as the correctness reference ·
-Refs: —*
+*Horizon: mid-term · Depends on: `mps bench`; the portable engine as the correctness reference
+(cleared 2026-10-31, to 2^20 words) · Refs: —*
 **Seed:** [`issues/cpu-transform-throughput.md`](issues/cpu-transform-throughput.md)
 
 ## Targets that check their node
@@ -438,7 +432,8 @@ it finds factors far beyond trial-factoring depth at a few percent of a primalit
 and a prime-pairing stage 2 run on the engine with checkpoints. Bounds are chosen by estimated success
 probability. The GCD is quadratic until the large-exponent GCD below lands.
 
-*Horizon: mid-term · Depends on: the transform engine's general multiply · Refs: —*
+*Horizon: mid-term · Depends on: the transform engine's general multiply (cleared 2026-10-31) ·
+Refs: —*
 **Seed:** [`issues/pminus1-factoring.md`](issues/pminus1-factoring.md)
 
 ## A GCD and Jacobi symbol that scale to the largest exponents
@@ -448,7 +443,8 @@ of minutes per call at the top of the exponent range. A half-GCD and a subquadra
 built on `mps`'s own multiplication, bring them down to seconds or minutes. The established programs
 use GMP for this, which § Invariants rules out here.
 
-*Horizon: mid-term · Depends on: the transform engine's general multiply · Refs: —*
+*Horizon: mid-term · Depends on: the transform (cleared 2026-10-31); a plain product of operands of
+varying sizes, which the engine's multiply modulo 2^p − 1 is not · Refs: —*
 **Seed:** [`issues/large-gcd-and-jacobi.md`](issues/large-gcd-and-jacobi.md)
 
 ## PRP proofs: a result anyone can verify cheaply

@@ -11,8 +11,8 @@ appetite: big
 
 ## Problem
 
-The FP64 weighted transform (`issues/ibdwt-transform-engine.md`) needs fast double precision, and
-several targets lack it:
+The FP64 weighted transform (`spec/ibdwt-transform-engine/`, on `main` since 2026-10-31) needs fast
+double precision, and several targets lack it:
 
 - **Apple GPUs.** Metal has no `double`.
 - **TPUs.** No FP64.
