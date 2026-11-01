@@ -18,6 +18,11 @@ make check                # bin/check from tests/*.cpp and the modules, built wi
                           # known answers
 make check-engine         # make check's three steps, then `bin/check engine`: the engine's checks at
                           # every supported length (minutes, not seconds; not in make check)
+make check-long           # tests/ll.sh long: the long tier, bin/mps -t ll on the known answers up to
+                          # the long bounds in its header (minutes; not in make check)
+sh ci/engine-gate.sh      # the engine's landing gate (§ Factory): make check-engine under clang and
+                          # under GCC in fresh copies of HEAD, residue digests compared (about 20
+                          # minutes; its header is the manual)
 make lengths              # bin/measure: measure the length table again into src/lengths.txt and
                           # print its rows for src/lengths.cpp (tens of minutes; see src/lengths.hpp)
 make clean                # remove what the build wrote: the objects in lib/ and the record of
@@ -96,15 +101,16 @@ needs `make -B`.
   `check_lucas.cpp` holds the Lucas–Lehmer test's checks: the known answers at two given shifts, and
   every error check, recovery and length move proved by injection through `lucas::Options`. `ll.sh`
   runs `bin/mps -t ll` on the known answers of `known/`, in shell built-ins only, up to the bounds
-  in its header. `make check` runs `bin/check`, `cli.sh` and `ll.sh`. `check_ibdwt.cpp` holds the
-  engine's default-tier checks and `check_engine.cpp` its engine tier; `engine_support.hpp` and
-  `engine_support.cpp` are what both share (pseudorandom digits, values on `BigInt`, the table's
-  assignment, the tally a check grades with). `vector_reader.hpp` and `vector_reader.cpp` read the
-  vector families in `vectors/`, which `vectors/generate.py` wrote once with Python's integers, each
-  file carrying the command that reproduces it (`jacobi.txt` holds the Jacobi symbol's); they hold
-  SHA-256 and SplitMix64 too. `known/` holds the tables of known answers, each row with its source,
-  written by `known/generate.py`, whose header is the manual: `mersenne-exponents.txt` (the Mersenne
-  prime exponents), `final-residues.txt` (the final residues of composite exponents) and
+  in its header. `make check` runs `bin/check`, `cli.sh` and `ll.sh`; `make check-long` runs
+  `ll.sh long`, the long tier. `check_ibdwt.cpp` holds the engine's default-tier checks and
+  `check_engine.cpp` its engine tier; `engine_support.hpp` and `engine_support.cpp` are what both
+  share (pseudorandom digits, values on `BigInt`, the table's assignment, the tally a check grades
+  with). `vector_reader.hpp` and `vector_reader.cpp` read the vector families in `vectors/`, which
+  `vectors/generate.py` wrote once with Python's integers, each file carrying the command that
+  reproduces it (`jacobi.txt` holds the Jacobi symbol's); they hold SHA-256 and SplitMix64 too.
+  `known/` holds the tables of known answers, each row with its source, written by
+  `known/generate.py`, whose header is the manual: `mersenne-exponents.txt` (the Mersenne prime
+  exponents), `final-residues.txt` (the final residues of composite exponents) and
   `partial-residues.txt` (the residues after a stated number of iterations, and the fingerprints).
   `log_peer.hpp` and `log_peer.cpp` are a second unit the logger's checks log from, so a state that
   isn't shared shows; they hold the checks' guards (`SavedLogger` restores the logger's state,
@@ -112,7 +118,10 @@ needs `make -B`.
 - `ci/test-commit.sh`: the cluster test job. It builds and checks one commit on one target in a
   fresh run directory in scratch and leaves the logs and `result.json` there; its header is the
   manual. `ci/targets/`: one `key=value` file per target, naming its partition, resources, modules
-  and make variables.
+  and make variables. `ci/engine-gate.sh`: the engine's landing gate (§ Factory). It runs
+  `make check-engine` under clang and under a GCC in two fresh copies of a commit and compares the
+  residue digests the two builds print; `compare LOG_A LOG_B` only compares two logs. Its header
+  is the manual.
 
 ## Factory
 
@@ -131,6 +140,7 @@ This repo is built by the spec-driven factory: GOAL → PLAN/TECH → build → 
 | setup | `make` |
 | verify | `make check`: the checks and the smoke test, both always run |
 | cluster test | `ci/test-commit.sh <hash> <target>`, copied from the tested commit into scratch and submitted to Slurm by path with its two arguments; the options, environment, run directory and `result.json` are in its header |
+| landing gate | before a change to the engine's sources (`src/ibdwt.*`, `src/fft.*`), its length table and measurement (`src/lengths.*`, `src/lengths.txt`, `src/measure.cpp`) or the numeric build flags (`IEEE` in the `Makefile`) lands: `ci/engine-gate.sh` green on the commit that lands, which runs `make check-engine` under clang and under GCC in fresh copies of it and compares their residue digests; its header is the manual |
 | throwaway environment | none: `mps` keeps no state outside its own working directory yet |
 | coupled core | the command-line surface (`src/main.hpp` usage and help, `src/cli.*`, `README.md` usage); the test entry points (`src/math.hpp` and the dispatch in `src/main.cpp`) |
 | same-commit rules | see § Conventions |

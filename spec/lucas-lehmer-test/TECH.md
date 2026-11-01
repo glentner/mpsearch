@@ -6,7 +6,7 @@ appetite: big
 status: in_progress
 branch: feature/lucas-lehmer-test
 base: main
-current_phase: P3
+current_phase: P4
 last_updated: '2026-11-01'
 phases:
 - id: P1
@@ -48,7 +48,7 @@ phases:
   verify: sh spec/lucas-lehmer-test/verify/p2.sh
 - id: P3
   name: The long tier, the landing gate and the remaining notes
-  status: pending
+  status: done
   satisfies:
   - R16
   - R17
@@ -262,13 +262,22 @@ prove it on the known answers at two shifts and prove every check and recovery b
 `ci/engine-gate.sh` and the profile's `landing gate` row exist and pass on this tree; AGENTS.md and
 the notes name everything this cycle created.
 
-- [ ] `Makefile`: `check-long` (`sh tests/ll.sh $(EXE) long`), `.PHONY`.
-- [ ] `ci/engine-gate.sh` (PLAN § 2.8): run mode and `compare` mode, the guards, exit statuses 0/1/2,
+- [x] `Makefile`: `check-long` (`sh tests/ll.sh $(EXE) long`), `.PHONY`.
+- [x] `ci/engine-gate.sh` (PLAN § 2.8): run mode and `compare` mode, the guards, exit statuses 0/1/2,
       its header the manual.
-- [ ] `AGENTS.md`, in this phase's commit: § Build and run and § Map lines for `make check-long` and
+- [x] `AGENTS.md`, in this phase's commit: § Build and run and § Map lines for `make check-long` and
       `ci/engine-gate.sh`; the profile's `| landing gate | … |` row after `cluster test` (R17, R18).
-- [ ] `doc/lucas-lehmer.md`, `doc/prp-and-gerbicz.md`, `doc/reference-arithmetic.md`: the three
+- [x] `doc/lucas-lehmer.md`, `doc/prp-and-gerbicz.md`, `doc/reference-arithmetic.md`: the three
       sentences say what `make check` runs since `known-answer-tables` (R18).
+- **Built** (amendment, 2026-11-01): `check-long` runs only `tests/ll.sh $(EXE) long`, as this
+      checklist says (not `make check`'s steps first); 55 s alone on clang, 62 known answers, and
+      45 s on clang in the full gate (green on both compilers). `ci/engine-gate.sh` is the
+      prototype's design (PLAN § 2.8), with the larger functions documented in
+      `ci/test-commit.sh`'s style; its `SUMMARIES` require the `ll:` line too, since P2 made
+      `tests/ll.sh` a step of `make check-engine`. Its run mode in the full gate: clang 500 s,
+      g++-16 556 s, about 18 minutes. `doc/lucas-lehmer.md`'s "What checks it" also names
+      `make check-long`. AGENTS.md's § Build and run names the engine gate as `sh ci/engine-gate.sh`
+      (the repo's scripts are not executable), and the § Map `tests/` bullet is rewrapped.
 - **Verify:** `sh spec/lucas-lehmer-test/verify/p3.sh` (its full mode runs the landing gate on a
   commit of the working tree: about 20 of its minutes).
 - **Touches:** `Makefile`, `ci/engine-gate.sh`, `AGENTS.md`, the three notes.

@@ -78,6 +78,11 @@ check-engine: $(EXE) $(CHECK)
 	@status=0; $(CHECK) || status=1; sh tests/cli.sh $(EXE) || status=1; sh tests/ll.sh $(EXE) || status=1; \
 	$(CHECK) engine || status=1; exit $$status
 
+# The Lucas-Lehmer test's long tier: its known answers through bin/mps up to the long bounds in
+# tests/ll.sh's header (minutes, not seconds; not in make check)
+check-long: $(EXE)
+	@sh tests/ll.sh $(EXE) long
+
 # Measure every supported length again (src/lengths.hpp's protocol) into src/lengths.txt, and print
 # the table's two maps for src/lengths.cpp
 lengths: $(MEASURE)
@@ -88,7 +93,7 @@ clean:
 
 FORCE:
 
-.PHONY: check check-engine clean lengths FORCE
+.PHONY: check check-engine check-long clean lengths FORCE
 .DELETE_ON_ERROR:
 
 -include $(DEPS)
