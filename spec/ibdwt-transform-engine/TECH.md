@@ -361,7 +361,7 @@ evidence, the ledger and the state.
 - [x] **Audit.** Walk R1–R14 against `src/`, `tests/`, `doc/`, `AGENTS.md` and the Makefile, one by
       one, and confirm each has its check or its gate step (PLAN § 2.9). Fix and commit anything
       found (above).
-- [ ] **Deferral ledger:** `spec/ibdwt-transform-engine/evidence/ledger.md` with `## Deferrals` and
+- [x] **Deferral ledger:** `spec/ibdwt-transform-engine/evidence/ledger.md` with `## Deferrals` and
       `## Times`.
   - [x] Walk P1–P4 of this file and the build's own commits for "do not fix here", "known
         limitation", "left as a follow-up" and any deferral the build introduced. Each gets an
@@ -379,7 +379,7 @@ evidence, the ledger and the state.
         on this Mac at P4, and what it runs.
   - [x] Every `issues/*.md` matches exactly one `**Seed:**` line in `ROADMAP.md`; this cycle's seed
         stays `adopted:ibdwt-transform-engine`.
-- [ ] **Pre-push.** `sh spec/ibdwt-transform-engine/verify/prepush.sh` must be green: the ledger's
+- [x] **Pre-push.** `sh spec/ibdwt-transform-engine/verify/prepush.sh` must be green: the ledger's
       bullets, the no-uncommitted-code rule and the scan first, then the P3 gate on the final tree.
       `prepush.sh scan` runs the scan alone; see it catch a planted site name once and a planted
       detailed line naming a made-up node once, then remove both plants.
@@ -390,12 +390,12 @@ evidence, the ledger and the state.
       (`x86-64-avx512`, `x86-64-avx2`, `aarch64-gb10`) from that commit's `ci/test-commit.sh`, as
       its header says, and resubmits a run that fails for a reason outside the tree (a preemption,
       a node fault). Only runs that test the tree are recorded.
-- [ ] **Evidence** (dispatch B, from the files the foreman hands over). Pass each piece through
+- [x] **Evidence** (dispatch B, from the files the foreman hands over). Pass each piece through
       `sh spec/ibdwt-transform-engine/verify/redact.sh IN OUT`: for each target
       `evidence/<target>.json`, `evidence/<target>.out` and `evidence/<target>.check.log`; and
       `evidence/jobs.tsv` (a header `label job_id state exit_code` and one tab-separated line per
       job from `sacct`).
-- [ ] **Times** (R12's record): under `## Times` in `evidence/ledger.md`, two lines quoted from
+- [x] **Times** (R12's record): under `## Times` in `evidence/ledger.md`, two lines quoted from
       dispatch A's prepush times line: ``- make check: <the timing sentence>`` (the interleaved
       comparison against 0bc49cb) and ``- make check-engine: <s> s on clang++ (budget 900 s)``; then
       one line per target, ``- `<target>`: check step <s> s``, from the run's `result.json`.

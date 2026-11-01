@@ -69,3 +69,13 @@ and its `ROADMAP.md` entry).
   R4 or R14 names. Nothing is deferred.
 
 ## Times
+
+R12's two times are quoted from the pre-push run (`remediation/prepush.sh`, green on `d7d0feb`,
+the pushed commit, whose code equals this tree's); the check steps are from the three runs'
+`result.json`, all of `d7d0feb`.
+
+- make check: make check 3.738 s at 0bc49cb, 4.977 s now, +1.239 s (budget +5 s; least of 5 interleaved runs each; load 4.4)
+- make check-engine: 464 s on clang++ (budget 900 s)
+- `x86-64-avx512`: check step 46 s
+- `x86-64-avx2`: check step 82 s
+- `aarch64-gb10`: check step 158 s
