@@ -427,6 +427,13 @@ evidence, the ledger and the state. The push target is the one branch `PUSH_REF`
   before the push with P4 `in_progress`; the foreman pushes and submits the three runs, and dispatch B
   redoes the evidence, the ledger's `## Times` and `## Landing gate` from the new pre-push lines, and
   closes P4 under the retuned `verify:`.
+- **Dispatch A, review cycle 1** (amendment, 2026-11-01): the audit walked what the remediation
+  touched (R14's refusals in `src/lucas.cpp`, the note and the refusal check; R4's Jacobi check;
+  the move and known-answer checks the sweep tightened; the profile's verify row; the three seeds)
+  against R1–R18 and § Invariants, and found no gap: no new deferral, `ROADMAP.md` unchanged, the
+  three Notes bullets as they were. The frozen `verify/prepush.sh` on `1e820ba` passed its ledger
+  notes, code-committed and scan steps and went red at "files: AGENTS.md" on the old verify row, as
+  P2's amendment rules; `remediation/prepush.sh` runs it under the wrapper.
 - **Verify:** `sh spec/lucas-lehmer-test/remediation/p4.sh`, then the four checkers (the frontmatter's
   `verify:`; before review cycle 1, `sh spec/lucas-lehmer-test/verify/p4.sh`, whose `audit` mode the
   wrapper keeps).
