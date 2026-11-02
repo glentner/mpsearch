@@ -3,7 +3,7 @@ slug: lucas-lehmer-test
 title: The Lucas–Lehmer test on the engine, with a shift and its error checks
 kind: feature
 appetite: big
-status: in_review
+status: blocked
 branch: feature/lucas-lehmer-test
 base: main
 current_phase: done
@@ -89,9 +89,9 @@ phases:
   verify: sh spec/lucas-lehmer-test/remediation/p4.sh && python3 -I spec/lucas-lehmer-test/remediation/F1-refusals.py && python3 -I spec/lucas-lehmer-test/remediation/F2-make-targets.py && python3 -I spec/lucas-lehmer-test/remediation/F3-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F4-line-refs.py && python3 -I spec/lucas-lehmer-test/remediation/F5-mutants.py check && python3 -I spec/lucas-lehmer-test/remediation/F6-mutants.py check
 review:
   verdict: changes-requested
-  cycle: 2
-  last_reviewed_commit: 7bd10396e671f797d81e8ba1e14100e51a4602e9
-  blocked_reason: 'review cycle 2: F5 (R13 progress fields unpinned), F6 (Jacobi vectors miss a borrow path); both LOW surviving mutants'
+  cycle: 3
+  last_reviewed_commit: bf087ae6120506ca86b09b31b37ce67b698519a5
+  blocked_reason: 'review cycle 3 at the bound: F7 MEDIUM (progress sub-check flaky under load), F8-F10 LOW; escalated to Geoffrey'
 ---
 
 # TECH.md — The Lucas–Lehmer test on the engine, with a shift and its error checks

@@ -166,3 +166,52 @@ R1–R12 and R14–R18 ✅, each by the commands above and the reviewer's matrix
   - **Cycle 2 F5** (`src/lucas.cpp`): fixed in `tests/check_lucas.cpp` only (`7efc00b`); `src/lucas.cpp` is unchanged since `1e820ba`. Signed off.
   - **Cycle 2 F6** (`src/mp.cpp`; the fix is in `tests/vectors/`, also listed): `8ea53d6` and `0c45bc3` append 32 records to `jacobi.txt` through `generate.py`, each symbol computed by its Python reciprocity loop and asserted to reach its limb path. No existing record or expected value changes: the only removed line is the old trailer. The C++ `jacobi` agrees on all 493 records. `src/mp.cpp` is unchanged by this round (no `src/` change since `b7c7db6`). Signed off.
 - Cycle 1's F1 trigger: signed off (above) and still on record for publish.
+
+## Review cycle 3 — changes-requested (2026-11-01)
+
+- **Reviewed commit:** bf087ae6120506ca86b09b31b37ce67b698519a5 (code equal to `0c45bc3`, the tested commit)  ·  **Base:** main (`bcb6fdf`)
+- **Mode:** a fresh blind pass over the full spec-excluded diff. The reviewer had commit subjects only, and was barred from commit bodies, `REVIEW.md`, `remediation/`, PLAN, TECH, `verify/`, `evidence/` and earlier review scratch.
+- **Disclosures (reviewer's own):** a scratchpad listing showed earlier gate-defect log names, one of which its mutant L21 mirrors (none opened). Seeds in the diff name `PLAN.md § 5` and `evidence/ledger.md` (not opened). All timings ran under a load average of about 5–6, including two stray shells at 100 % CPU.
+- **Bound:** this is cycle 3 of ≤3, with CONFIRMED findings, so the loop has not converged. Per the rubric's bounded loop, the foreman stops and escalates to Geoffrey; no fourth remediation is dispatched without his decision.
+
+### Verification run
+
+- `make check` on clang and g++-16 passes 116 / 644 / 48 with no warnings. `make check-long` passes 62 in 45.3 s (clang) and 48.6 s (g++-16).
+- R16: least of 7 interleaved pairs gives 4.989 s against 8.787 s, so +3.80 s (budget +5 s).
+- `MPS_GCC=g++-16 sh ci/engine-gate.sh` is green on bf087ae: clang 504 s, gcc 551 s, 5 digests equal, exit 0. Compare-mode and exit-2 controls behave as specified.
+- R1/R2: every shift of p = 3, 5, 7, 13, 31, 127, 521, 1279 gives prime with no failures, and all 1277 shifts of M1277 give the same Res64.
+- The 493 vectors agree with the reviewer's own Python and with Euler's criterion. `generate.py jacobi` regenerates the file identically, and 6,000 further pairs agree.
+- R14 was driven through `bin/mps` on every reason combination, including P_max, P_max+1, P_max+2, 20381717, 999999999 and 999999998.
+- 93 source mutants, each under both compilers, with 89 killed under each. The survivors are two equivalents (L60, J14) and two findings (F8, F9).
+- 400 random single corruptions each of M1279 and M1277: about half caught, as the GOAL's non-goals state.
+
+### Requirement → evidence matrix
+
+R1–R18 ✅ in behaviour. R12 has one unpinned format rule (F8), R13 one unpinned count (F9), and R11's note one false sentence (F10). No scope creep, and no § Invariants concern.
+
+### Findings
+
+#### [MEDIUM/CONFIRMED] F7 — the progress check's recovery sub-check fails on a loaded machine
+- **Where:** `tests/check_lucas.cpp:1179` (added in `7efc00b`, F5's remediation)
+- **Failure scenario:** with `progress_seconds = 0` each line times one squaring of M127, about 1 µs, printed to 0.001 ms. The sub-check requires the line after a recovery to be within 10× the median, a band about ten print steps wide. One preemption in that interval fails `make check`, the profile's `verify` and the cluster job, with no code at fault.
+- **Evidence:** the reviewed `bin/check`, unmodified, ran 6 rounds of 12 concurrent copies on 10 cores. 70 passed and 2 failed, both on this line: `(0.024000 ms against 0.002000 ms)` and `(0.050000 ms against 0.004000 ms)`. A verbatim harness also failed 1 of 30 runs at load about 5.7.
+- **Touches:** R16 (`make check` stays a reliable gate) and R13's pin. **Class:** no check in `make check` bounds a wall-clock time by a ratio or margin that ordinary scheduling can exceed. Each timing assertion either spans enough work to swamp a preemption, or asserts only what is exact (counts, resets, formulas).
+
+#### [LOW/CONFIRMED] F8 — the record's whole-number distance format is unpinned
+- **Where:** `src/result.cpp:266` (`number_text`); the format at `src/result.cpp:372`
+- **Failure scenario:** deleting the `.0` suffix for a whole-number `largest_distance` survives `make check` under both compilers. `bin/mps -j -t ll 3` would then emit `"largest_distance": 0` instead of `0.0`. Reachable on M3, M5, M7, M13, M17 and M19.
+- **Touches:** R12. `src/result.cpp` is on the high-blast list.
+
+#### [LOW/CONFIRMED] F9 — a recovery that resets the squaring count goes unseen
+- **Where:** `src/lucas.cpp:311–312`; `tests/check_lucas.cpp:1152–1181`
+- **Failure scenario:** the mutant `line_squarings = 0;` after `restore();` survives under both compilers. With `progress_seconds = 0` every line spans one squaring, so the check can't see a miscount. On M86243 (lines every 2 s, a 1 injected at 24264), the line after recovery reads 0.208 ms and 11 s to go, against the real 0.172 ms and 9 s.
+- **Touches:** R13. `src/lucas.cpp` is on the high-blast list.
+
+#### [LOW/CONFIRMED] F10 — the note says the folded large distances are always logged
+- **Where:** `doc/lucas-lehmer.md:144` against `src/lucas.cpp:315–317`
+- **Failure scenario:** the note says the first 8 large distances are logged one by one "and the rest in one line at the end". The folded line is logged only on the verdict path, so a run ending in an error never logs it. The error line still carries the count, so R11 holds, but the sentence is false.
+- **Touches:** R11 / R18 (the note describes the test as built).
+
+### Human-gate triggers
+
+- F8 (`src/result.cpp`) and F9 (`src/lucas.cpp`) are CONFIRMED findings in listed files, and F7 sits in a test of one. They are not signed off. With the loop at its bound, they go to Geoffrey with the escalation.
