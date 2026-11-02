@@ -215,3 +215,11 @@ R1–R18 ✅ in behaviour. R12 has one unpinned format rule (F8), R13 one unpinn
 ### Human-gate triggers
 
 - F8 (`src/result.cpp`) and F9 (`src/lucas.cpp`) are CONFIRMED findings in listed files, and F7 sits in a test of one. They are not signed off. With the loop at its bound, they go to Geoffrey with the escalation.
+
+### Escalation decision (2026-11-02)
+
+Geoffrey approved one more remediation round, as the foreman recommended. That approval covers four things:
+- **The fixes:** F7 by exact or scheduling-proof assertions, shown green under heavy concurrent load; F8 and F9 by tests only; F10 by correcting the note.
+- **The human gate:** this is his decision on the F8 (`src/result.cpp`) and F9 (`src/lucas.cpp`) triggers, for test-only fixes. Any change to a listed source file goes back to him first.
+- **The next review:** cycle 4 is scoped to verifying the remediation of F7–F10 and their classes (code-review Step 4's scoped mode), not a fresh full pass.
+- **The bound:** this round is the one exception to it. A CONFIRMED finding in cycle 4 escalates again.
